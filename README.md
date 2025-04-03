@@ -1,17 +1,12 @@
-[[_TOC_]]
-
 # ZooKeeper Service
 
 ## Repository structure
 
 * `./demo` - directory `docker-compose` to run ZooKeeper, integration tests & backup-daemon.
 * `./docs` - directory with actual documentation for users and developers.
-* `./zookeeper-service-operator` - directory with zookeeper-operator source code and HELM chart.
-* `./zookeeper-service-operator/charts` - directory with **main** HELM chart with resources for ZooKeeper and
+* `./charts/helm/zookeeper-service` - directory with **main** HELM chart with resources for ZooKeeper and
   integration tests.
 * `./integration-tests` - directory with Robot Framework test cases for ZooKeeper.
-* `./zookeeper-service-operator-integration-tests` - directory with documentation and separate HELM chart for
-  integration tests.
 
 ## How to start
 
@@ -22,8 +17,8 @@
 1. Build operator and integration tests, if you need non-master versions.
 2. Prepare kubeconfig on you host machine to work with target cluster.
 3. Prepare `sample.yaml` file with deployment parameters, which should contains custom docker images if it is needed.
-4. Store `sample.yaml` file in `zookeeper-service-operator/charts/helm/zookeeper-service` directory.
-5. Go to `zookeeper-service-operator/charts/helm/zookeeper-service` directory.
+4. Store `sample.yaml` file in `charts/helm/zookeeper-service` directory.
+5. Go to `charts/helm/zookeeper-service` directory.
 6. Run the following command:
 
   ```sh

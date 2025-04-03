@@ -123,7 +123,7 @@ The example of parameters to deploy Zookeeper service with enabled TLS and Helm 
           ca: LS0tLS1CRUdtuguyhuhkjij....
   ```
 
-**NOTE:** For App Deployer, we need to use only `Rolling Update` mode because `Clean Install` mode deletes all pre-created secrets.
+**NOTE:** Use only `Rolling Update` mode because `Clean Install` mode deletes all pre-created secrets.
 
 ## Certificate Renewal
 

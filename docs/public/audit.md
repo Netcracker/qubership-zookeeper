@@ -2,8 +2,6 @@ This chapter describes the security audit logging for ZooKeeper.
 
 <!-- #GFCFilterMarkerStart# -->
 The following topics are covered in this chapter:
-
-[[_TOC_]]
 <!-- #GFCFilterMarkerEnd# -->
 
 # Common Information

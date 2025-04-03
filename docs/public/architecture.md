@@ -1,5 +1,3 @@
-[[_TOC_]]
-
 # Overview
 
 [Apache ZooKeeper](https://zookeeper.apache.org/) is a centralized open-source software for managing and coordinating distributed applications.
@@ -9,7 +7,7 @@ ZooKeeper ensures high availability and fault tolerance by using a replicated ar
 It is commonly used for tasks such as distributed coordination, leader election, configuration management, and synchronization in distributed systems.
 
 **NOTE:** It is not recommended to use ZooKeeper for new projects and products,
-[HashiCorp Consul](https://git.qubership.org/PROD.Platform.Streaming/consul-service/-/blob/master/README.md) is more preferred choice.
+[HashiCorp Consul](https://github.com/Netcracker/qubership-consul/blob/main/README.md) is more preferred choice.
 The rarity of releases of ZooKeeper versions, occurring only once a year, makes it inadequate for quickly remediating potential vulnerability issues.
 Currently, in the company, Kafka and Config Server are the main users of ZooKeeper.
 However, Kafka is moving to a self-managed KRaft cluster, eliminating the dependency on ZooKeeper, while Config Server uses Consul in recent releases as a replacement.
@@ -20,7 +18,7 @@ The Qubership platform provides ZooKeeper deployment to Kubernetes/OpenShift usi
 The deployment procedure and additional features include the following:
 
 * Support of Qubership deployment jobs for HA scheme and different configurations. For more detailed information, refer to [Installation Guide](/docs/public/installation.md).
-* Backup and restore. For more detailed information, refer to [ZooKeeper Backup Daemon Guide](https://git.qubership.org/PROD.Platform.Streaming/zookeeper-backup-daemon/-/blob/master/documentation/maintenance-guide/development-guide/README.md).
+* Backup and restore. For more detailed information, refer to [ZooKeeper Backup Daemon Guide](https://github.com/Netcracker/qubership-zookeeper-backup-daemon/blob/main/documentation/maintenance-guide/development-guide/README.md).
 * Monitoring integration with Grafana Dashboard and Prometheus Alerts. For more detailed information, refer to [Monitoring Guide](/docs/public/monitoring.md).
 
 # ZooKeeper Components

@@ -47,8 +47,6 @@ We also have charts for deploying ZooKeeper UI.
 **Attention**: it can be used just for internal development work.
 It is not presented on dev/qa/project cluster, but you can deploy it using HELM only in your own dev-environment.
 
-Link to GitLab repository: [https://git.qubership.org/Personal.Streaming.Platform/zk-ui-helm>]
-
 ### ZooKeeper JVM parameters check
 
 #### All

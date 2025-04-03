@@ -1,4 +1,76 @@
-[[_TOC_]]
+The following topics are covered in this chapter:
+
+<!-- TOC -->
+- [Single Node Failure](#single-node-failure)
+  - [Description](#description)
+  - [Alerts](#alerts)
+  - [Stack Trace(s)](#stack-traces)
+  - [How to Solve](#how-to-solve)
+  - [Recommendations](#recommendations)
+  
+- [All Nodes Failure](#all-nodes-failure)
+  - [Description](#description-1)
+  - [Alerts](#alerts-1)
+  - [Stack Trace(s)](#stack-traces-1)
+  - [How to Solve](#how-to-solve-1)
+  - [Recommendations](#recommendations-1)
+  
+- [CPU Limit](#cpu-limit)
+  - [Description](#description-2)
+  - [Alerts](#alerts-2)
+  - [Stack Trace(s)](#stack-traces-2)
+  - [How to Solve](#how-to-solve-2)
+  - [Recommendations](#recommendations-2)
+  
+- [Memory Limit](#memory-limit)
+  - [Description](#description-3)
+  - [Alerts](#alerts-3)
+  - [Stack Trace(s)](#stack-traces-3)
+  - [How to Solve](#how-to-solve-3)
+  - [Recommendations](#recommendations-3)
+  
+- [Disk Filled on All Nodes](#disk-filled-on-all-nodes)
+  - [Description](#description-4)
+  - [Alerts](#alerts-4)
+  - [Stack Trace(s)](#stack-traces-4)
+  - [How to Solve](#how-to-solve-4)
+  - [Recommendations](#recommendations-4)
+  
+- [Last Backup Has Failed](#last-backup-has-failed)
+  - [Description](#description-5)
+  - [Alerts](#alerts-5)
+  - [Stack Trace(s)](#stack-traces-5)
+  - [How to Solve](#how-to-solve-5)
+  - [Recommendations](#recommendations-5)
+  
+- [Data Is Out of Space](#data-is-out-of-space)
+  - [Description](#description-6)
+  - [Alerts](#alerts-6)
+  - [Stack Trace(s)](#stack-traces-6)
+  - [How to Solve](#how-to-solve-6)
+  - [Recommendations](#recommendations-6)
+  
+- [Clients Cannot Connect To ZooKeeper with Connection Loss Error](#clients-cannot-connect-to-zookeeper-with-connection-loss-error)
+  - [Description](#description-7)
+  - [Alerts](#alerts-7)
+  - [Stack Trace(s)](#stack-traces-7)
+  - [How to Solve](#how-to-solve-7)
+  - [Recommendations](#recommendations-7)
+  
+- [Container Failed with Error: container has runAsNonRoot and image will run as root](#container-failed-with-error-container-has-runasnonroot-and-image-will-run-as-root)
+  - [Description](#description-8)
+  - [Alerts](#alerts-8)
+  - [Stack Trace(s)](#stack-traces-8)
+  - [How to Solve](#how-to-solve-8)
+  - [Recommendations](#recommendations-8)
+  
+- [ZooKeeper Backup Daemon Failed with PermissionError](#zookeeper-backup-daemon-failed-with-permissionerror)
+  - [Description](#description-9)
+  - [Alerts](#alerts-9)
+  - [Stack Trace(s)](#stack-traces-9)
+  - [How to Solve](#how-to-solve-9)
+  - [Recommendations](#recommendations-9)
+<!-- TOC -->
 
 ## Single Node Failure
 
@@ -173,7 +245,7 @@ java.io.IOException: No space left on device
 Manually clean up the Disk space in case of high usage and adjust `autopurge` configuration.\
 For more detailed information, refer to [Disk Filled Guide](troubleshooting-scenarios/disk_filled_on_all_nodes.md).
 
-### Recommendation
+### Recommendations
 
 Review disk usage and autopurge settings.
 
@@ -205,7 +277,7 @@ deployment. If Backup Daemon pod is up, check it state by the following command 
 curl -XGET http://localhost:8080/health
 ```
 
-### Recommendation
+### Recommendations
 
 Not applicable.
 
@@ -231,7 +303,7 @@ Not applicable.
 You may need to manually clean up this data occasionally. For this purpose you should find ZooKeeper folder
 `\var\opt\zookeeper\data` and delete `version-2` folder using bash-command `rm -rf version-2`.
 
-### Recommendation
+### Recommendations
 
 Ensure sufficient disk capacity for ZooKeeper nodes based on the expected data growth and retention policies.\
 Review disk usage.
@@ -287,7 +359,7 @@ _Permanent Solution_
 * Upgrade ZooKeeper to 3.6.2.
 * If the issue is reproduced in OpenShift 3.11 environment it is strongly recommended to upgrade OpenShift Installer build to 2.65.
 
-### Recommendation
+### Recommendations
 
 How to check it is the same problem:
 
@@ -334,7 +406,7 @@ securityContext:
     runAsUser: 1000
 ```
 
-### Recommendation
+### Recommendations
 
 Not applicable.
 
@@ -373,6 +445,6 @@ securityContext:
     fsGroup: 1000
 ```
 
-### Recommendation
+### Recommendations
 
 Not applicable.
