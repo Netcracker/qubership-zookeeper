@@ -17,8 +17,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	zookeeperservice "github.com/Netcracker/qubership-zookeeper/api/v1"
 	"github.com/Netcracker/qubership-zookeeper/controllers/provider"
-	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
 	"github.com/Netcracker/qubership-zookeeper/util"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
