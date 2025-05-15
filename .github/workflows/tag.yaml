@@ -1,4 +1,4 @@
-name: Build Artifacts
+name: Push tag
 on:
   workflow_dispatch:
     inputs:
