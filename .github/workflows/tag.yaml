@@ -1,5 +1,8 @@
 name: Push tag
 on:
+  pull_request:
+    branches:
+      - '**'
   workflow_dispatch:
     inputs:
       package_name:
