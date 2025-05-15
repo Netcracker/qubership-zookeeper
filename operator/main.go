@@ -30,9 +30,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	qubershiporgv1 "github.com/Netcracker/qubership-zookeeper/api/v1"
+	qubershiporgv1alpha1 "github.com/Netcracker/qubership-zookeeper/api/v1alpha1"
 	"github.com/Netcracker/qubership-zookeeper/controllers"
-	qubershiporgv1 "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
-	qubershiporgv1alpha1 "github.com/Netcracker/qubership-zookeeper/operator/api/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 

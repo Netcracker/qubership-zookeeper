@@ -15,7 +15,7 @@
 package controllers
 
 import (
-	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
+	zookeeperservice "github.com/Netcracker/qubership-zookeeper/api/v1"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"time"

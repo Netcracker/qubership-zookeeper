@@ -17,7 +17,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
+	zookeeperservice "github.com/Netcracker/qubership-zookeeper/api/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 )
