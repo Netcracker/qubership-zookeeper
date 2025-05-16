@@ -32,7 +32,7 @@ jobs:
         with:
           pull-request-number: ${{ github.event.pull_request.number }}
           github-token: ${{ github.token }}
-          conventional-commits: "./.github/auto-labeler-config.yaml"
+          conventional-commits: "./.github/workflows/auto-labeler-config.yaml"
           maintain-labels-not-matched: true
           apply-changes: ${{ github.event.pull_request.base.repo.id == github.event.pull_request.head.repo.id }}
       - name: "Drop warning if PR from fork"
