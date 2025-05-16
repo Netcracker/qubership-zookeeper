@@ -1,0 +1,13 @@
+---
+
+charts:
+  - name: qubership-zookeeper
+    version: ${release} # ${release} is a value of input parameter of workflow helm-charts-release.yaml
+    chart_file: charts/helm/zookeeper-service/Chart.yaml
+    values_file: charts/helm/zookeeper-service/values.yaml
+    image:
+      - ghcr.io/netcracker/qubership-zookeeper-operator:${version}
+      - ghcr.io/netcracker/qubership-docker-zookeeper:${version}
+      - ghcr.io/netcracker/qubership-zookeeper-monitoring:${version}
+      - ghcr.io/netcracker/qubership-zookeeper-backup-daemon:${version}
+      - ghcr.io/netcracker/qubership-zookeeper-integration-tests:${version}
