@@ -22,8 +22,6 @@ on:
         description: "Tag name"
         required: true
         default: ''
-env:
-  GITHUB_GROUP: ${{ github.repository_owner }}
 
 jobs:
   multiplatform_build:
