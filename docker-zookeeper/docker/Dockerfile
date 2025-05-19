@@ -122,14 +122,6 @@ COPY docker/docker-entrypoint.sh /
 COPY docker/zkHealth.sh ${ZOOKEEPER_HOME}/bin
 COPY docker/dr_reconfig.sh ${ZOOKEEPER_HOME}/bin
 
-#ARG CDT_VERSION="9.3.2.78.2"
-#ENV NC_DIAGNOSTIC_FOLDER=/app/ncdiag
-#RUN mkdir -p ${NC_DIAGNOSTIC_FOLDER} \
-#    && wget https://artifactorycn.netcracker.com/pd.saas.mvn/com/netcracker/execution-statistics-collector/installer-cloud/${CDT_VERSION}/installer-cloud-${CDT_VERSION}.zip \
-#    && unzip -oq installer-cloud-${CDT_VERSION}.zip -d ${NC_DIAGNOSTIC_FOLDER} \
-#    && rm -f installer-cloud-${CDT_VERSION}.zip \
-#    && chmod a+rwx -R ${NC_DIAGNOSTIC_FOLDER}
-
 # Adapt grants
 RUN chgrp -R 0 ${ZOOKEEPER_HOME} \
     && chgrp -R 0 ${ZOOKEEPER_OPT} \
