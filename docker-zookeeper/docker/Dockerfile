@@ -19,7 +19,7 @@ COPY main.go main.go
 # Build
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GO111MODULE=on go build -a -o zookeeper-assistant main.go
 
-FROM eclipse-temurin:22.0.1_8-jdk-alpine
+FROM bellsoft/liberica-openjdk-alpine:11
 
 ENV ZOOKEEPER_HOME=/opt/zookeeper \
     ZOOKEEPER_OPT=/var/opt/zookeeper \
