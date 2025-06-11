@@ -17,6 +17,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
+
 	zookeeperservice "github.com/Netcracker/qubership-zookeeper/api/v1"
 	"github.com/Netcracker/qubership-zookeeper/controllers/provider"
 	"github.com/Netcracker/qubership-zookeeper/util"
@@ -26,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"time"
 )
 
 const (
@@ -50,6 +51,7 @@ func (r ReconcileZooKeeper) Status() error {
 		return err
 	}
 	r.logger.Info("Start checking for ZooKeeper pods")
+	r.logger.Info("CSDP_nach0522 : test logging")
 	err := wait.PollImmediate(10*time.Second, time.Duration(r.cr.Spec.Global.PodsReadyTimeout)*time.Second, func() (done bool, err error) {
 		for i := 1; i <= r.cr.Spec.ZooKeeper.Replicas; i++ {
 			deploymentName := fmt.Sprintf("%s-%d", r.cr.Name, i)
