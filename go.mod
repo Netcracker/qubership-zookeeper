@@ -6,6 +6,7 @@ require (
 	github.com/go-logr/logr v0.4.0
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/sethvargo/go-password v0.2.0
+	github.com/sirupsen/logrus v1.8.1
 	k8s.io/api v0.22.1
 	k8s.io/apimachinery v0.22.1
 	k8s.io/client-go v0.22.1
