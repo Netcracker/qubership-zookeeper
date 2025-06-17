@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  zookeeper-service:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2025-06-17T10:34:57.18434705Z"
+    description: A Helm chart for Kubernetes
+    digest: 3ee6cc654f27df676a1992aa34d0e4d52f9bb40833e0dae60a2ec94d23f1f22a
+    name: zookeeper-service
+    type: application
+    urls:
+    - https://github.com/Netcracker/qubership-zookeeper/releases/download/v0.10.3/zookeeper-service-0.10.3.tgz
+    version: 0.10.3
+generated: "2025-06-17T10:34:57.184356778Z"
