@@ -65,9 +65,9 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
-	ctrl.Log.Info("Started with application")
-	ctrl.Log.Info("CSDP_sora0422:test logging")
-
+	setupLog.Info("✅ Started with application")
+	setupLog.Info("CSDP_sora0422:test logging")
+	fmt.Println(">>> CSDP_sora0422:test printing to stdout")
 	namespace, err := getWatchNamespace()
 	if err != nil {
 		setupLog.Error(err, "Failed to get watch namespace")
