@@ -50,8 +50,6 @@ func init() {
 }
 
 func main() {
-	ctrl.Log.Info("Started with application")
-	ctrl.Log.Info("CSDP_sora0422:test logging")
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
@@ -67,6 +65,8 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	ctrl.Log.Info("Started with application")
+	ctrl.Log.Info("CSDP_sora0422:test logging")
 
 	namespace, err := getWatchNamespace()
 	if err != nil {
