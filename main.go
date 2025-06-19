@@ -19,8 +19,6 @@ import (
 	"fmt"
 	"os"
 
-	log "github.com/sirupsen/logrus"
-
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -52,8 +50,8 @@ func init() {
 }
 
 func main() {
-	log.Info("Started with application")
-	log.Info("CSDP_sora0422:test logging")
+	ctrl.Log.Info("Started with application")
+	ctrl.Log.Info("CSDP_sora0422:test logging")
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
