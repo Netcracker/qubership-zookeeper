@@ -3,7 +3,7 @@ module github.com/Netcracker/qubership-zookeeper
 go 1.24
 
 require (
-	github.com/go-logr/logr v0.4.0
+	github.com/go-logr/logr v1.4.3
 	github.com/hashicorp/vault/api v1.20.0
 	github.com/sethvargo/go-password v0.3.1
 	k8s.io/api v0.22.1
