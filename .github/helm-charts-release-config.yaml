@@ -7,8 +7,8 @@
 
 charts:
   - name: qubership-zookeeper
-    chart_file: charts/helm/consul-service/Chart.yaml
-    values_file: charts/helm/consul-service/values.yaml
+    chart_file: charts/helm/zookeeper-service/Chart.yaml
+    values_file: charts/helm/zookeeper-service/values.yaml
     image:
       - ghcr.io/netcracker/qubership-zookeeper-operator:${release}
       - ghcr.io/netcracker/qubership-docker-zookeeper:${release}
