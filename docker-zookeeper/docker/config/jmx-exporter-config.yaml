@@ -26,3 +26,4 @@ rules:
     labels:
       replicaId: "$2"
       memberType: "$3"
+  - pattern: ".*"
