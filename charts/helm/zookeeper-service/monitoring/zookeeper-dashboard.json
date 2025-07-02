@@ -538,7 +538,7 @@
           "datasource": "$datasource",
           "editorMode": "code",
           "exemplar": true,
-          "expr": "100 * max( jvm_memory_bytes_used{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}) / max(jvm_memory_bytes_max{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"})",
+          "expr": "100 * max( jvm_memory_used_bytes{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}) / max(jvm_memory_max_bytes{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"})",
           "instant": true,
           "interval": "",
           "legendFormat": "",
@@ -2824,7 +2824,7 @@
             "uid": "$datasource"
           },
           "exemplar": true,
-          "expr": "jvm_memory_bytes_used{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
+          "expr": "jvm_memory_used_bytes{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
           "groupBy": [
             {
               "params": [
@@ -2875,7 +2875,7 @@
             "uid": "$datasource"
           },
           "exemplar": true,
-          "expr": "jvm_memory_bytes_max{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
+          "expr": "jvm_memory_max_bytes{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
           "groupBy": [
             {
               "params": [
@@ -3056,7 +3056,7 @@
             "uid": "$datasource"
           },
           "exemplar": true,
-          "expr": "100 * jvm_memory_bytes_used{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"} / jvm_memory_bytes_max{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
+          "expr": "100 * jvm_memory_used_bytes{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"} / jvm_memory_max_bytes{area=\"heap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
           "groupBy": [
             {
               "params": [
@@ -3192,7 +3192,7 @@
             "uid": "$datasource"
           },
           "exemplar": true,
-          "expr": "jvm_memory_pool_bytes_used{namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
+          "expr": "jvm_memory_pool_used_bytes{namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
           "interval": "",
           "legendFormat": "{{job}}: {{pool}}",
           "refId": "A"
@@ -3202,7 +3202,7 @@
             "uid": "$datasource"
           },
           "exemplar": true,
-          "expr": "jvm_memory_pool_bytes_max{namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
+          "expr": "jvm_memory_pool_max_bytes{namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job}}: {{pool}} - max",
@@ -3367,7 +3367,7 @@
             "uid": "$datasource"
           },
           "exemplar": true,
-          "expr": "jvm_memory_bytes_used{area=\"nonheap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
+          "expr": "jvm_memory_used_bytes{area=\"nonheap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
           "groupBy": [
             {
               "params": [
@@ -3419,7 +3419,7 @@
             "uid": "$datasource"
           },
           "exemplar": true,
-          "expr": "jvm_memory_bytes_committed{area=\"nonheap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
+          "expr": "jvm_memory_committed_bytes{area=\"nonheap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"}",
           "groupBy": [
             {
               "params": [
@@ -3470,7 +3470,7 @@
             "uid": "$datasource"
           },
           "exemplar": true,
-          "expr": "jvm_memory_bytes_max{area=\"nonheap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"} > 0",
+          "expr": "jvm_memory_max_bytes{area=\"nonheap\",namespace=\"$project\",job=~\"$server*\", cluster=\"$cluster\"} > 0",
           "groupBy": [
             {
               "params": [
