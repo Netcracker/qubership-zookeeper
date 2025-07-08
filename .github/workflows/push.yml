@@ -31,7 +31,7 @@ jobs:
             context: integration-tests
           - name: qubership-zookeeper-operator
             file: operator/Dockerfile
-            context: .
+            context: operator
           - name: qubership-zookeeper-transfer
             file: docker-transfer/Dockerfile
             context: ""
