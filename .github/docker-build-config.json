@@ -8,7 +8,7 @@
     {
       "name": "qubership-zookeeper-operator",
       "file": "operator/Dockerfile",
-      "context": "."
+      "context": "operator"
     },
     {
       "name": "qubership-zookeeper-transfer",
