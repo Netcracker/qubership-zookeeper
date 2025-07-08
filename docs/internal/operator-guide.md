@@ -100,11 +100,11 @@ If API model has incompatible changes, new application version should be release
     make manifests
     ```
 
-   Make sure generated CRD `zookeeper-service-operator/config/crd/bases/qubership.org_zookeeperservices.yaml` contains new version.
+   Make sure generated CRD `operator/config/crd/bases/qubership.org_zookeeperservices.yaml` contains new version.
 
-7. Copy content of new generated CRD to `zookeeper-service-operator/charts/helm/zookeeper-service/crds/crd.yaml` file.
+7. Copy content of new generated CRD to `operator/charts/helm/zookeeper-service/crds/crd.yaml` file.
 
-8. Change `apiVersion` from old to new one in `zookeeper-service-operator/charts/helm/zookeeper-service/templates/cr.yaml` file.
+8. Change `apiVersion` from old to new one in `operator/charts/helm/zookeeper-service/templates/cr.yaml` file.
 
 # Useful Operator Commands
 

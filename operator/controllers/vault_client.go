@@ -17,8 +17,8 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	zookeeperservice "github.com/Netcracker/qubership-zookeeper/api/v1"
-	"github.com/Netcracker/qubership-zookeeper/controllers/provider"
+	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
+	"github.com/Netcracker/qubership-zookeeper/operator/controllers/provider"
 	"github.com/hashicorp/vault/api"
 	kubeConfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 )

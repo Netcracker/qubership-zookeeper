@@ -16,8 +16,8 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/Netcracker/qubership-zookeeper/controllers/provider"
-	"github.com/Netcracker/qubership-zookeeper/util"
+	"github.com/Netcracker/qubership-zookeeper/operator/controllers/provider"
+	"github.com/Netcracker/qubership-zookeeper/operator/util"
 	corev1 "k8s.io/api/core/v1"
 	"strings"
 )

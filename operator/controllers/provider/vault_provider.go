@@ -16,7 +16,7 @@ package provider
 
 import (
 	"fmt"
-	zookeeperservice "github.com/Netcracker/qubership-zookeeper/api/v1"
+	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	"regexp"
 	"strings"
