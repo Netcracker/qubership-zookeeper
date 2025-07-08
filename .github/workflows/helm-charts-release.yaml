@@ -163,7 +163,7 @@ jobs:
       - name: Run chart-releaser
         uses: netcracker/chart-releaser-action@main
         with:
-          charts_dir: charts/helm
+          charts_dir: operator/charts/helm
           release_name_template: "{{ .Version }}"
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
