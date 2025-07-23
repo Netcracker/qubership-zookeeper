@@ -4,7 +4,7 @@
 
 * `./demo` - directory `docker-compose` to run ZooKeeper, integration tests & backup-daemon.
 * `./docs` - directory with actual documentation for users and developers.
-* `./charts/helm/zookeeper-service` - directory with **main** HELM chart with resources for ZooKeeper and
+* `./operator/charts/helm/zookeeper-service` - directory with **main** HELM chart with resources for ZooKeeper and
   integration tests.
 * `./integration-tests` - directory with Robot Framework test cases for ZooKeeper.
 
