@@ -1,4 +1,4 @@
-module github.com/Netcracker/qubership-zookeeper
+module github.com/Netcracker/qubership-zookeeper/operator
 
 go 1.24
 

@@ -13,6 +13,6 @@ resources:
   controller: true
   domain: qubership.org
   kind: ZooKeeperService
-  path: github.com/Netcracker/qubership-zookeeper/api/v1
+  path: github.com/Netcracker/qubership-zookeeper/operator/api/v1
   version: v1
 version: "3"

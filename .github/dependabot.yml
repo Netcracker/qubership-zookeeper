@@ -13,10 +13,10 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "docker"
-    directory: "/zookeeper-backup-daemon"
+    directory: "/backup-daemon"
     schedule:
       interval: "weekly"
   - package-ecosystem: "docker"
-    directory: "/zookeeper-monitoring"
+    directory: "/monitoring"
     schedule:
       interval: "weekly"

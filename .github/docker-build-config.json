@@ -7,8 +7,8 @@
     },
     {
       "name": "qubership-zookeeper-operator",
-      "file": "Dockerfile",
-      "context": "."
+      "file": "operator/Dockerfile",
+      "context": "operator"
     },
     {
       "name": "qubership-zookeeper-transfer",
@@ -17,13 +17,13 @@
     },
     {
       "name": "qubership-zookeeper-backup-daemon",
-      "file": "zookeeper-backup-daemon/docker/Dockerfile",
-      "context": "zookeeper-backup-daemon"
+      "file": "backup-daemon/docker/Dockerfile",
+      "context": "backup-daemon"
     },
     {
       "name": "qubership-zookeeper-monitoring",
-      "file": "zookeeper-monitoring/docker/Dockerfile",
-      "context": "zookeeper-monitoring"
+      "file": "monitoring/docker/Dockerfile",
+      "context": "monitoring"
     },
     {
       "name": "qubership-docker-zookeeper",

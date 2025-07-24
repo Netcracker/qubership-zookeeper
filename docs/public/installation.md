@@ -174,7 +174,7 @@ The following rules require `cluster-wide` permissions. If it is not possible to
 * Custom resource definition `ZooKeeperService` should be created/applied before the installation if the corresponding
   rights cannot be provided to the deployment user.
 <!-- #GFCFilterMarkerStart# -->  
-The CRD for this version is stored in [crd.yaml](../../charts/helm/zookeeper-service/crds/crd.yaml) and can be
+The CRD for this version is stored in [crd.yaml](../../operator/charts/helm/zookeeper-service/crds/crd.yaml) and can be
 applied with the following command:
 
   ```sh
@@ -638,7 +638,7 @@ Make sure all YAML values are escaped in accordance with the Ops portal syntax.
 ### Helm
 
 To deploy via Helm you need to prepare yaml file with custom deploy parameters and run the following
-command in [ZooKeeper Chart](/charts/helm/zookeeper-service):
+command in [ZooKeeper Chart](/operator/charts/helm/zookeeper-service):
 
 ```bash
 helm install [release-name] ./ -f [parameters-yaml] -n [namespace]
@@ -865,7 +865,7 @@ It can be enabled with `zooKeeper.rollingUpdate: true`, by default it is disable
 Custom resource definition `ZooKeeperService` should be upgraded before the installation if the new version has major
 changes.
 <!-- #GFCFilterMarkerStart# -->
-The CRD for this version is stored in [crd.yaml](../../charts/helm/zookeeper-service/crds/crd.yaml) and can be
+The CRD for this version is stored in [crd.yaml](../../operator/charts/helm/zookeeper-service/crds/crd.yaml) and can be
 applied with the following command:
 
   ```sh

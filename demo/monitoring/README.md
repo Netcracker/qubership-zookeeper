@@ -9,7 +9,7 @@ It will start the ZooKeeper cluster with 3 containers and container with zookeep
 
 Prometheus endpoint will be available here: http://localhost:8096/metrics
 
-You can find Grafana dashboard for Prometheus metrics here: https://github.com/Netcracker/qubership-zookeeper/blob/main/zookeeper-service-operator/charts/helm/zookeeper-service/monitoring/zookeeper-dashboard.json
+You can find Grafana dashboard for Prometheus metrics here: https://github.com/Netcracker/qubership-zookeeper/blob/main/operator/charts/helm/zookeeper-service/monitoring/zookeeper-dashboard.json
 
 # ZooKeeper Monitoring Parameters
 
