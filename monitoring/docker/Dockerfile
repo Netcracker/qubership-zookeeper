@@ -16,7 +16,7 @@ RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED
 
 RUN  python3 -m ensurepip \
     && rm -r /usr/lib/python*/ensurepip \
-    && pip3 install --upgrade pip setuptools==70.0.0 \
+    && pip3 install --upgrade pip setuptools==80.9.0 \
     && pip3 install -r ${ZOOKEEPER_MONITORING_HOME}/requirements.txt \
     && chmod -R 777 ${ZOOKEEPER_MONITORING_HOME}/exec-scripts \
     && chmod +x /docker-entrypoint.sh \
