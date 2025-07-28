@@ -13,7 +13,7 @@
     {
       "name": "qubership-zookeeper-transfer",
       "file": "docker-transfer/Dockerfile",
-      "context": ""
+      "context": "."
     },
     {
       "name": "qubership-zookeeper-backup-daemon",
