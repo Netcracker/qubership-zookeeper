@@ -894,13 +894,68 @@ availability zones.
 You can manage pods' distribution using `affinity` rules to prevent Kubernetes from running ZooKeeper pods on nodes of
 the same availability zone.
 
+#### Affinity cross Kubernetes Nodes
+
+Default affinity cross kubernetes Nodes (1 pod per 1 node). 
+
+<details>
+<summary>Click to expand YAML</summary>
+
+```yaml
+zooKeeper:
+  affinity: {
+    "podAntiAffinity": {
+      "requiredDuringSchedulingIgnoredDuringExecution": [
+        {
+          "labelSelector": {
+            "matchExpressions": [
+              {
+                "key": "component",
+                "operator": "In",
+                "values": [
+                  "zookeeper"
+                ]
+              }
+            ]
+          },
+          "topologyKey": "kubernetes.io/hostname"
+        }
+      ]
+    },
+    "nodeAffinity": {
+      "requiredDuringSchedulingIgnoredDuringExecution": {
+        "nodeSelectorTerms": [
+          {
+            "matchExpressions": [
+              {
+                "key": "role",
+                "operator": "In",
+                "values": [
+                  "compute"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+```
+
+</details>
+
+Where:
+
+* `kubernetes.io/hostname` is the name of the label that defines the node name. This is the default name for Kubernetes.
+* `role` and `compute` are the sample name and value of label that defines the region to run ZooKeeper pods.
+
 **Note**: This section describes deployment only for `storage class` Persistent Volumes (PV) type because with
 Predefined PV, the ZooKeeper pods are started on the nodes that are specified explicitly with Persistent Volumes. In
 that way, it is necessary to take care of creating PVs on nodes belonging to different AZ in advance.
 
 #### Replicas Fewer Than Availability Zones
 
-For cases when the number of ZooKeeper pods (value of the `zookeeper.replicas` parameter) is equal or less than the number of
+For cases when the number of ZooKeeper pods (value of the `zooKeeper.replicas` parameter) is equal or less than the number of
 availability zones, you need to restrict the start of pods to one pod per availability zone.
 You can also specify additional node affinity rule to start pods on allowed Kubernetes nodes.
 
@@ -910,7 +965,7 @@ For this, you can use the following affinity rules:
 <summary>Click to expand YAML</summary>
 
 ```yaml
-zookeeper:
+zooKeeper:
   affinity: {
     "podAntiAffinity": {
       "requiredDuringSchedulingIgnoredDuringExecution": [
@@ -960,7 +1015,7 @@ Where:
 
 #### Replicas More Than Availability Zones
 
-For cases when the number of ZooKeeper pods (value of the `zookeeper.replicas` parameter) is greater than the number of availability
+For cases when the number of ZooKeeper pods (value of the `zooKeeper.replicas` parameter) is greater than the number of availability
 zones, you need to restrict the start of pods to one pod per node and specify the preferred rule to start on different
 availability zones.
 You can also specify an additional node affinity rule to start the pods on allowed Kubernetes nodes.
@@ -971,7 +1026,7 @@ For this, you can use the following affinity rules:
 <summary>Click to expand YAML</summary>
 
 ```yaml
-zookeeper:
+zooKeeper:
   affinity: {
     "podAntiAffinity": {
       "requiredDuringSchedulingIgnoredDuringExecution": [
