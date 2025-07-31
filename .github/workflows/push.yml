@@ -90,8 +90,8 @@ jobs:
           component-name: ${{ matrix.component.name }}
           component-tag: ${{ steps.meta.outputs.tags }}
           access-token: ${{ secrets.GITHUB_TOKEN }}
-        if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
       - name: Build and push
+        if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
         uses: docker/build-push-action@v6
         with:
           no-cache: true
