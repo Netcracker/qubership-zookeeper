@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.24.4-alpine3.22 as builder
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine3.22 as builder
 ARG BUILDPLATFORM
 ARG TARGETOS
 ARG TARGETARCH
@@ -19,7 +19,7 @@ COPY main.go main.go
 # Build
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GO111MODULE=on go build -a -o zookeeper-assistant main.go
 
-FROM eclipse-temurin:21.0.7_6-jdk-alpine-3.21
+FROM eclipse-temurin:21-jdk-alpine-3.22
 
 ENV ZOOKEEPER_HOME=/opt/zookeeper \
     ZOOKEEPER_OPT=/var/opt/zookeeper \
