@@ -1,6 +1,6 @@
 module github.com/Netcracker/qubership-zookeeper/operator
 
-go 1.24
+go 1.24.6
 
 require (
 	github.com/go-logr/logr v0.4.0
