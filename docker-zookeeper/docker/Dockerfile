@@ -138,7 +138,7 @@ RUN set -x && apk upgrade --no-cache --available
 # Upgrade tools from edge to avoid vulnerabilities
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --no-cache \
+    && apk add --update --upgrade --no-cache \
         pcre2
 
 USER 1000:0
