@@ -8,7 +8,6 @@ on:
 
 jobs:
   Zookeeper-Pipeline:
-    if: github.event.pull_request.user.login != 'dependabot[bot]'
     uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@80631034d5b75e978dfb4fdd300ec729b9e86ab4
     with:
       service_branch: '${{ github.head_ref || github.ref_name }}'
