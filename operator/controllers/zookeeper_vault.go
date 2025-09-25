@@ -16,13 +16,14 @@ package controllers
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/Netcracker/qubership-zookeeper/operator/controllers/provider"
 	"github.com/Netcracker/qubership-zookeeper/operator/util"
 	corev1 "k8s.io/api/core/v1"
-	"strings"
 )
 
-const refreshCredentialsAnnotation = "vault.qubership.org/refresh-credentials"
+const refreshCredentialsAnnotation = "vault.netcracker.com/refresh-credentials"
 
 type PasswordGenerator interface {
 	Generate() (string, error)

@@ -67,8 +67,8 @@ RUN set -x \
     && usermod -a -G 0 zookeeper
 
 # Reminder: we don't upgrade it to 3.9.x until Clickhouse support
-ARG DISTRO_NAME=apache-zookeeper-3.8.4-bin
-ARG DISTRO_VERSION_NAME=zookeeper-3.8.4
+ARG DISTRO_NAME=apache-zookeeper-3.8.5-bin
+ARG DISTRO_VERSION_NAME=zookeeper-3.8.5
 # Download Apache Zookeeper and install
 RUN set -x \
     && export DISTR_DIR="$(mktemp -d)" \

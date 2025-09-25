@@ -5,7 +5,7 @@ metadata:
   name: zookeeperservice-editor-role
 rules:
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - zookeeperservices
   verbs:
@@ -17,7 +17,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - zookeeperservices/status
   verbs:
