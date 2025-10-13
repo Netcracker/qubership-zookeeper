@@ -234,14 +234,3 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
-
-capabilities: capmd-gen
-	CAPMD_GEN=$(CAPMDGEN_DIR)/capmdgen ;\
-	$(CAPMDGEN_DIR)/capmdgen -schema $(CAPMDGEN_DIR)/schema/capabilities_schema.json \
-				-yaml ../docs/data/capabilities.yaml -output ../docs/public/capabilites.md
-
-capmd-gen:
-	rm -rf ./$(CAPMDGEN_DIR) && \
-	mkdir -p $(CAPMDGEN_DIR) && \
-	git clone git@git.qubership.org:prod.platform.cloud.infra/internal/capmdgen.git ./$(CAPMDGEN_DIR) && \
-	cd $(CAPMDGEN_DIR) && go build -o ./capmdgen

@@ -219,7 +219,7 @@ monitoring:
 #  securityContext: {
 #    "runAsUser": 1000
 #  }
-  customLabelsё: {}
+  customLabels: {}
 
 ## Values for ZooKeeper Backup Daemon deployment
 backupDaemon:
