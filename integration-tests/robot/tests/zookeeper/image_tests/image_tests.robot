@@ -13,7 +13,7 @@ Get Image Tag
     ${length}=  Get Length  ${parts}
     Run Keyword If  ${length} > 1  Return From Keyword  ${parts[2]}  
     Run Keywords
-    ...  Log To Console  \n[ERROR] Image has no tag: ${image}\nMonitored images list: ${MONITORED_IMAGES}
+    ...  Log To Console  \n[ERROR] Image ${parts} has no tag: ${image}\nMonitored images list: ${MONITORED_IMAGES}
     ...  AND  Fail  Some images are not found, please check .helpers template and description.yaml in delivery
 
 *** Test Cases ***
