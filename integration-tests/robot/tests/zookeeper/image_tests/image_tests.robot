@@ -11,22 +11,19 @@ Get Image Tag
     [Arguments]  ${image}
     ${parts}=  Split String  ${image}  :
     ${length}=  Get Length  ${parts}
-    Run Keyword If  ${length} > 1  Return From Keyword  ${parts[2]}  ELSE  Return From Keyword  ${EMPTY}
+    Run Keyword If  ${length} > 1  Return From Keyword  ${parts[2]}  
+    Run Keywords
+    ...  Log To Console  \n[ERROR] Image has no tag: ${image}\nMonitored images list: ${MONITORED_IMAGES}
+    ...  AND  Fail  Some images are not found, please check .helpers template and description.yaml in delivery
 
 *** Test Cases ***
 Test Hardcoded Images
   [Tags]  zookeeper  zookeeper_images
   ${stripped_resources}=  Strip String  ${MONITORED_IMAGES}  characters=,  mode=right
-  @{list_resources} =  Split String	${stripped_resources} 	,
+  @{list_resources} =  Split String ${stripped_resources}  ,
   FOR  ${resource}  IN  @{list_resources}
     ${type}  ${name}  ${container_name}  ${image}=  Split String  ${resource}
     ${resource_image}=  Get Resource Image  ${type}  ${name}  %{OS_PROJECT}  ${container_name}
-
-    Log To Console  resource_image: '${resource_image}'
-    IF  '${resource_image}' == 'not_found'
-      Log To Console  Monitored images list: ${MONITORED_IMAGES}
-      Fail  Some images are not found, please check .helpers template and description.yaml in delivery
-    END
 
     ${expected_tag}=  Get Image Tag  ${image}
     ${actual_tag}=    Get Image Tag  ${resource_image}
