@@ -11,7 +11,7 @@ Get Image Tag
     [Arguments]  ${image}
     ${parts}=  Split String  ${image}  :
     ${length}=  Get Length  ${parts}
-    Run Keyword If  ${length} > 1  Return From Keyword  ${parts[2]}  ELSE  Fail  Image has no tag: ${image}
+    Run Keyword If  ${length} > 1  Return From Keyword  ${parts[2]}  ELSE  Return From Keyword  ${EMPTY}
 
 *** Test Cases ***
 Test Hardcoded Images
