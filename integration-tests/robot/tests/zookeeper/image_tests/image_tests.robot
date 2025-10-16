@@ -22,7 +22,7 @@ Test Hardcoded Images
     ${type}  ${name}  ${container_name}  ${image}=  Split String  ${resource}
     ${resource_image}=  Get Resource Image  ${type}  ${name}  %{OS_PROJECT}  ${container_name}
 
-    Run Keyword If    '${resource_image}' == 'not_found'
+    Run Keyword If    ${resource_image} == 'not_found'
     ...    Log To Console    \nMonitored images list: ${MONITORED_IMAGES}
     ...    AND    Fail    Some images are not found, please check .helpers template and description.yaml in delivery
 
