@@ -15,3 +15,4 @@ charts:
       - ghcr.io/netcracker/qubership-zookeeper-monitoring:${release}
       - ghcr.io/netcracker/qubership-zookeeper-backup-daemon:${release}
       - ghcr.io/netcracker/qubership-zookeeper-integration-tests:${release}
+      - ghcr.io/netcracker/qubership-docker-kubectl:#latest
