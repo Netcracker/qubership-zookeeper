@@ -80,7 +80,7 @@ func main() {
 		HealthProbeBindAddress:  probeAddr,
 		LeaderElection:          enableLeaderElection,
 		LeaderElectionNamespace: namespace,
-		LeaderElectionID:        fmt.Sprintf("zookeeperservice.%s.qubership.org", namespace),
+		LeaderElectionID:        fmt.Sprintf("zookeeperservice.%s.netcracker.com", namespace),
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
