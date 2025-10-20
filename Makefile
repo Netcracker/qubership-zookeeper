@@ -239,9 +239,3 @@ capabilities: capmd-gen
 	CAPMD_GEN=$(CAPMDGEN_DIR)/capmdgen ;\
 	$(CAPMDGEN_DIR)/capmdgen -schema $(CAPMDGEN_DIR)/schema/capabilities_schema.json \
 				-yaml ../docs/data/capabilities.yaml -output ../docs/public/capabilites.md
-
-capmd-gen:
-	rm -rf ./$(CAPMDGEN_DIR) && \
-	mkdir -p $(CAPMDGEN_DIR) && \
-	git clone git@git.netcracker.com:prod.platform.cloud.infra/internal/capmdgen.git ./$(CAPMDGEN_DIR) && \
-	cd $(CAPMDGEN_DIR) && go build -o ./capmdgen
