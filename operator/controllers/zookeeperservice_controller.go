@@ -17,6 +17,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
+
 	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
 	"github.com/Netcracker/qubership-zookeeper/operator/controllers/provider"
 	"github.com/Netcracker/qubership-zookeeper/operator/util"
@@ -28,7 +30,6 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
 )
 
 const (
@@ -46,9 +47,9 @@ type ReconcileService interface {
 	Status() error
 }
 
-//+kubebuilder:rbac:groups=qubership.org,resources=zookeeperservices,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=qubership.org,resources=zookeeperservices/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=qubership.org,resources=zookeeperservices/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netcracker.com,resources=zookeeperservices,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netcracker.com,resources=zookeeperservices/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netcracker.com,resources=zookeeperservices/finalizers,verbs=update
 
 func (r *ZooKeeperServiceReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)

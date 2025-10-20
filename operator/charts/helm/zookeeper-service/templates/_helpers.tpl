@@ -237,6 +237,14 @@ Find a zookeeper image in various places.
 {{- end -}}
 
 {{/*
+Find a kubectl image in various places.
+*/}}
+{{- define "kubectl.image" -}}
+    {{- printf "%s" .Values.groupMigration.image -}}
+{{- end -}}
+
+
+{{/*
 ZooKeeper admin username.
 */}}
 {{- define "zookeeper.adminUsername" -}}
