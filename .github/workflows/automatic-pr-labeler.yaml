@@ -24,7 +24,9 @@ jobs:
     if: (github.event.pull_request.merged == false) && (github.event.pull_request.user.login != 'dependabot[bot]') && (github.event.pull_request.user.login != 'github-actions[bot]')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
 
       - name: "Execute assign labels"
         id: action-assign-labels
@@ -32,7 +34,7 @@ jobs:
         with:
           pull-request-number: ${{ github.event.pull_request.number }}
           github-token: ${{ github.token }}
-          conventional-commits: ".github/workflows/automatic-pr-labeler.yaml"
+          conventional-commits: "./.github/auto-labeler-config.yaml"
           maintain-labels-not-matched: true
           apply-changes: ${{ github.event.pull_request.base.repo.id == github.event.pull_request.head.repo.id }}
       - name: "Drop warning if PR from fork"
@@ -42,4 +44,4 @@ jobs:
             echo "⚠️ Pull request from fork! ⚠️";
             echo "Labels will not be applied to PR. Assign them manually please.";
             echo "Labels to assign: ${{ steps.action-assign-labels.outputs.labels-next }}";
-          } >> $GITHUB_STEP_SUMMARY
+          } >> "$GITHUB_STEP_SUMMARY"

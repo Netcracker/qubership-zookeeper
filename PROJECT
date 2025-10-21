@@ -1,4 +1,4 @@
-domain: qubership.org
+domain: netcracker.com
 layout:
 - go.kubebuilder.io/v3
 plugins:
@@ -11,8 +11,8 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: qubership.org
+  domain: netcracker.com
   kind: ZooKeeperService
-  path: github.com/Netcracker/qubership-zookeeper/api/v1
+  path: github.com/Netcracker/qubership-zookeeper/operator/api/v1
   version: v1
 version: "3"
