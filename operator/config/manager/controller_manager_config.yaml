@@ -8,4 +8,4 @@ webhook:
   port: 9443
 leaderElection:
   leaderElect: true
-  resourceName: 10ee96e6.qubership.org
+  resourceName: 10ee96e6.netcracker.com

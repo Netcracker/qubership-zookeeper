@@ -67,8 +67,8 @@ RUN set -x \
     && usermod -a -G 0 zookeeper
 
 # Reminder: we don't upgrade it to 3.9.x until Clickhouse support
-ARG DISTRO_NAME=apache-zookeeper-3.8.4-bin
-ARG DISTRO_VERSION_NAME=zookeeper-3.8.4
+ARG DISTRO_NAME=apache-zookeeper-3.8.5-bin
+ARG DISTRO_VERSION_NAME=zookeeper-3.8.5
 # Download Apache Zookeeper and install
 RUN set -x \
     && export DISTR_DIR="$(mktemp -d)" \
@@ -134,6 +134,12 @@ RUN chgrp -R 0 ${ZOOKEEPER_HOME} \
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
+
+# Upgrade tools from edge to avoid vulnerabilities
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
+    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && apk add --update --upgrade --no-cache \
+        pcre2
 
 USER 1000:0
 WORKDIR ${ZOOKEEPER_HOME}
