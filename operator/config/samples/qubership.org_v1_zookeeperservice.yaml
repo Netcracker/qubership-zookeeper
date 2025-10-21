@@ -1,0 +1,6 @@
+apiVersion: netcracker.com/v1
+kind: ZooKeeperService
+metadata:
+  name: zookeeperservice-sample
+spec:
+  # Add fields here

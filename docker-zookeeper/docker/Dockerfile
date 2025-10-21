@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.22.4-alpine3.20 as builder
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine3.22 as builder
 ARG BUILDPLATFORM
 ARG TARGETOS
 ARG TARGETARCH
@@ -19,7 +19,7 @@ COPY main.go main.go
 # Build
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GO111MODULE=on go build -a -o zookeeper-assistant main.go
 
-FROM eclipse-temurin:22.0.1_8-jdk-alpine
+FROM eclipse-temurin:21-jdk-alpine-3.22
 
 ENV ZOOKEEPER_HOME=/opt/zookeeper \
     ZOOKEEPER_OPT=/var/opt/zookeeper \
@@ -67,8 +67,8 @@ RUN set -x \
     && usermod -a -G 0 zookeeper
 
 # Reminder: we don't upgrade it to 3.9.x until Clickhouse support
-ARG DISTRO_NAME=apache-zookeeper-3.8.4-bin
-ARG DISTRO_VERSION_NAME=zookeeper-3.8.4
+ARG DISTRO_NAME=apache-zookeeper-3.8.5-bin
+ARG DISTRO_VERSION_NAME=zookeeper-3.8.5
 # Download Apache Zookeeper and install
 RUN set -x \
     && export DISTR_DIR="$(mktemp -d)" \
@@ -84,7 +84,7 @@ RUN set -x \
     && mkdir -p ${ZOOKEEPER_OPT} \
     && mkdir -p ${ZOOKEEPER_DATA}
 
-ARG JOLOKIA_VERSION="1.7.1"
+ARG JOLOKIA_VERSION="1.7.2"
 # Download Jolokia
 RUN set -x \
     && wget \
@@ -134,6 +134,12 @@ RUN chgrp -R 0 ${ZOOKEEPER_HOME} \
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
+
+# Upgrade tools from edge to avoid vulnerabilities
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
+    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && apk add --update --upgrade --no-cache \
+        pcre2
 
 USER 1000:0
 WORKDIR ${ZOOKEEPER_HOME}

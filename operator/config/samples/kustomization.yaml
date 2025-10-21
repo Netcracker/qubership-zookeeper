@@ -1,0 +1,5 @@
+## Append samples you want in your CSV to this file as resources ##
+resources:
+- netcracker.com_v1alpha1_zookeeperservice.yaml
+- netcracker.com_v1_zookeeperservice.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples

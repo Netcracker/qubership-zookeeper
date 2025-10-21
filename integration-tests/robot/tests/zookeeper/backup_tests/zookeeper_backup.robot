@@ -69,7 +69,7 @@ Create Nodes For Restore Test
 
 Create Nodes For Restore Advanced
     Create Node  ${zk}  ${ZOOKEEPER_NODE_PATH}/tmp1  123$%_&$/n
-    Create Node  ${zk}  ${ZOOKEEPER_NODE_PATH}/tmp2  темп2
+    Create Node  ${zk}  ${ZOOKEEPER_NODE_PATH}/tmp2  temp2
     Create Node  ${zk}  ${ZOOKEEPER_NODE_PATH}/tmp3  ""
     Create Node  ${zk}  ${ZOOKEEPER_NODE_PATH}/tmp3/nested  tmp3
     Create Byte Node  ${zk}  ${ZOOKEEPER_NODE_PATH}/tmp4  \x00\x01\xffsd
@@ -143,7 +143,7 @@ Check That Nodes Exist After Restore Advanced
     Check Existence Of Node  ${ZOOKEEPER_NODE_PATH}/tmp1
     Check Node Value  ${ZOOKEEPER_NODE_PATH}/tmp1  123$%_&$/n
     Check Existence Of Node  ${ZOOKEEPER_NODE_PATH}/tmp2
-    Check Node Value  ${ZOOKEEPER_NODE_PATH}/tmp2  темп2
+    Check Node Value  ${ZOOKEEPER_NODE_PATH}/tmp2  temp2
     Check Existence Of Node  ${ZOOKEEPER_NODE_PATH}/tmp3/nested
     Check Node Value  ${ZOOKEEPER_NODE_PATH}/tmp3/nested  tmp3
     Check Existence Of Node  ${ZOOKEEPER_NODE_PATH}/tmp4
