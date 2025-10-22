@@ -3,16 +3,16 @@
 # Rules: https://yamllint.readthedocs.io/en/stable/rules.html
 
 # Exclude not required files
-# ignore-from-file:
-# - .gitignore
-# - .yamlignore
+ignore-from-file:
+  - .gitignore
+  - .yamlignore
 
 rules:
   braces:
-    min-spaces-inside: 1
+    min-spaces-inside: 0
     max-spaces-inside: 1
-    min-spaces-inside-empty: 0
-    max-spaces-inside-empty: 0
+    min-spaces-inside-empty: -1
+    max-spaces-inside-empty: -1
   brackets:
     min-spaces-inside: 0
     max-spaces-inside: 1
