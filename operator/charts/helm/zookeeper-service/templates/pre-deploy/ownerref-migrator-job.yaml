@@ -1,8 +1,9 @@
 {{- if .Values.groupMigration.enabled }}
+{{- if .Capabilities.APIVersions.Has "qubership.org/v1" }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Release.Name }}-ownerref-migrator
+  name: {{ template "zookeeper.name" . }}-ownerref-migrator
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
   annotations:
@@ -15,7 +16,7 @@ spec:
       labels:
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ .Release.Name }}-ownerref-migrator
+      serviceAccountName: {{ template "zookeeper.name" . }}-ownerref-migrator
       restartPolicy: OnFailure
       {{- if .Values.groupMigration.runAsNonRoot }}
       securityContext:
@@ -40,6 +41,8 @@ spec:
               RESOURCES="${RESOURCES:-deployments,statefulsets,configmaps,secrets,services,persistentvolumeclaims}"
               SELECTOR="{{ .Values.groupMigration.labelSelector }}"
               OLD_GROUP="{{ .Values.groupMigration.oldGroupPrefix }}"
+
+              $KUBECTL -n "$NS" scale deploy/{{ template "zookeeper.name" . }}-service-operator --replicas=0
 
               # Build optional selector flag
               if [ -n "${SELECTOR}" ]; then SEL="-l ${SELECTOR}"; else SEL=""; fi
@@ -100,4 +103,5 @@ spec:
             readOnlyRootFilesystem: true
             capabilities: { drop: ["ALL"] }
           {{- end }}
+{{- end }}
 {{- end }}
