@@ -24,7 +24,7 @@ request body:
 curl -XPOST -u username:password -v -H "Content-Type: application/json" -d '{"mode":"transactional"}' http://localhost:8080/backup
 ```
 
-For more information about `Backup Modes` see [Backup Modes](../backup-modes/backup-modes).
+For more information about `Backup Modes` see [Backup Modes](./backup-modes.md).
 
 ### Not Evictable Backup
 
