@@ -1,6 +1,6 @@
 # API Usage
 
-For POST operations you must specify user/pass from `BACKUP_DAEMON_API_CREDENTIALS_USERNAME` and `BACKUP_DAEMON_API_CREDENTIALS_PASSWORD` env parameters so that you can use REST api to run backup tasks:
+For POST operations you must specify user/pass from `BACKUP_DAEMON_API_CREDENTIALS_USERNAME` and `BACKUP_DAEMON_API_CREDENTIALS_PASSWORD` env parameters so that you can use REST API to run backup tasks:
 
 ## Backup
 
@@ -87,7 +87,7 @@ curl -XGET http://localhost:8080/listbackups/<backup_id>
 where `backup_id` is the name of necessary backup. The command returns JSON string with data about
 particular backup:
 
-* `ts` is UNIX timestamp of backup
+* `ts` is Unix timestamp of backup
 * `spent_time` is time spent on backup (in ms)
 * `db_list` is list of stored databases
 * `id` is backup name
@@ -119,7 +119,7 @@ If recovery is in progress, you can check its status running the following comma
 curl -XGET http://localhost:8080/jobstatus/<task_id>
 ```
 
-where `task_id` is task id received at the recovery execution step.
+where `task_id` is task ID received at the recovery execution step.
 
 ## Backups List
 
