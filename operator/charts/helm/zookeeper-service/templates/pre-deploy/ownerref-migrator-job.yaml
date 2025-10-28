@@ -42,7 +42,7 @@ spec:
               SELECTOR="{{ .Values.groupMigration.labelSelector }}"
               OLD_GROUP="{{ .Values.groupMigration.oldGroupPrefix }}"
 
-              $KUBECTL -n "$NS" scale deploy/{{ template "zookeeper.name" . }}-service-operator --replicas=0
+              $KUBECTL -n "$NS" scale deploy/{{ template "zookeeper.name" . }}-service-operator --replicas=0 2>/dev/null || true
 
               # Build optional selector flag
               if [ -n "${SELECTOR}" ]; then SEL="-l ${SELECTOR}"; else SEL=""; fi
