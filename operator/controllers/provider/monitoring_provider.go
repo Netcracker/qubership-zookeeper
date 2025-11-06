@@ -22,6 +22,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"strconv"
 )
 
@@ -178,6 +179,8 @@ func (mrp MonitoringResourceProvider) NewMonitoringDeployment() *appsv1.Deployme
 							Command:         mrp.getCommand(),
 							Args:            mrp.getArgs(),
 							SecurityContext: getDefaultContainerSecurityContext(),
+							LivenessProbe:   mrp.getLivenessProbe(),
+							ReadinessProbe:  mrp.getReadinessProbe(),
 						},
 					},
 					SecurityContext:    &mrp.spec.SecurityContext,
@@ -339,4 +342,28 @@ func (mrp MonitoringResourceProvider) GetMonitoringCustomLabels(monitoringLabels
 // GetServiceAccountName returns service account name for pods. Now it's equal to service name.
 func (mrp MonitoringResourceProvider) GetServiceAccountName() string {
 	return mrp.GetServiceName()
+}
+
+func (mrp MonitoringResourceProvider) getLivenessProbe() *corev1.Probe {
+	probe := mrp.getProbe()
+	probe.Handler = corev1.Handler{
+		TCPSocket: &corev1.TCPSocketAction{
+			Port: intstr.FromInt(8096),
+		},
+	}
+	return probe
+}
+
+func (mrp MonitoringResourceProvider) getReadinessProbe() *corev1.Probe {
+	return mrp.getLivenessProbe()
+}
+
+func (mrp MonitoringResourceProvider) getProbe() *corev1.Probe {
+	return &corev1.Probe{
+		InitialDelaySeconds: 30,
+		TimeoutSeconds:      5,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    5,
+	}
 }
