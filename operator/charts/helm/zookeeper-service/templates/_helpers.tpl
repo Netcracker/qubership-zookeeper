@@ -237,6 +237,14 @@ Find a zookeeper image in various places.
 {{- end -}}
 
 {{/*
+Find a kubectl image in various places.
+*/}}
+{{- define "kubectl.image" -}}
+    {{- printf "%s" .Values.groupMigration.image -}}
+{{- end -}}
+
+
+{{/*
 ZooKeeper admin username.
 */}}
 {{- define "zookeeper.adminUsername" -}}
@@ -490,5 +498,6 @@ Common Zookeeper chart related resources labels
 {{- define "zookeeper.defaultLabels" -}}
 app.kubernetes.io/version: '{{ .Values.ARTIFACT_DESCRIPTOR_VERSION | trunc 63 | trimAll "-_." }}'
 app.kubernetes.io/component: 'backend'
+app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: '{{ .Values.PART_OF }}'
 {{- end -}}
