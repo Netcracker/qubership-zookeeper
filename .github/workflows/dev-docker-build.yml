@@ -82,7 +82,7 @@ jobs:
           download-artifact: 'false'
           component: ${{ toJson(matrix.component) }}
           platforms: ${{ needs.prepare.outputs.platforms }}
-          tags: ${{ needs.prepare.outputs.tags }}
+          tags: test-build # ${{ needs.prepare.outputs.tags }}
           checkout: 'true'
           dry-run: ${{ github.event_name == 'pull_request' }}
         env:
