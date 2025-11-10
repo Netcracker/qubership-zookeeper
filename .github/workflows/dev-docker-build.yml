@@ -7,6 +7,7 @@ on:
     branches:
       - '**'
     paths-ignore:
+      - '.github/workflows/**'
       - 'docs/**'
       - 'CODE-OF-CONDUCT.md'
       - 'CONTRIBUTING.md'
@@ -17,6 +18,7 @@ on:
     branches:
       - '**'
     paths-ignore:
+      - '.github/workflows/**'
       - 'docs/**'
       - 'CODE-OF-CONDUCT.md'
       - 'CONTRIBUTING.md'
