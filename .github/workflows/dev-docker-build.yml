@@ -63,19 +63,20 @@ jobs:
           ref: ${{ github.ref }}
 
   multiplatform_build:
-    name: Build and Push ${{ matrix.component.name }} Image
+    name: ${{ matrix.component.name }} Image Build and Push
     if: github.event.pull_request.user.login != 'dependabot[bot]'
+    permissions:
+      contents: read
+      packages: write
     needs: prepare
     strategy:
       fail-fast: false
       matrix:
         component: ${{ fromJson(needs.prepare.outputs.components) }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
-      - uses: netcracker/qubership-workflow-hub/actions/docker-action@v2.0.1
+      - name: Build and Push Docker Image
+        uses: netcracker/qubership-workflow-hub/actions/docker-action@v2.0.1
         with:
           ref: ${{ github.ref }}
           download-artifact: 'false'
