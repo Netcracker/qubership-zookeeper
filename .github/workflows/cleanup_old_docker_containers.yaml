@@ -37,7 +37,7 @@ jobs:
           echo "**Event**: ${{ github.event_name }}"
           echo "**Actor**: ${{ github.actor }}"
           echo "**Threshold days**: ${{ github.event.inputs.threshold-days || 7 }}"
-          echo "**Included tags**: ${{ github.event.inputs.included-tags || 'dev*' }}"
+          echo "**Included tags**: ${{ github.event.inputs.included-tags || '' }}"
           echo "**Excluded tags**: ${{ github.event.inputs.excluded-tags || 'release*,semver' }}"
           echo "**Dry-run**: ${{ github.event.inputs.dry-run || 'false' }}"
 
