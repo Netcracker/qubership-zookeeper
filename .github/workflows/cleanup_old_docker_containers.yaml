@@ -3,8 +3,8 @@
 name: Cleanup Old Docker Container Versions
 run-name: "${{ github.event_name }} - ${{ github.actor }}"
 on:
-#  schedule:
-#    - cron: "0 0 * * 0" # Runs weekly on Sunday at midnight
+  schedule:
+    - cron: "5 * * * 0" # Runs weekly on Sunday at midnight
   workflow_dispatch:
     inputs:
       threshold-days:
