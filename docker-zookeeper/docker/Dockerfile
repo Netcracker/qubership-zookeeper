@@ -37,7 +37,7 @@ COPY --from=builder --chown=${USER_UID} /workspace/zookeeper-assistant .
 
 # Install misc tools
 RUN set -x \
-    && apk add --update --no-cache \
+    && apk add --update \
         bash \
         shadow \
         netcat-openbsd \
@@ -133,12 +133,12 @@ RUN chgrp -R 0 ${ZOOKEEPER_HOME} \
     && chmod +x /docker-entrypoint.sh
 
 # Upgrade all tools to avoid vulnerabilities
-RUN set -x && apk upgrade --no-cache --available
+RUN set -x && apk upgrade --available
 
 # Upgrade tools from edge to avoid vulnerabilities
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --upgrade --no-cache \
+    && apk add --update --upgrade \
         pcre2
 
 USER 1000:0

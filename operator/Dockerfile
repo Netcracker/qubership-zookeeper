@@ -36,10 +36,10 @@ COPY --from=builder --chown=${USER_UID} /workspace/manager .
 
 # Avoiding vulnerabilities
 RUN set -x \
-    && apk add --upgrade --no-cache apk-tools
+    && apk add --upgrade apk-tools
 
 # Upgrade all tools to avoid vulnerabilities
-RUN set -x && apk upgrade --no-cache --available
+RUN set -x && apk upgrade --available
 
 RUN addgroup ${GROUP_NAME} && adduser -D -G ${GROUP_NAME} -u ${USER_UID} ${USER_NAME}
 USER ${USER_UID}
