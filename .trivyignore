@@ -1,3 +1,2 @@
-misconfigurations:
-  - id: AVD-DS-0026
-  - id: AVD-DS-0002
+AVD-DS-0026
+AVD-DS-0002
