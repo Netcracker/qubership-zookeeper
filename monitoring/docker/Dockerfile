@@ -25,7 +25,7 @@ RUN  python3 -m ensurepip \
     && rm -rf /var/cache/apk/*
 
 # Upgrade all tools to avoid vulnerabilities
-RUN set -x && apk upgrade --no-cache --available
+RUN set -x && apk upgrade --available
 
 USER 1000:0
 WORKDIR ${ZOOKEEPER_MONITORING_HOME}

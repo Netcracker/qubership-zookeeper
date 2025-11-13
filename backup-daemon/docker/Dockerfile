@@ -11,13 +11,13 @@ COPY scripts/ ${ZOOKEEPER_HOME}/scripts/
 COPY sh_scripts/ ${ZOOKEEPER_HOME}/sh_scripts/
 
 RUN set -x \
-    && apk add --upgrade --no-cache curl apk-tools build-base \
+    && apk add --upgrade curl apk-tools build-base \
     && pip3 install -r ${ZOOKEEPER_HOME}/requirements.txt \
     && apk del build-base \
     && rm -rf /var/cache/apk/*
 
 # Upgrade all tools to avoid vulnerabilities
-RUN set -x && apk upgrade --no-cache --available
+RUN set -x && apk upgrade --available
 
 RUN chmod +x ${ZOOKEEPER_HOME}/scripts/*.py
 RUN chmod +x ${ZOOKEEPER_HOME}/sh_scripts/list_instances_in_vault_command.sh
