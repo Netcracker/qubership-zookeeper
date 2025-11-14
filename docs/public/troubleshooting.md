@@ -312,9 +312,8 @@ Review disk usage.
 
 ### Description
 
-ZooKeeper clients cannot connect to ZooKeeper server with `Connection Loss` errors.\
-It could happen after restart ZooKeeper leader (during upgrade, change configuration, failover scenarios, etc.) due to incorrect shutdown.\
-There is external ticket for this issue: <https://issues.apache.org/jira/browse/ZOOKEEPER-3828> but there is no solution.
+ZooKeeper clients cannot connect to ZooKeeper server with `Connection Loss` errors.
+It could happen after restart ZooKeeper leader (during upgrade, change configuration, failover scenarios, etc.) due to incorrect shutdown.
 
 >**NOTE:** Starting with ZooKeeper `3.5.8-1.1` the ZooKeeper cluster is marked as not ready if clients cannot connect to it.
 Before this version ZooKeeper cluster looks like fully operational even if clients cannot connect to it.
