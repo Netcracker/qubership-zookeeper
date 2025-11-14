@@ -37,7 +37,7 @@ COPY --from=builder --chown=${USER_UID} /workspace/zookeeper-assistant .
 
 # Install misc tools
 RUN set -x \
-    && apk add --update \
+    && apk add --update --no-cache \
         bash \
         shadow \
         netcat-openbsd \
@@ -138,7 +138,7 @@ RUN set -x && apk upgrade --available
 # Upgrade tools from edge to avoid vulnerabilities
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --upgrade \
+    && apk add --update --no-cache --upgrade \
         pcre2
 
 USER 1000:0

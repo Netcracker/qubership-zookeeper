@@ -10,7 +10,7 @@ COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 # Install misc. tools
 RUN set -x \
-    && apk add --upgrade bash curl tini python3 apk-tools openssl
+    && apk add --upgrade --no-cache bash curl tini python3 apk-tools openssl
 
 RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED
 
