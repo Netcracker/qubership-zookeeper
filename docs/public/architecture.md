@@ -18,7 +18,7 @@ The Qubership platform provides ZooKeeper deployment to Kubernetes/OpenShift usi
 The deployment procedure and additional features include the following:
 
 * Support of Qubership deployment jobs for HA scheme and different configurations. For more detailed information, refer to [Installation Guide](/docs/public/installation.md).
-* Backup and restore. For more detailed information, refer to [ZooKeeper Backup Daemon Guide](https://github.com/Netcracker/qubership-zookeeper-backup-daemon/blob/main/documentation/maintenance-guide/development-guide/README.md).
+* Backup and restore. For more detailed information, refer to [ZooKeeper Backup Daemon Guide](./development-guide.md).
 * Monitoring integration with Grafana Dashboard and Prometheus Alerts. For more detailed information, refer to [Monitoring Guide](/docs/public/monitoring.md).
 
 # ZooKeeper Components

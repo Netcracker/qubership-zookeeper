@@ -13,7 +13,7 @@ COPY docker/zookeeper_pods_checker.py ${ROBOT_HOME}/zookeeper_pods_checker.py
 COPY robot ${ROBOT_HOME}
 
 # Upgrade all tools to avoid vulnerabilities
-RUN set -x && apk upgrade --no-cache --available
+RUN set -x && apk upgrade --available
 
 RUN set -x \
     && pip3 install -r ${ROBOT_HOME}/requirements.txt \
