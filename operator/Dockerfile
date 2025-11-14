@@ -36,7 +36,7 @@ COPY --from=builder --chown=${USER_UID} /workspace/manager .
 
 # Avoiding vulnerabilities
 RUN set -x \
-    && apk add --upgrade apk-tools
+    && apk add --upgrade --no-cache apk-tools
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --available

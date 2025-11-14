@@ -11,7 +11,7 @@ COPY scripts/ ${ZOOKEEPER_HOME}/scripts/
 COPY sh_scripts/ ${ZOOKEEPER_HOME}/sh_scripts/
 
 RUN set -x \
-    && apk add --upgrade curl apk-tools build-base \
+    && apk add --upgrade --no-cache curl apk-tools build-base \
     && pip3 install -r ${ZOOKEEPER_HOME}/requirements.txt \
     && apk del build-base \
     && rm -rf /var/cache/apk/*
