@@ -2,7 +2,7 @@ name: Run Zookeeper Pipeline
 
 permissions:
   contents: read
-  packages: write
+  packages: read
   actions: read
 
 on:
