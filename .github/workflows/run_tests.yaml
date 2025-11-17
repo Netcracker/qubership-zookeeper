@@ -18,7 +18,7 @@ jobs:
       conclusion: ${{ steps.wait.outputs.conclusion }}
     steps:
       - name: Wait for push.yml to complete
-        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@v2.0.0
+        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@0f2be042d7c833c6bf60df85732609b7991fb821 # v.2.0.0
         id: wait
         with:
           workflow: push.yml
@@ -26,8 +26,7 @@ jobs:
           poll-interval: 20
   Zookeeper-Pipeline:
     needs: Wait-for-images
-    if: ${{needs.Wait-for-images.outputs.conclusion}} == 'success'
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@v1.0.1
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@aecdc72c47de69569cecc4b876e86ecb6776d629 #v1.0.1
     with:
       service_branch: '${{ github.head_ref || github.ref_name }}'
       versions_file: '.github/versions.yaml'

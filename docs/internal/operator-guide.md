@@ -44,7 +44,7 @@ docker build \
   --pull \
   --file=${DOCKER_FILE} \
   -t ${IMAGE_NAME} \
-  --no-cache \
+  \
   .
 
 docker inspect ${IMAGE_NAME}
