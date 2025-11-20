@@ -10,7 +10,7 @@ COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 # Install misc. tools
 RUN set -x \
-    && apk add --upgrade bash curl tini python3 apk-tools openssl
+    && apk add --upgrade --no-cache bash curl tini python3 apk-tools openssl
 
 RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED
 
@@ -25,7 +25,7 @@ RUN  python3 -m ensurepip \
     && rm -rf /var/cache/apk/*
 
 # Upgrade all tools to avoid vulnerabilities
-RUN set -x && apk upgrade --no-cache --available
+RUN set -x && apk upgrade --available
 
 USER 1000:0
 WORKDIR ${ZOOKEEPER_MONITORING_HOME}

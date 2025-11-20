@@ -17,7 +17,7 @@ RUN set -x \
     && rm -rf /var/cache/apk/*
 
 # Upgrade all tools to avoid vulnerabilities
-RUN set -x && apk upgrade --no-cache --available
+RUN set -x && apk upgrade --available
 
 RUN chmod +x ${ZOOKEEPER_HOME}/scripts/*.py
 RUN chmod +x ${ZOOKEEPER_HOME}/sh_scripts/list_instances_in_vault_command.sh
