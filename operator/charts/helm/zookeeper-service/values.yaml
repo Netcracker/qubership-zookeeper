@@ -169,7 +169,10 @@ zooKeeper:
 
 ## Values for ZooKeeper Monitoring deployment
 monitoring:
-  install: true
+  install: false
+  alertsPackVersion: v1
+  backupDaemonAlertsInstall: false
+
   dockerImage: "ghcr.io/netcracker/qubership-zookeeper-monitoring:main"
 #  affinity: {
 #    "podAffinity": {
