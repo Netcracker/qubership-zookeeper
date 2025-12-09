@@ -10,10 +10,11 @@ ${ACL_VALUE}                  ACL
 *** Settings ***
 Library  String
 Library  Collections
-Library     RetryFailed    log_level=TRACE
+Library     RetryFailed
 Resource  ../../shared/keywords.robot
 Suite Setup  Setup
 Suite Teardown  Cleanup
+Test Teardown    Run Keyword If Test Failed    Sleep    5s
 
 *** Keywords ***
 Setup
