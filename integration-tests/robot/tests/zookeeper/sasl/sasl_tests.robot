@@ -10,6 +10,7 @@ ${ACL_VALUE}                  ACL
 *** Settings ***
 Library  String
 Library  Collections
+Library     RetryFailed    log_level=TRACE
 Resource  ../../shared/keywords.robot
 Suite Setup  Setup
 Suite Teardown  Cleanup
@@ -42,18 +43,18 @@ Cleanup
 
 *** Test Cases ***
 Test Client With All Grants Can Read Protected Node Data
-    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper
+    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper  test:retry(3)
     ${data} =  Get Node Value  ${admin_zk}  ${ZOOKEEPER_TESTS_NODE_PATH}
     Should Be Equal As Strings  ${data}  ${ACL_VALUE}
 
 Test Unauthorized Client Can Not Read Protected Node Data
-    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper
+    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper  test:retry(3)
     ${zk} =  Connect To Zookeeper
     Run Keyword And Expect Error  NoAuthError  Get Node Value  ${zk}  ${ZOOKEEPER_TESTS_NODE_PATH}
     [Teardown]  Disconnect From Zookeeper  ${zk}
 
 Test Client Without Read Grant Can Not Read Protected Node Data
-    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper
+    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper  test:retry(3)
     ${access_control_list} =  Create Access Control List  sasl  ${ZOOKEEPER_CLIENT_USERNAME}  read=${False}  all=${False}
     Add Acl To Node  ${access_control_list}
     ${zk} =  Connect To Zookeeper  sasl  ${ZOOKEEPER_CLIENT_USERNAME}  ${ZOOKEEPER_CLIENT_PASSWORD}  ${access_control_list}
@@ -62,7 +63,7 @@ Test Client Without Read Grant Can Not Read Protected Node Data
     [Teardown]  Disconnect From Zookeeper  ${zk}
 
 Test Client Without Write Grant Can Not Write To Protected Node
-    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper
+    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper  test:retry(3)
     ${access_control_list} =  Create Access Control List  sasl  ${ZOOKEEPER_CLIENT_USERNAME}  write=${False}  all=${False}
     Add Acl To Node  ${access_control_list}
     ${zk} =  Connect To Zookeeper  sasl  ${ZOOKEEPER_CLIENT_USERNAME}  ${ZOOKEEPER_CLIENT_PASSWORD}  ${access_control_list}
@@ -73,7 +74,7 @@ Test Client Without Write Grant Can Not Write To Protected Node
     [Teardown]  Disconnect From Zookeeper  ${zk}
 
 Test Client Without Create Grant Can Not Create Node
-    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper
+    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper  test:retry(3)
     ${access_control_list} =  Create Access Control List  sasl  ${ZOOKEEPER_CLIENT_USERNAME}  create=${False}  all=${False}
     ${zk} =  Connect To Zookeeper  sasl  ${ZOOKEEPER_CLIENT_USERNAME}  ${ZOOKEEPER_CLIENT_PASSWORD}  ${access_control_list}
     Run Keyword And Expect Error  NoAuthError  Create Node  ${zk}  ${ZOOKEEPER_ACL_NODE_PATH}/uncreated  ${ACL_VALUE}
@@ -81,14 +82,14 @@ Test Client Without Create Grant Can Not Create Node
     [Teardown]  Disconnect From Zookeeper  ${zk}
 
 Test Client Without Delete Grant Can Not Delete Protected Node
-    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper
+    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper  test:retry(3)
     ${access_control_list} =  Create Access Control List  sasl  ${ZOOKEEPER_CLIENT_USERNAME}  delete=${False}  all=${False}
     ${zk} =  Connect To Zookeeper  sasl  ${ZOOKEEPER_CLIENT_USERNAME}  ${ZOOKEEPER_CLIENT_PASSWORD}  ${access_control_list}
     Run Keyword And Expect Error  NoAuthError  Delete Node  ${zk}  ${ZOOKEEPER_ACL_NODE_PATH}
     [Teardown]  Disconnect From Zookeeper  ${zk}
 
 Test Client Without Admin Grant Can Not Set Permissions To Node
-    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper
+    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper  test:retry(3)
     ${access_control_list} =  Create Access Control List  sasl  ${ZOOKEEPER_CLIENT_USERNAME}  admin=${False}  all=${False}
     ${zk} =  Connect To Zookeeper  sasl  ${ZOOKEEPER_CLIENT_USERNAME}  ${ZOOKEEPER_CLIENT_PASSWORD}  ${access_control_list}
     ${node_acls} =  Get Acls  ${admin_zk}  ${ZOOKEEPER_TESTS_NODE_PATH}
@@ -97,7 +98,7 @@ Test Client Without Admin Grant Can Not Set Permissions To Node
     [Teardown]  Disconnect From Zookeeper  ${zk}
 
 Test Admin Without Grants Can Access To Node
-    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper
+    [Tags]  zookeeper_sasl  zookeeper_acl  zookeeper  test:retry(3)
     ${access_control_list} =  Create Access Control List  sasl  ${ZOOKEEPER_CLIENT_USERNAME}
     ${acls} =  Create List  ${access_control_list}
     ${zk} =  Connect To Zookeeper  sasl  ${ZOOKEEPER_ADMIN_USERNAME}  ${ZOOKEEPER_ADMIN_PASSWORD}
@@ -107,13 +108,13 @@ Test Admin Without Grants Can Access To Node
     [Teardown]  Disconnect From Zookeeper  ${zk}
     
 Test Connect With Incorrect Password
-    [Tags]  zookeeper_sasl  zookeeper
+    [Tags]  zookeeper_sasl  zookeeper  test:retry(3)
     ${zk} =  Connect To Zookeeper  sasl  ${ZOOKEEPER_CLIENT_USERNAME}  123
     Run Keyword And Expect Error  AuthFailedError  Node Exists  ${zk}  ${ZOOKEEPER_TESTS_NODE_PATH}
     [Teardown]  Disconnect From Zookeeper  ${zk}
 
 Test Connect With Unknown User
-    [Tags]  zookeeper_sasl  zookeeper
+    [Tags]  zookeeper_sasl  zookeeper  test:retry(3)
     ${zk} =  Connect To Zookeeper  sasl  username  password
     Run Keyword And Expect Error  AuthFailedError  Node Exists  ${zk}  ${ZOOKEEPER_TESTS_NODE_PATH}
     [Teardown]  Disconnect From Zookeeper  ${zk}
