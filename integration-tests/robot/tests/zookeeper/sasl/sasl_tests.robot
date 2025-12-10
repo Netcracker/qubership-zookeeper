@@ -6,15 +6,17 @@ ${ZOOKEEPER_ADMIN_PASSWORD}   %{ZOOKEEPER_ADMIN_PASSWORD}
 ${ZOOKEEPER_CLIENT_USERNAME}  %{ZOOKEEPER_CLIENT_USERNAME}
 ${ZOOKEEPER_CLIENT_PASSWORD}  %{ZOOKEEPER_CLIENT_PASSWORD}
 ${ACL_VALUE}                  ACL
+${SUITE_RETRY_TIME}           2min
+${SUITE_RETRY_INTERVAL}       10s
 
 *** Settings ***
 Library  String
 Library  Collections
-Library     RetryFailed
+Library  RetryFailed
 Resource  ../../shared/keywords.robot
-Suite Setup  Setup
-Suite Teardown  Cleanup
-Test Teardown    Run Keyword If Test Failed    Sleep    5s
+Suite Setup  Wait Until Keyword Succeeds  ${SUITE_RETRY_TIME}  ${SUITE_RETRY_INTERVAL}  Setup
+Suite Teardown  Wait Until Keyword Succeeds  ${SUITE_RETRY_TIME}  ${SUITE_RETRY_INTERVAL}  Cleanup
+Test Teardown  Run Keyword If Test Failed  Sleep  5s
 
 *** Keywords ***
 Setup
