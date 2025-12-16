@@ -3,6 +3,7 @@ paths:
     ignore:
       - 'shellcheck reported issue in this script: SC2086:info.+'
       - 'shellcheck reported issue in this script: SC2002:style.+'
+      - 'object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type {string => string} [expression]'
   workflows-templates/**/*.{yml,yaml}:
     ignore:
       - 'shellcheck reported issue in this script: SC2086:info.+'
