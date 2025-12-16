@@ -105,14 +105,21 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
+      - name: "Add github.vars into github.env"
+        id: vars
+        run: |
+          VARS_JSON='''
+          ${{ toJson(vars) }}
+          '''
+          echo "${VARS_JSON}" | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' >> $GITHUB_ENV
+
       - name: "Update versions in values"
         id: update-versions
         uses: netcracker/qubership-workflow-hub/actions/charts-values-update-action@396774180000abdb825cbf150b56cc59c6913db8  # v2.0.5
         with:
           release-version: ${{ inputs.release }}
           config-file: .github/charts-values-update-config.yaml
-        env:
-          ${{ insert }}: ${{ vars }}
+
       - name: "Debug"
         env:
           IMAGES_VERSIONS: "${{ steps.update-versions.outputs.images-versions }}"
