@@ -106,11 +106,9 @@ jobs:
           persist-credentials: true
 
       - name: "Add github.vars into github.env"
-        id: vars
+        env:
+          VARS_JSON: '${{ toJson(vars) }}'
         run: |
-          VARS_JSON='''
-          ${{ toJson(vars) }}
-          '''
           echo "${VARS_JSON}" | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' >> $GITHUB_ENV
 
       - name: "Update versions in values"
