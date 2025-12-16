@@ -13,6 +13,7 @@ on:
 
 jobs:
   Wait-for-images:
+    if: ! github.event.repository.fork
     runs-on: ubuntu-latest
     outputs:
       conclusion: ${{ steps.wait.outputs.conclusion }}
@@ -25,6 +26,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           poll-interval: 20
   Zookeeper-Pipeline:
+    if: ! github.event.repository.fork
     needs: Wait-for-images
     uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@d035050ec322700c3df9a7ec62efc0220abe4243  #v1.1.0
     with:
