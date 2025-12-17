@@ -6,16 +6,14 @@ ${ADMIN_PASSWORD}             admin
 ${USERNAME}                   user123
 ${PASSWORD}                   pwd123
 ${ACL_VALUE}                  ACL
-${SUITE_RETRY_TIME}           2min
-${SUITE_RETRY_INTERVAL}       10s
 
 *** Settings ***
 Library  String
 Library  Collections
 Library  RetryFailed
 Resource  ../../shared/keywords.robot
-Suite Setup  Wait Until Keyword Succeeds  ${SUITE_RETRY_TIME}  ${SUITE_RETRY_INTERVAL}  Setup
-Suite Teardown  Wait Until Keyword Succeeds  ${SUITE_RETRY_TIME}  ${SUITE_RETRY_INTERVAL}  Cleanup
+Suite Setup  Setup
+Suite Teardown  Cleanup
 Test Teardown  Run Keyword If Test Failed  Sleep  5s
 
 *** Keywords ***

@@ -112,15 +112,15 @@ def get_server_state(server_address):
                 logger.info(f"Server {zookeeper_server} state: {state}")
                 return state
             else:
-                logger.warning(f"Unexpected output format from {zookeeper_server}: {stdout}")
+                logger.warn(f"Unexpected output format from {zookeeper_server}: {stdout}")
         else:
-            logger.warning(f"Failed to retrieve state information from {zookeeper_server} (return code: {process.returncode})")
+            logger.warn(f"Failed to retrieve state information from {zookeeper_server} (return code: {process.returncode})")
     except subprocess.TimeoutExpired:
-        logger.warning(f"Timeout while connecting to {zookeeper_server}")
+        logger.warn(f"Timeout while connecting to {zookeeper_server}")
     except Exception as e:
         logger.exception(f"Error retrieving state information from {zookeeper_server}: {e}")
 
-    logger.warning(f"Returning 'NA' for server {zookeeper_server}")
+    logger.warn(f"Returning 'NA' for server {zookeeper_server}")
     return "NA"
 
 def get_leader_node(zookeeper_hosts):
@@ -143,9 +143,9 @@ def get_leader_node(zookeeper_hosts):
         logger.info(f"Unique leader found: {leaders[0]}")
         return leaders[0]  # Return just the hostname without port
     elif len(leaders) > 1:
-        logger.warning(f"Multiple leaders found: {leaders}. This is unexpected.")
+        logger.warn(f"Multiple leaders found: {leaders}. This is unexpected.")
     else:
-        logger.warning("No leader found among all hosts")
+        logger.warn("No leader found among all hosts")
     
     return "NA"
 
