@@ -24,8 +24,6 @@ on:
         required: false
         default: true
         type: boolean
-permissions:
-  contents: read
 
 jobs:
   cleanup:
