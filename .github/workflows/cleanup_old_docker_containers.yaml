@@ -59,7 +59,7 @@ jobs:
         uses: netcracker/qubership-workflow-hub/actions/container-package-cleanup@396774180000abdb825cbf150b56cc59c6913db8 #v2.0.5
         with:
           threshold-days: ${{ github.event.inputs.threshold-days || 7 }}
-          included-tags: ${{ github.event.inputs.included-tags || 'dev*' }}
+          included-tags: ${{ github.event.inputs.included-tags || '*' }}
           excluded-tags: ${{ github.event.inputs.excluded-tags || 'release*' }}
           dry-run: ${{ github.event.inputs.dry-run || 'false' }}
         env:
