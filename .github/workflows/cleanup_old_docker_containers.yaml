@@ -50,8 +50,8 @@ jobs:
           echo "**Threshold days**: $THRESHOLD_DAYS"
           echo "**Included tags**: $INCLUDED_TAGS"
           echo "**Excluded tags**: $EXCLUDED_TAGS"
-          echo "**Dry-run**: ${DRY_RUN}"
-          echo "**Debug**: ${DEBUG}"
+          echo "**Dry-run**: $DRY_RUN"
+          echo "**Debug**: $DEBUG}"
 
       - name: "Run Container Package Cleanup Action"
         uses: netcracker/qubership-workflow-hub/actions/container-package-cleanup@396774180000abdb825cbf150b56cc59c6913db8 #v2.0.5
