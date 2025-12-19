@@ -45,9 +45,9 @@ jobs:
           DRY_RUN: ${{ github.event.inputs.dry-run || 'false' }}
           DEBUG: ${{ github.event.inputs.debug || 'false' }}
         run: |
-          echo "**Event**: ${GITHUB_EVENT_NAME}"
-          echo "**Actor**: ${GITHUB_ACTOR}"
-          echo "**Threshold days**: ${THRESHOLD_DAYS}"
+          echo "**Event**: $GITHUB_EVENT_NAME"
+          echo "**Actor**: $GITHUB_ACTOR"
+          echo "**Threshold days**: $THRESHOLD_DAYS"
           echo "**Included tags**: $INCLUDED_TAGS"
           echo "**Excluded tags**: $EXCLUDED_TAGS"
           echo "**Dry-run**: ${DRY_RUN}"
