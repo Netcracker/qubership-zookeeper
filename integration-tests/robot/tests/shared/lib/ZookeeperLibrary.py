@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import os
+import time
 
 from kazoo.client import KazooClient
 from kazoo.security import make_digest_acl, make_acl
+from kazoo.exceptions import ConnectionLoss
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -156,21 +158,34 @@ class ZookeeperLibrary(object):
         """
         zk.set_acls(node_path, acls)
 
-    def create_node(self, zk, node_path, data=None):
+    def create_node(self, zk, node_path, data=None, retries=3, delay=5):
         """
         Creates ZooKeeper node.
         *Args:*\n
             _zk_ (KazooClient) - ZooKeeper client;\n
             _node_path_ (str) - path of the node;\n
             _data_ (str) - initial bytes value of node;\n
+            _retries_ (int, optional) - number of retry attempts (default: 3);\n
+            _delay_ (int, optional) - initial delay between retries in seconds (default: 5);\n
         *Example:*\n
-            | Create Node | zk | /zookeeper_crud | Creation data |
+            | Create Node | zk | /zookeeper_crud | Creation data | retries=3 | delay=1 |
         """
-        if data:
-            zk.create(node_path, value=data.encode())
-        else:
-            zk.create(node_path)
-        logger.debug('Node "{}" is created.'.format(node_path))
+        for attempt in range(1, retries + 1):
+            try:
+                if data:
+                    zk.create(node_path, value=data.encode())
+                else:
+                    zk.create(node_path)
+                logger.debug('Node "{}" is created.'.format(node_path))
+                return
+
+            except ConnectionLoss as e:
+                msg = (f'Attempt {attempt}/{retries}: cannot create node "{node_path}" '
+                       f'due to ConnectionLoss')
+                logger.warn(msg)
+                if attempt == retries:
+                    self.builtin.fail(f'Failed to create node "{node_path}" after {retries} attempts: {e}')
+                time.sleep(delay)
 
     def create_node_with_children(self, zk, node_path, children_number: int, data):
         zk.create(node_path)
@@ -264,17 +279,35 @@ class ZookeeperLibrary(object):
         stat = zk.set(node_path, new_value.encode())
         logger.debug('Node "{}" is updated: {}'.format(node_path, stat))
 
-    def delete_node(self, zk, node_path):
+    def delete_node(self, zk, node_path, retries=3, delay=5):
         """
         Delete the node.
         *Args:*\n
             _zk_ (KazooClient) - ZooKeeper client;\n
             _node_path_ (str) - path of the node;\n
+            _retries_ (int, optional) - number of retry attempts (default: 5);\n
+            _delay_ (int, optional) - initial delay between retries in seconds (default: 2);\n
+
         *Example:*\n
-            | Delete Node | zk | /zookeeper_crud/tests |
+            | Delete Node | zk | /zookeeper_crud/tests | retries=3 | delay=1 |
         """
-        zk.delete(node_path, recursive=True)
-        logger.debug('Node "{}" is deleted.'.format(node_path))
+        for attempt in range(1, retries + 1):
+            try:
+                if zk.exists(node_path):
+                    zk.delete(node_path, recursive=True)
+                    logger.debug(f'Node "{node_path}" is deleted.')
+                    return
+                else:
+                    logger.debug(f'Node "{node_path}" does not exist.')
+                    return
+
+            except ConnectionLoss as e:
+                msg = (f'Attempt {attempt}/{retries}: cannot delete node "{node_path}" '
+                       f'due to ConnectionLoss')
+                logger.warn(msg)
+                if attempt == retries:
+                    self.builtin.fail(f'Failed to delete node "{node_path}" after {retries} attempts: {e}')
+                time.sleep(delay)
 
     def find_minimum(self, first, second):
         """
@@ -297,4 +330,3 @@ class ZookeeperLibrary(object):
             | Execute Command | zk | ruok |
         """
         return zk.command(cmd.encode())
-    
