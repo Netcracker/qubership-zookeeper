@@ -287,7 +287,7 @@ func (bdrp BackupDaemonResourceProvider) getBackupDaemonVolumeMounts() []corev1.
 func (bdrp BackupDaemonResourceProvider) getLivenessProbe() *corev1.Probe {
 	probe := bdrp.getProbe()
 	backupDaemonPort := int(bdrp.getBackupDaemonPort())
-	probe.Handler = corev1.Handler{
+	probe.ProbeHandler = corev1.ProbeHandler{
 		TCPSocket: &corev1.TCPSocketAction{
 			Port: intstr.FromInt(backupDaemonPort),
 		},
