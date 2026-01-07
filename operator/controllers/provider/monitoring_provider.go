@@ -346,7 +346,7 @@ func (mrp MonitoringResourceProvider) GetServiceAccountName() string {
 
 func (mrp MonitoringResourceProvider) getLivenessProbe() *corev1.Probe {
 	probe := mrp.getProbe()
-	probe.Handler = corev1.Handler{
+	probe.ProbeHandler = corev1.ProbeHandler{
 		TCPSocket: &corev1.TCPSocketAction{
 			Port: intstr.FromInt(8096),
 		},
