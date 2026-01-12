@@ -180,7 +180,7 @@ func (r *ZooKeeperServiceReconciler) GeneratePasswordForPolicy(policyName string
 	if response == nil {
 		return "", fmt.Errorf("vault: Cannot generate password for policy: %s", policyName)
 	}
-	func() { _ = response.Body.Close() }()
+	defer func() { _ = response.Body.Close() }()
 	var respJson map[string]string
 	if err = response.DecodeJSON(&respJson); err != nil {
 		return "", err
@@ -203,7 +203,7 @@ func (r *ZooKeeperServiceReconciler) ReadVaultAuthRole(roleName string, cr *zook
 	request := vaultClient.NewRequest("GET", fmt.Sprintf("/v1/auth/%s/role/%s", cr.Spec.VaultSecretManagement.Method, roleName))
 	response, err := vaultClient.RawRequestWithContext(context.Background(), request) //nolint:staticcheck // SA1019: legacy Vault raw API
 	if response != nil {
-		func() { _ = response.Body.Close() }()
+		defer func() { _ = response.Body.Close() }()
 		if response.StatusCode == 404 {
 			log.Info(fmt.Sprintf("Auth role '%s' is not found", roleName))
 			return nil, nil
