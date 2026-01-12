@@ -164,8 +164,7 @@ func (r *ZooKeeperServiceReconciler) WriteVaultPasswordPolicy(policyName string,
 		log.Error(err, fmt.Sprintf("Error occurred during buiding request for password policy '%s'", policyName))
 		return err
 	}
-	//lint:ignore SA1019 reason: legacy Vault raw API, Logical() cannot be used here yet
-	if _, err := vaultClient.RawRequestWithContext(context.Background(), request); err != nil {
+	if _, err := vaultClient.RawRequestWithContext(context.Background(), request); err != nil { //nolint:staticcheck // SA1019: legacy Vault raw API
 		log.Error(err, fmt.Sprintf("Error occurred during writing password policy '%s'", policyName))
 	}
 	return err
@@ -173,8 +172,7 @@ func (r *ZooKeeperServiceReconciler) WriteVaultPasswordPolicy(policyName string,
 
 func (r *ZooKeeperServiceReconciler) GeneratePasswordForPolicy(policyName string) (string, error) {
 	request := vaultClient.NewRequest("GET", fmt.Sprintf("/v1/sys/policies/password/%s/generate", policyName))
-	//lint:ignore SA1019 reason: legacy Vault raw API, Logical() cannot be used here yet
-	response, err := vaultClient.RawRequestWithContext(context.Background(), request)
+	response, err := vaultClient.RawRequestWithContext(context.Background(), request) //nolint:staticcheck // SA1019: legacy Vault raw API
 	if err != nil {
 		log.Error(err, fmt.Sprintf("Error occurred during generate password for policy '%s'", policyName))
 		return "", err
@@ -197,15 +195,13 @@ func (r *ZooKeeperServiceReconciler) WriteVaultAuthRole(roleName string, role in
 		log.Error(err, fmt.Sprintf("Error occurred during writing role '%s'", roleName))
 		return err
 	}
-	//lint:ignore SA1019 reason: legacy Vault raw API, Logical() cannot be used here yet
-	_, err = vaultClient.RawRequestWithContext(context.Background(), request)
+	_, err = vaultClient.RawRequestWithContext(context.Background(), request) //nolint:staticcheck // SA1019: legacy Vault raw API
 	return err
 }
 
 func (r *ZooKeeperServiceReconciler) ReadVaultAuthRole(roleName string, cr *zookeeperservice.ZooKeeperService) (map[string]interface{}, error) {
 	request := vaultClient.NewRequest("GET", fmt.Sprintf("/v1/auth/%s/role/%s", cr.Spec.VaultSecretManagement.Method, roleName))
-	//lint:ignore SA1019 reason: legacy Vault raw API, Logical() cannot be used here yet
-	response, err := vaultClient.RawRequestWithContext(context.Background(), request)
+	response, err := vaultClient.RawRequestWithContext(context.Background(), request) //nolint:staticcheck // SA1019: legacy Vault raw API
 	if response != nil {
 		func() { _ = response.Body.Close() }()
 		if response.StatusCode == 404 {
