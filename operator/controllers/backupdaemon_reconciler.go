@@ -58,7 +58,7 @@ func (r ReconcileBackupDaemon) Status() error {
 		return err
 	}
 	r.logger.Info("Start checking for ZooKeeper Backup Daemon pod")
-	err := wait.PollImmediateWithContext(context.Background(), 10*time.Second, time.Duration(r.cr.Spec.Global.PodsReadyTimeout)*time.Second, func(ctx context.Context) (done bool, err error) {
+	err := wait.PollUntilContextTimeout(context.Background(), 10*time.Second, time.Duration(r.cr.Spec.Global.PodsReadyTimeout)*time.Second, true, func(ctx context.Context) (done bool, err error) {
 		if r.reconciler.isDeploymentReady(r.backupDaemonProvider.GetServiceName(), r.cr.Namespace, r.logger) {
 			return true, nil
 		}
