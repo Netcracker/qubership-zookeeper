@@ -15,6 +15,7 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
@@ -163,7 +164,7 @@ func (r *ZooKeeperServiceReconciler) WriteVaultPasswordPolicy(policyName string,
 		log.Error(err, fmt.Sprintf("Error occurred during buiding request for password policy '%s'", policyName))
 		return err
 	}
-	if _, err := vaultClient.RawRequest(request); err != nil {
+	if _, err := vaultClient.RawRequestWithContext(context.Background(), request); err != nil {
 		log.Error(err, fmt.Sprintf("Error occurred during writing password policy '%s'", policyName))
 	}
 	return err
@@ -171,7 +172,7 @@ func (r *ZooKeeperServiceReconciler) WriteVaultPasswordPolicy(policyName string,
 
 func (r *ZooKeeperServiceReconciler) GeneratePasswordForPolicy(policyName string) (string, error) {
 	request := vaultClient.NewRequest("GET", fmt.Sprintf("/v1/sys/policies/password/%s/generate", policyName))
-	response, err := vaultClient.RawRequest(request)
+	response, err := vaultClient.RawRequestWithContext(context.Background(), request)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("Error occurred during generate password for policy '%s'", policyName))
 		return "", err
@@ -179,7 +180,7 @@ func (r *ZooKeeperServiceReconciler) GeneratePasswordForPolicy(policyName string
 	if response == nil {
 		return "", fmt.Errorf("vault: Cannot generate password for policy: %s", policyName)
 	}
-	defer response.Body.Close()
+	func() { _ = response.Body.Close() }()
 	var respJson map[string]string
 	if err = response.DecodeJSON(&respJson); err != nil {
 		return "", err
@@ -194,15 +195,15 @@ func (r *ZooKeeperServiceReconciler) WriteVaultAuthRole(roleName string, role in
 		log.Error(err, fmt.Sprintf("Error occurred during writing role '%s'", roleName))
 		return err
 	}
-	_, err = vaultClient.RawRequest(request)
+	_, err = vaultClient.RawRequestWithContext(context.Background(), request)
 	return err
 }
 
 func (r *ZooKeeperServiceReconciler) ReadVaultAuthRole(roleName string, cr *zookeeperservice.ZooKeeperService) (map[string]interface{}, error) {
 	request := vaultClient.NewRequest("GET", fmt.Sprintf("/v1/auth/%s/role/%s", cr.Spec.VaultSecretManagement.Method, roleName))
-	response, err := vaultClient.RawRequest(request)
+	response, err := vaultClient.RawRequestWithContext(context.Background(), request)
 	if response != nil {
-		defer response.Body.Close()
+		func() { _ = response.Body.Close() }()
 		if response.StatusCode == 404 {
 			log.Info(fmt.Sprintf("Auth role '%s' is not found", roleName))
 			return nil, nil
