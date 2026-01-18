@@ -2,6 +2,9 @@ FROM telegraf:1.37-alpine
 
 ENV ZOOKEEPER_MONITORING_HOME=/opt/zookeeper-monitoring
 
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
+
 RUN mkdir -p ${ZOOKEEPER_MONITORING_HOME}
 
 COPY docker/config/requirements.txt ${ZOOKEEPER_MONITORING_HOME}/requirements.txt
@@ -26,6 +29,12 @@ RUN  python3 -m ensurepip \
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --available
+
+# Upgrade tools from edge to avoid vulnerabilities
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
+    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && apk add --update --no-cache --upgrade \
+        pcre2 curl gnutls libcurl jq
 
 USER 1000:0
 WORKDIR ${ZOOKEEPER_MONITORING_HOME}

@@ -5,6 +5,9 @@ ENV ZOOKEEPER_HOME=/opt/zookeeper \
 
 ENV PYTHONPATH=/usr/local/lib/python3.7/site-packages/integration_library_builtIn
 
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
+
 COPY backup-daemon.conf /etc/backup-daemon.conf
 COPY docker/requirements.txt ${ZOOKEEPER_HOME}/requirements.txt
 COPY scripts/ ${ZOOKEEPER_HOME}/scripts/
