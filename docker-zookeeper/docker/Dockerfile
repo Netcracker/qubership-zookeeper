@@ -93,9 +93,9 @@ RUN set -x \
         -O ${ZOOKEEPER_HOME}/lib/jolokia-jvm-${JOLOKIA_VERSION}.jar \
         "https://repo1.maven.org/maven2/org/jolokia/jolokia-jvm/${JOLOKIA_VERSION}/jolokia-jvm-${JOLOKIA_VERSION}.jar"
 
-RUN rm -f ${KAFKA_HOME}/libs/logback-classic-*.jar \
-    && wget -nv -O ${KAFKA_HOME}/libs/logback-classic-1.5.19.jar \
-       "https://repo1.maven.org/maven2/ch/qos/logback/logback-classic/1.5.19/logback-classic-1.5.19.jar"
+RUN rm -f ${ZOOKEEPER_HOME}/lib/logback-core-1.3.15.jar \
+    && wget -nv -O ${ZOOKEEPER_HOME}/lib/logback-core-1.5.19.jar \
+       "https://repo1.maven.org/maven2/ch/qos/logback/logback-core/1.5.19/logback-core-1.5.19.jar"
 
 ARG NETTY_VER=4.1.125.Final
 RUN set -eux; \
