@@ -136,7 +136,7 @@ func (zrp ZooKeeperResourceProvider) NewServerDeploymentForCR(serverId int) *app
 	zooKeeperCustomLabels := zrp.GetZooKeeperCustomLabels(zooKeeperLabels)
 	replicas := int32(1)
 	livenessProbe := corev1.Probe{
-		Handler: corev1.Handler{
+		ProbeHandler: corev1.ProbeHandler{
 			Exec: zrp.getExecCommand([]string{"./bin/zkHealth.sh", "liveness-probe"}),
 		},
 		InitialDelaySeconds: 20,
@@ -146,7 +146,7 @@ func (zrp ZooKeeperResourceProvider) NewServerDeploymentForCR(serverId int) *app
 		FailureThreshold:    5,
 	}
 	readinessProbe := corev1.Probe{
-		Handler: corev1.Handler{
+		ProbeHandler: corev1.ProbeHandler{
 			Exec: zrp.getExecCommand([]string{"./bin/zkHealth.sh", "readiness-probe"}),
 		},
 		InitialDelaySeconds: 40,
