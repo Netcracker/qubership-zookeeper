@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.25-alpine3.22 as builder
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine3.23 as builder
 ARG BUILDPLATFORM
 ARG TARGETOS
 ARG TARGETARCH
@@ -19,7 +19,7 @@ COPY main.go main.go
 # Build
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GO111MODULE=on go build -a -o zookeeper-assistant main.go
 
-FROM eclipse-temurin:21-jdk-alpine-3.22
+FROM eclipse-temurin:21-jdk-alpine-3.23
 
 ENV ZOOKEEPER_HOME=/opt/zookeeper \
     ZOOKEEPER_OPT=/var/opt/zookeeper \
@@ -92,6 +92,30 @@ RUN set -x \
         -nv \
         -O ${ZOOKEEPER_HOME}/lib/jolokia-jvm-${JOLOKIA_VERSION}.jar \
         "https://repo1.maven.org/maven2/org/jolokia/jolokia-jvm/${JOLOKIA_VERSION}/jolokia-jvm-${JOLOKIA_VERSION}.jar"
+
+RUN rm -f ${KAFKA_HOME}/libs/logback-classic-*.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/logback-classic-1.5.19.jar \
+       "https://repo1.maven.org/maven2/ch/qos/logback/logback-classic/1.5.19/logback-classic-1.5.19.jar"
+
+ARG NETTY_VER=4.1.125.Final
+RUN set -eux; \
+  KAFKA_LIB=${ZOOKEEPER_HOME}/lib; \
+  cd "$ZOOKEEPER_LIB"; \
+  for a in \
+    netty-buffer \
+    netty-codec \
+    netty-common \
+    netty-handler \
+    netty-resolver \
+    netty-transport \
+    netty-transport-classes-epoll \
+    netty-transport-native-epoll \
+    netty-transport-native-unix-common \
+  ; do \
+    curl -fL -o "${a}-${NETTY_VER}.jar" \
+      "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
+  done; \
+  rm -f netty-*-4.1.119.Final.jar;
 
 ARG PROMETHEUS_JMX_EXPORTER_VERSION="1.1.0"
 # Download jmx_prometheus_javaagent
