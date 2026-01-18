@@ -193,7 +193,11 @@ func GetState() func(w http.ResponseWriter, r *http.Request) {
 					log.Error("Failed to marshal response to json: ", marshalerr)
 					return
 				}
-				w.Write(resbody)
+				_, err := w.Write(resbody)
+				if err != nil {
+					log.Error("Failed to write body to http response: ", err)
+					return
+				}
 				return
 			}
 		}()
@@ -201,7 +205,11 @@ func GetState() func(w http.ResponseWriter, r *http.Request) {
 		response := State{Status: "Running"}
 		w.WriteHeader(200)
 		responseBody, _ := json.Marshal(response)
-		w.Write(responseBody)
+		_, err := w.Write(responseBody)
+		if err != nil {
+			log.Error("Failed to write body to http response: ", err)
+			return
+		}
 	}
 }
 
@@ -216,7 +224,11 @@ func (data Data) Store() func(w http.ResponseWriter, r *http.Request) {
 					log.Error("Failed to marshal response to json: ", marshalerr)
 					return
 				}
-				w.Write(resbody)
+				_, err := w.Write(resbody)
+				if err != nil {
+					log.Error("Failed to write body to http response: ", err)
+					return
+				}
 				return
 			}
 		}()
@@ -226,7 +238,11 @@ func (data Data) Store() func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		responseBody, _ := json.Marshal(response)
 		log.Debugf("Response body: %s\n", responseBody)
-		w.Write(responseBody)
+		_, err := w.Write(responseBody)
+		if err != nil {
+			log.Error("Failed to write body to http response: ", err)
+			return
+		}
 	}
 }
 
