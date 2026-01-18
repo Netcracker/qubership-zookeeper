@@ -136,8 +136,8 @@ func main() {
 	loggingLeveled.SetLevel(loggingLevel, "")
 	loggingFormatter := logging.NewBackendFormatter(loggingSetting, format)
 	logging.SetBackend(loggingFormatter)
-
-	if *command == "health" {
+	switch *command {
+	case "health":
 		c, err := zookeeperConnect([]string{"127.0.0.1:2181"}, zkSessionTimeout)
 		if err != nil {
 			log.Fatal("Failed to connect to ZooKeeper: ", err)
@@ -154,7 +154,7 @@ func main() {
 			log.Fatal("Failed to obtain list of znodes: ", err)
 		}
 		log.Info("ZooKeeper health check is successful")
-	} else if *command == "backup" {
+	case "backup":
 		data := Data{
 			Source:      *source,
 			Destination: *destination,
@@ -172,6 +172,8 @@ func main() {
 		if err := g.Wait(); err != nil {
 			log.Fatal(err)
 		}
+	default:
+		log.Fatalf("Unknown command: %s", *command)
 	}
 }
 
@@ -193,7 +195,11 @@ func GetState() func(w http.ResponseWriter, r *http.Request) {
 					log.Error("Failed to marshal response to json: ", marshalerr)
 					return
 				}
-				w.Write(resbody)
+				_, err := w.Write(resbody)
+				if err != nil {
+					log.Error("Failed to write body to http response: ", err)
+					return
+				}
 				return
 			}
 		}()
@@ -201,7 +207,11 @@ func GetState() func(w http.ResponseWriter, r *http.Request) {
 		response := State{Status: "Running"}
 		w.WriteHeader(200)
 		responseBody, _ := json.Marshal(response)
-		w.Write(responseBody)
+		_, err := w.Write(responseBody)
+		if err != nil {
+			log.Error("Failed to write body to http response: ", err)
+			return
+		}
 	}
 }
 
@@ -216,7 +226,11 @@ func (data Data) Store() func(w http.ResponseWriter, r *http.Request) {
 					log.Error("Failed to marshal response to json: ", marshalerr)
 					return
 				}
-				w.Write(resbody)
+				_, err := w.Write(resbody)
+				if err != nil {
+					log.Error("Failed to write body to http response: ", err)
+					return
+				}
 				return
 			}
 		}()
@@ -226,7 +240,11 @@ func (data Data) Store() func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		responseBody, _ := json.Marshal(response)
 		log.Debugf("Response body: %s\n", responseBody)
-		w.Write(responseBody)
+		_, err := w.Write(responseBody)
+		if err != nil {
+			log.Error("Failed to write body to http response: ", err)
+			return
+		}
 	}
 }
 
