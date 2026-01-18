@@ -97,26 +97,6 @@ RUN rm -f ${ZOOKEEPER_HOME}/lib/logback-core-1.3.15.jar \
     && wget -nv -O ${ZOOKEEPER_HOME}/lib/logback-core-1.5.19.jar \
        "https://repo1.maven.org/maven2/ch/qos/logback/logback-core/1.5.19/logback-core-1.5.19.jar"
 
-ARG NETTY_VER=4.1.125.Final
-RUN set -eux; \
-  KAFKA_LIB=${ZOOKEEPER_HOME}/lib; \
-  cd "$ZOOKEEPER_LIB"; \
-  for a in \
-    netty-buffer \
-    netty-codec \
-    netty-common \
-    netty-handler \
-    netty-resolver \
-    netty-transport \
-    netty-transport-classes-epoll \
-    netty-transport-native-epoll \
-    netty-transport-native-unix-common \
-  ; do \
-    curl -fL -o "${a}-${NETTY_VER}.jar" \
-      "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
-  done; \
-  rm -f netty-*-4.1.119.Final.jar;
-
 ARG PROMETHEUS_JMX_EXPORTER_VERSION="1.1.0"
 # Download jmx_prometheus_javaagent
 RUN set -x \
@@ -137,6 +117,26 @@ RUN set -x \
     && tar -xzf /tmp/async-profiler-3.0-linux-x64.tar.gz -C /opt/ \
     && ln -s /opt/async-profiler-3.0-linux-x64/profiler.sh /usr/local/bin/profiler \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-x64.tar.gz
+
+ARG NETTY_VER=4.1.125.Final
+RUN set -eux; \
+  ZOOKEEPER_LIB=${ZOOKEEPER_HOME}/lib; \
+  cd "$ZOOKEEPER_LIB"; \
+  for a in \
+    netty-buffer \
+    netty-codec \
+    netty-common \
+    netty-handler \
+    netty-resolver \
+    netty-transport \
+    netty-transport-classes-epoll \
+    netty-transport-native-epoll \
+    netty-transport-native-unix-common \
+  ; do \
+    curl -fL -o "${a}-${NETTY_VER}.jar" \
+      "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
+  done; \
+  rm -f netty-*-4.1.119.Final.jar;
 
 # Copy config and script files
 COPY docker/config/logback.xml ${ZOOKEEPER_HOME}/conf/logback.xml
