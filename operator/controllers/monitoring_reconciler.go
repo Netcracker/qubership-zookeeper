@@ -49,7 +49,7 @@ func (r ReconcileMonitoring) Status() error {
 		return err
 	}
 	r.logger.Info("Start checking for ZooKeeper monitoring pod")
-	err := wait.PollImmediate(10*time.Second, time.Duration(r.cr.Spec.Global.PodsReadyTimeout)*time.Second, func() (done bool, err error) {
+	err := wait.PollUntilContextTimeout(context.Background(), 10*time.Second, time.Duration(r.cr.Spec.Global.PodsReadyTimeout)*time.Second, true, func(ctx context.Context) (done bool, err error) {
 		if r.reconciler.isDeploymentReady(r.monitoringProvider.GetServiceName(), r.cr.Namespace, r.logger) {
 			return true, nil
 		}

@@ -250,23 +250,59 @@ func (r *ZooKeeperServiceReconciler) processSnapshotsPersistentVolumeClaim(snaps
 	}
 	snapshotsLabels := provider.GetZooKeeperLabels(cr.Name, cr.Spec.Global.DefaultLabels)
 
-	if snapshotStorage.PersistentVolumeType == "standalone" {
-		return provider.ProcessNonSharedPersistentVolumeClaim(persistentVolumeClaimName, snapshotStorage.PersistentVolumeName,
-			snapshotStorage.PersistentVolumeLabel, snapshotStorage.StorageClass, snapshotStorage.VolumeSize,
-			cr.Namespace, snapshotsLabels, logger), nil
-	} else if snapshotStorage.PersistentVolumeType == "predefined_claim" {
-		return r.findPersistentVolumeClaim(persistentVolumeClaimName, cr.Namespace, logger)
-	} else if snapshotStorage.PersistentVolumeType == "predefined" {
+	switch snapshotStorage.PersistentVolumeType {
+
+	case "standalone":
+		return provider.ProcessNonSharedPersistentVolumeClaim(
+			persistentVolumeClaimName,
+			snapshotStorage.PersistentVolumeName,
+			snapshotStorage.PersistentVolumeLabel,
+			snapshotStorage.StorageClass,
+			snapshotStorage.VolumeSize,
+			cr.Namespace,
+			snapshotsLabels,
+			logger,
+		), nil
+
+	case "predefined_claim":
+		return r.findPersistentVolumeClaim(
+			persistentVolumeClaimName,
+			cr.Namespace,
+			logger,
+		)
+
+	case "predefined":
 		if snapshotStorage.PersistentVolumeName == "" {
-			return nil, fmt.Errorf("parameter 'persistentVolumeName' must be specified for 'predefined' persistent volume type")
+			return nil, fmt.Errorf(
+				"parameter 'persistentVolumeName' must be specified for 'predefined' persistent volume type",
+			)
 		}
-		return provider.NewPersistentVolumeClaim(persistentVolumeClaimName, cr.Namespace, snapshotsLabels, true,
-			snapshotStorage.PersistentVolumeName, nil, snapshotStorage.StorageClass, snapshotStorage.VolumeSize), nil
-	} else if snapshotStorage.PersistentVolumeType == "storage_class" {
-		return provider.NewPersistentVolumeClaim(persistentVolumeClaimName, cr.Namespace, snapshotsLabels, true,
-			"", nil, snapshotStorage.StorageClass, snapshotStorage.VolumeSize), nil
+		return provider.NewPersistentVolumeClaim(
+			persistentVolumeClaimName,
+			cr.Namespace,
+			snapshotsLabels,
+			true,
+			snapshotStorage.PersistentVolumeName,
+			nil,
+			snapshotStorage.StorageClass,
+			snapshotStorage.VolumeSize,
+		), nil
+
+	case "storage_class":
+		return provider.NewPersistentVolumeClaim(
+			persistentVolumeClaimName,
+			cr.Namespace,
+			snapshotsLabels,
+			true,
+			"",
+			nil,
+			snapshotStorage.StorageClass,
+			snapshotStorage.VolumeSize,
+		), nil
+
+	default:
+		return nil, nil
 	}
-	return nil, nil
 }
 
 func (r *ZooKeeperServiceReconciler) isDeploymentReady(deploymentName string, namespace string, logger logr.Logger) bool {
