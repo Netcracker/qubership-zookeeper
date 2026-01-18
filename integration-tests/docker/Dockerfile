@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-docker-integration-tests:main
+FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.1.19
 
 ENV ROBOT_OUTPUT=${ROBOT_HOME}/output \
     DISTR_DIR=/tmp/deps \
@@ -7,6 +7,9 @@ ENV ROBOT_OUTPUT=${ROBOT_HOME}/output \
 
 RUN mkdir -p ${ROBOT_HOME} \
     && mkdir -p ${ROBOT_OUTPUT}
+
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
 
 COPY docker/requirements.txt ${ROBOT_HOME}/requirements.txt
 COPY docker/zookeeper_pods_checker.py ${ROBOT_HOME}/zookeeper_pods_checker.py
