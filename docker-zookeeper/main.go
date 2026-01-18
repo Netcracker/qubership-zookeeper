@@ -136,8 +136,8 @@ func main() {
 	loggingLeveled.SetLevel(loggingLevel, "")
 	loggingFormatter := logging.NewBackendFormatter(loggingSetting, format)
 	logging.SetBackend(loggingFormatter)
-
-	if *command == "health" {
+	switch *command {
+	case "health":
 		c, err := zookeeperConnect([]string{"127.0.0.1:2181"}, zkSessionTimeout)
 		if err != nil {
 			log.Fatal("Failed to connect to ZooKeeper: ", err)
@@ -154,7 +154,7 @@ func main() {
 			log.Fatal("Failed to obtain list of znodes: ", err)
 		}
 		log.Info("ZooKeeper health check is successful")
-	} else if *command == "backup" {
+	case "backup":
 		data := Data{
 			Source:      *source,
 			Destination: *destination,
@@ -172,6 +172,8 @@ func main() {
 		if err := g.Wait(); err != nil {
 			log.Fatal(err)
 		}
+	default:
+		log.Fatalf("Unknown command: %s", *command)
 	}
 }
 
