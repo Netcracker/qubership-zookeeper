@@ -22,6 +22,12 @@ RUN set -x \
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --available
 
+# Upgrade tools from edge to avoid vulnerabilities
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
+    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && apk add --update --no-cache --upgrade \
+        pcre2 curl gnutls libcurl jq
+
 RUN chmod +x ${ZOOKEEPER_HOME}/scripts/*.py
 RUN chmod +x ${ZOOKEEPER_HOME}/sh_scripts/list_instances_in_vault_command.sh
 
