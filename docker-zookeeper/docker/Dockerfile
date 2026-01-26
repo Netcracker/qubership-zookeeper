@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.25-alpine3.22 as builder
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine3.23 as builder
 ARG BUILDPLATFORM
 ARG TARGETOS
 ARG TARGETARCH
@@ -19,7 +19,7 @@ COPY main.go main.go
 # Build
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GO111MODULE=on go build -a -o zookeeper-assistant main.go
 
-FROM eclipse-temurin:21-jdk-alpine-3.22
+FROM eclipse-temurin:21-jdk-alpine-3.23
 
 ENV ZOOKEEPER_HOME=/opt/zookeeper \
     ZOOKEEPER_OPT=/var/opt/zookeeper \
@@ -114,6 +114,26 @@ RUN set -x \
     && ln -s /opt/async-profiler-3.0-linux-x64/profiler.sh /usr/local/bin/profiler \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-x64.tar.gz
 
+ARG NETTY_VER=4.1.125.Final
+RUN set -eux; \
+  ZOOKEEPER_LIB=${ZOOKEEPER_HOME}/lib; \
+  cd "$ZOOKEEPER_LIB"; \
+  for a in \
+    netty-buffer \
+    netty-codec \
+    netty-common \
+    netty-handler \
+    netty-resolver \
+    netty-transport \
+    netty-transport-classes-epoll \
+    netty-transport-native-epoll \
+    netty-transport-native-unix-common \
+  ; do \
+    curl -fL -o "${a}-${NETTY_VER}.jar" \
+      "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
+  done; \
+  rm -f netty-*-4.1.119.Final.jar;
+
 # Copy config and script files
 COPY docker/config/logback.xml ${ZOOKEEPER_HOME}/conf/logback.xml
 COPY docker/config/zoo.cfg ${ZOOKEEPER_HOME}/conf/zoo.cfg
@@ -139,7 +159,7 @@ RUN set -x && apk upgrade --available
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --update --no-cache --upgrade \
-        pcre2
+        pcre2 curl gnutls libcurl jq
 
 USER 1000:0
 WORKDIR ${ZOOKEEPER_HOME}

@@ -7,7 +7,7 @@ require (
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
-	golang.org/x/sync v0.15.0
+	golang.org/x/sync v0.19.0
 )
 
 require github.com/felixge/httpsnoop v1.0.4 // indirect

@@ -15,6 +15,7 @@
 package controllers
 
 import (
+	"context"
 	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -50,7 +51,7 @@ func (r ReconcileIntegrationTests) Status() error {
 		return err
 	}
 	r.logger.Info("Start checking for ZooKeeper Integration Tests")
-	err := wait.PollImmediate(10*time.Second, time.Duration(r.cr.Spec.IntegrationTests.Timeout)*time.Second, func() (done bool, err error) {
+	err := wait.PollUntilContextTimeout(context.Background(), 10*time.Second, time.Duration(r.cr.Spec.IntegrationTests.Timeout)*time.Second, true, func(ctx context.Context) (done bool, err error) {
 		if r.reconciler.isDeploymentReady(r.cr.Spec.IntegrationTests.ServiceName, r.cr.Namespace, r.logger) {
 			return true, nil
 		}

@@ -50,7 +50,7 @@ func (r ReconcileZooKeeper) Status() error {
 		return err
 	}
 	r.logger.Info("Start checking for ZooKeeper pods")
-	err := wait.PollImmediate(10*time.Second, time.Duration(r.cr.Spec.Global.PodsReadyTimeout)*time.Second, func() (done bool, err error) {
+	err := wait.PollUntilContextTimeout(context.Background(), 10*time.Second, time.Duration(r.cr.Spec.Global.PodsReadyTimeout)*time.Second, true, func(ctx context.Context) (done bool, err error) {
 		for i := 1; i <= r.cr.Spec.ZooKeeper.Replicas; i++ {
 			deploymentName := fmt.Sprintf("%s-%d", r.cr.Name, i)
 			if !r.reconciler.isDeploymentReady(deploymentName, r.cr.Namespace, r.logger) {
@@ -197,7 +197,7 @@ func (r ReconcileZooKeeper) Reconcile() error {
 			//Checking for pod to be in running state
 			deploymentName := serverDeployment.Name
 			r.logger.Info(fmt.Sprintf("Waiting for pod of %s deployment to be in 'Running' state.", deploymentName))
-			err = wait.Poll(waitingInterval, time.Duration(300)*time.Second, func() (done bool, err error) {
+			err = wait.PollUntilContextTimeout(context.Background(), waitingInterval, time.Duration(300)*time.Second, true, func(ctx context.Context) (done bool, err error) {
 				podRunning, err := r.isPodRunning(r.cr, deploymentName)
 				if err != nil {
 					r.logger.Error(err, "Error checking if pod is running.")
@@ -217,7 +217,7 @@ func (r ReconcileZooKeeper) Reconcile() error {
 				deploymentName := fmt.Sprintf("%s-%d", r.cr.Name, serverId)
 				r.logger.Info(fmt.Sprintf("Waiting for %s deployment.", deploymentName))
 				time.Sleep(waitingInterval)
-				err = wait.PollImmediate(waitingInterval, time.Duration(300)*time.Second, func() (done bool, err error) {
+				err = wait.PollUntilContextTimeout(context.Background(), waitingInterval, time.Duration(300)*time.Second, true, func(ctx context.Context) (done bool, err error) {
 					return r.reconciler.isDeploymentReady(deploymentName, r.cr.Namespace, r.logger), nil
 				})
 				if err != nil {
