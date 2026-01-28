@@ -66,7 +66,7 @@ func (r ReconcileBackupDaemon) Status() error {
 		return false, nil
 	})
 	if err != nil {
-		return r.reconciler.updateConditions(r.cr, NewCondition(statusFalse,
+		return r.reconciler.updateConditions(r.cr, NewCondition(statusTrue,
 			typeFailed,
 			backupDaemonConditionReason,
 			"ZooKeeper Backup Daemon pod is not ready"))

@@ -127,7 +127,7 @@ func (r *ZooKeeperServiceReconciler) Reconcile(ctx context.Context, request ctrl
 		}
 
 		if hasFailedConditions(instance) {
-			if err := r.updateConditions(instance, NewCondition(statusFalse,
+			if err := r.updateConditions(instance, NewCondition(statusTrue,
 				typeFailed,
 				zooKeeperServiceConditionReason,
 				"The deployment readiness status check failed")); err != nil {
