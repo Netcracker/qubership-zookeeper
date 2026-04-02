@@ -25,6 +25,24 @@
   helm install zookeeper-service ./ -f sample.yaml -n <TARGET_NAMESPACE>
   ```
 
+### Integration tests and ATP Storage (S3)
+
+Integration tests can optionally upload results to an S3-compatible storage (ATP Storage).
+
+The defaults are defined in `operator/charts/helm/zookeeper-service/values.yaml` under `integrationTests`:
+
+- `integrationTests.atpStorage.bucket`: `""` - when empty, S3 upload is disabled and results stay local
+- `integrationTests.atpStorage.serverUrl`: `"https://s3.amazonaws.com"`
+- `integrationTests.atpStorage.serverUiUrl`: `"https://console.test.com"`
+- `integrationTests.atpStorage.region`: `"us-east-1"`
+- `integrationTests.environmentName`: `"zookeeper"`
+- `integrationTests.atpReportViewUiUrl`: `"https://test.com"`
+
+To enable upload, set at least `integrationTests.atpStorage.bucket` and credentials:
+
+- `integrationTests.atpStorage.username`
+- `integrationTests.atpStorage.password`
+
 ### Smoke tests
 
 There is no smoke tests.
