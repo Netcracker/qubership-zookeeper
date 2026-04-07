@@ -19,6 +19,9 @@ COPY robot ${ROBOT_HOME}
 RUN set -x && apk upgrade --available
 
 RUN set -x \
+    && python3 -m ensurepip \
+    && rm -r /usr/lib/python*/ensurepip \
+    && pip3 install --upgrade pip setuptools==80.10.1 jaraco.context==6.1.0 \
     && pip3 install -r ${ROBOT_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*
 

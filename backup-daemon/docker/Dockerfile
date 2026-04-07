@@ -15,6 +15,9 @@ COPY sh_scripts/ ${ZOOKEEPER_HOME}/sh_scripts/
 
 RUN set -x \
     && apk add --upgrade --no-cache curl apk-tools build-base \
+    && python3 -m ensurepip \
+    && rm -r /usr/lib/python*/ensurepip \
+    && pip3 install --upgrade pip setuptools==80.10.1 jaraco.context==6.1.0 \
     && pip3 install -r ${ZOOKEEPER_HOME}/requirements.txt \
     && apk del build-base \
     && rm -rf /var/cache/apk/*

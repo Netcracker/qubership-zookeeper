@@ -1,4 +1,4 @@
-FROM telegraf:1.37-alpine
+FROM telegraf:1.38.2-alpine
 
 ENV ZOOKEEPER_MONITORING_HOME=/opt/zookeeper-monitoring
 
@@ -13,13 +13,14 @@ COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 # Install misc. tools
 RUN set -x \
-    && apk add --upgrade --no-cache bash curl tini python3 apk-tools openssl
+    && apk add --upgrade --no-cache bash curl tini python3 apk-tools openssl \
+       net-snmp-tools net-snmp-agent-libs net-snmp-libs
 
 RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED
 
 RUN  python3 -m ensurepip \
     && rm -r /usr/lib/python*/ensurepip \
-    && pip3 install --upgrade pip setuptools==80.9.0 \
+    && pip3 install --upgrade pip setuptools==80.10.1 \
     && pip3 install -r ${ZOOKEEPER_MONITORING_HOME}/requirements.txt \
     && chmod -R 777 ${ZOOKEEPER_MONITORING_HOME}/exec-scripts \
     && chmod +x /docker-entrypoint.sh \
