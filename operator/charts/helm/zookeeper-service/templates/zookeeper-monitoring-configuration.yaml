@@ -173,7 +173,7 @@ data:
 
     ## If no servers are specified, then localhost is used as the host.
     ## If no port is specified, 2181 is used
-    servers = [$ZOOKEEPER_HOST]
+    servers = ["$ZOOKEEPER_HOST"]
     timeout = "10s"
     fieldpass = ["znode_count", "ephemerals_count", "approximate_data_size", "avg_latency", "min_latency", "max_latency", "num_alive_connections", "packets_received", "packets_sent"]
 
