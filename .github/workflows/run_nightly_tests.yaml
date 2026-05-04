@@ -1,6 +1,7 @@
 name: Run Nightly Zookeeper Pipeline
 
 permissions:
+  actions: write
   contents: read
 
 on:
