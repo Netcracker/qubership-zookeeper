@@ -32,6 +32,7 @@ jobs:
   Wait-for-images:
     permissions:
       actions: read
+      contents: read
     runs-on: ubuntu-latest
     outputs:
       conclusion: ${{ steps.wait.outputs.conclusion }}
@@ -46,6 +47,7 @@ jobs:
   Zookeeper-Pipeline:
     permissions:
       packages: read
+      contents: read
     needs: Wait-for-images
     uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@feature/apps-hardening-scan #v1.6.1
     with:
