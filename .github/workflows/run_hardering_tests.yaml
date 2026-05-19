@@ -49,8 +49,9 @@ jobs:
       packages: read
       contents: read
     needs: Wait-for-images
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@feature/apps-hardening-scan #v1.6.1
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@feature/apps-hardening-scan
     with:
+      repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
       pipeline_branch: 'feature/apps-hardening-scan' #this value must match the value after '@' in 'uses'
       scope: 'hardening'
