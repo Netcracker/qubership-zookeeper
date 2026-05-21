@@ -6,12 +6,11 @@ permissions:
   actions: read
 
 on:
-  push
-#  pull_request:
-#    types: [opened, synchronize, reopened]
-#    branches: [main]
-#  push:
-#    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  push:
+    branches: [main]
 
 jobs:
   Wait-for-images:
@@ -48,6 +47,10 @@ jobs:
   Zookeeper-Pipeline:
     needs: Wait-for-images
     uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@905b88900dc8c14291eaeff4eddcf4d4f734aee1 #v1.9.0
+    permissions:
+      contents: read
+      actions: write
+      packages: read
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
