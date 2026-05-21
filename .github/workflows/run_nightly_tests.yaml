@@ -5,16 +5,15 @@ permissions:
   contents: read
 
 on:
-  push
-#  schedule:
-#    - cron: '0 1 * * *'
+  schedule:
+    - cron: '0 2 * * *'
 
 jobs:
   Nightly-Zookeeper-Pipeline:
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@nightly_zookeeper
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@905b88900dc8c14291eaeff4eddcf4d4f734aee1 #v1.9.0
     with:
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: 'nightly_zookeeper' #this value must match the value after '@' in 'uses'
+      pipeline_branch: '905b88900dc8c14291eaeff4eddcf4d4f734aee1' #this value must match the value after '@' in 'uses'
       runner_type: 'ubuntu-latest'
       scope: 'nightly'
     secrets:
