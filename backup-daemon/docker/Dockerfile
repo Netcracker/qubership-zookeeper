@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-backup-daemon:1.30.5_alpine
+FROM ghcr.io/netcracker/qubership-backup-daemon:1.30.6_alpine
 
 ENV ZOOKEEPER_HOME=/opt/zookeeper \
     ZOOKEEPER_BACKUP=/opt/zookeeper/backup-storage
