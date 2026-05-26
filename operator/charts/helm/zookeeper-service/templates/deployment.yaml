@@ -53,6 +53,8 @@ spec:
               memory: {{ default "128Mi" .Values.operator.resources.requests.memory }}
           securityContext:
             {{- include "zookeeper-service.globalContainerSecurityContext" . | nindent 12 }}
+          volumeMounts:
+            {{- include "zookeeper-service.tmpVolumeMount" . | nindent 12 }}
           livenessProbe:
             httpGet:
               path: /healthz
@@ -84,6 +86,8 @@ spec:
       {{- if .Values.operator.priorityClassName }}
       priorityClassName: {{ .Values.operator.priorityClassName }}
       {{- end }}
+      volumes:
+        {{- include "zookeeper-service.tmpVolume" . | nindent 8 }}
       securityContext:
         {{- include "zookeeper-service.globalPodSecurityContext" . | nindent 8 }}
         {{- with .Values.operator.securityContext }}

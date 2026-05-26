@@ -218,12 +218,14 @@ func (zrp ZooKeeperResourceProvider) NewServerDeploymentForCR(serverId int) *app
 		{Name: "data", VolumeSource: dataVolumeSource},
 		{Name: "log", VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}}},
 		{Name: "backup-storage", VolumeSource: backupVolumeSource},
+		getTmpVolume(),
 	}
 
 	volumeMounts := []corev1.VolumeMount{
 		{Name: "data", MountPath: "/var/opt/zookeeper/data"},
 		{Name: "log", MountPath: "/opt/zookeeper/log"},
 		{Name: "backup-storage", MountPath: "/opt/zookeeper/backup-storage"},
+		getTmpVolumeMount(),
 	}
 
 	diagnosticMode := zrp.spec.Diagnostics.Mode

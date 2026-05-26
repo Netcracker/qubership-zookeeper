@@ -7,7 +7,7 @@ if [[ "$DEBUG" == true ]]; then
   printenv
 fi
 
-: ${ZOOKEEPER_PROMETHEUS_PORT:=8080}
+: "${ZOOKEEPER_PROMETHEUS_PORT:=8080}"
 
 # Set environment variables used in telegraf.conf
 export ZOOKEEPER_CLIENT_USERNAME=${ZOOKEEPER_CLIENT_USERNAME}
@@ -24,7 +24,7 @@ function validate_addresses() {
     echo >&2 "Error: value of variable [$variable_name] is empty!"
     exit 1
   fi
-  if [[ !(${variable_value} =~ ^((\'.+\')(,*))+$) ]] ; then
+  if [[ ! (${variable_value} =~ ^((\'.+\')(,*))+$) ]] ; then
     echo >&2 "Error: Value of variable [$variable_name] = [$variable_value] does not match address pattern!"
     exit 1
   fi
@@ -45,5 +45,7 @@ else
   PROMETHEUS_URLS=$(convert_to_prometheus_urls "$ZOOKEEPER_HOST")
 fi
 export PROMETHEUS_URLS
+
+mkdir -p "${MONITORING_LOGS}"
 
 /sbin/tini -- /entrypoint.sh telegraf

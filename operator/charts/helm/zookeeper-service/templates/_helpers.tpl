@@ -35,6 +35,10 @@ Create chart name and version as used by the chart label.
 runAsNonRoot: true
 seccompProfile:
   type: "RuntimeDefault"
+{{- if eq (default "" .Values.PAAS_PLATFORM) "KUBERNETES" }}
+runAsUser: 1000
+runAsGroup: 1000
+{{- end }}
 {{- with .Values.global.securityContext }}
 {{ toYaml . }}
 {{- end -}}
@@ -42,8 +46,20 @@ seccompProfile:
 
 {{- define "zookeeper-service.globalContainerSecurityContext" -}}
 allowPrivilegeEscalation: false
+readOnlyRootFilesystem: true
 capabilities:
   drop: ["ALL"]
+{{- end -}}
+
+{{- define "zookeeper-service.tmpVolume" -}}
+- name: tmp
+  emptyDir:
+    sizeLimit: 10Mi
+{{- end -}}
+
+{{- define "zookeeper-service.tmpVolumeMount" -}}
+- name: tmp
+  mountPath: /tmp
 {{- end -}}
 
 {{/*

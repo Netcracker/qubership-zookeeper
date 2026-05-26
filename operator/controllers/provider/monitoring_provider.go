@@ -212,6 +212,7 @@ func (mrp MonitoringResourceProvider) getMonitoringVolumes() []corev1.Volume {
 				},
 			},
 		},
+		getTmpVolume(),
 	}
 }
 
@@ -222,6 +223,7 @@ func (mrp MonitoringResourceProvider) getMonitoringVolumeMounts() []corev1.Volum
 			Name:      "config",
 			MountPath: "/etc/telegraf",
 		},
+		getTmpVolumeMount(),
 	}
 }
 

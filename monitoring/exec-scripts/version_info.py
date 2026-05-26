@@ -20,6 +20,8 @@ from logging.handlers import RotatingFileHandler
 
 logger = logging.getLogger(__name__)
 
+MONITORING_LOGS = os.getenv('MONITORING_LOGS')
+
 m_tls_formatted_command = "echo mntr | openssl s_client -crlf -quiet -connect {} -cert /tls/tls.crt -key /tls/tls.key -CAfile /tls/ca.crt"
 non_encrypted_formatted_command = "echo mntr | nc {} 2181"
 
@@ -31,13 +33,13 @@ def __configure_logging(log):
     log.setLevel(logging.DEBUG)
     formatter = logging.Formatter(fmt='[%(asctime)s,%(msecs)03d][%(levelname)s] %(message)s',
                                   datefmt='%Y-%m-%dT%H:%M:%S')
-    log_handler = RotatingFileHandler(filename='/opt/zookeeper-monitoring/exec-scripts/version_info.log',
+    log_handler = RotatingFileHandler(filename=f'{MONITORING_LOGS}/version_info.log',
                                       maxBytes=50 * 1024,
                                       backupCount=5)
     log_handler.setFormatter(formatter)
     log_handler.setLevel(logging.DEBUG if os.getenv('ZOOKEEPER_MONITORING_SCRIPT_DEBUG') else logging.INFO)
     log.addHandler(log_handler)
-    err_handler = RotatingFileHandler(filename='/opt/zookeeper-monitoring/exec-scripts/version_info.err',
+    err_handler = RotatingFileHandler(filename=f'{MONITORING_LOGS}/version_info.err',
                                       maxBytes=50 * 1024,
                                       backupCount=5)
     err_handler.setFormatter(formatter)
