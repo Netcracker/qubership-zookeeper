@@ -14,14 +14,15 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "zookeeper.defaultLabels" . | nindent 8 }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "zookeeper.name" . }}-ownerref-migrator
       restartPolicy: OnFailure
+      {{- if .Values.groupMigration.runAsNonRoot }}
       securityContext:
         {{- include "zookeeper-service.globalPodSecurityContext" . | nindent 8 }}
-      volumes:
-        {{- include "zookeeper-service.tmpVolume" . | nindent 8 }}
+      {{- end }}
       containers:
         - name: migrator
           image: {{ template "kubectl.image" . }}
@@ -96,12 +97,9 @@ spec:
             requests:
               cpu: {{ .Values.operator.resources.requests.cpu }}
               memory: {{ .Values.operator.resources.requests.memory }}
+          {{- if .Values.groupMigration.runAsNonRoot }}
           securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop: ["ALL"]
-          volumeMounts:
-            {{- include "zookeeper-service.tmpVolumeMount" . | nindent 12 }}
+            {{- include "zookeeper-service.globalContainerSecurityContext" . | nindent 12 }}
+          {{- end }}
 {{- end }}
 {{- end }}
