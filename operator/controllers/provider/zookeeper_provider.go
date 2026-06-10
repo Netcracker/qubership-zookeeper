@@ -218,7 +218,7 @@ func (zrp ZooKeeperResourceProvider) NewServerDeploymentForCR(serverId int) *app
 		{Name: "data", VolumeSource: dataVolumeSource},
 		{Name: "log", VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}}},
 		{Name: "backup-storage", VolumeSource: backupVolumeSource},
-		getTmpVolume(),
+		getTmpVolume("32Mi"),
 	}
 
 	volumeMounts := []corev1.VolumeMount{

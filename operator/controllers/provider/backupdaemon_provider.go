@@ -273,7 +273,7 @@ func (bdrp BackupDaemonResourceProvider) getBackupDaemonVolumes() []corev1.Volum
 			Name:         "backup-storage",
 			VolumeSource: volumeSource,
 		},
-		getTmpVolume(),
+		getTmpVolume("50Mi"),
 		getVarLogVolume(),
 	}
 }

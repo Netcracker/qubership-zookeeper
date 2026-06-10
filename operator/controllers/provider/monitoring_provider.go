@@ -212,7 +212,7 @@ func (mrp MonitoringResourceProvider) getMonitoringVolumes() []corev1.Volume {
 				},
 			},
 		},
-		getTmpVolume(),
+		getTmpVolume("8Mi"),
 	}
 }
 

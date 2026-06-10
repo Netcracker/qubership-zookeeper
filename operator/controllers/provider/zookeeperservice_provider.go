@@ -181,8 +181,8 @@ func getDefaultContainerSecurityContext() *corev1.SecurityContext {
 	}
 }
 
-func getTmpVolume() corev1.Volume {
-	sizeLimit := resource.MustParse("10Mi")
+func getTmpVolume(sizeLimitQuantity string) corev1.Volume {
+	sizeLimit := resource.MustParse(sizeLimitQuantity)
 	return corev1.Volume{
 		Name: "tmp",
 		VolumeSource: corev1.VolumeSource{

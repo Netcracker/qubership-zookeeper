@@ -54,7 +54,7 @@ capabilities:
 {{- define "zookeeper-service.tmpVolume" -}}
 - name: tmp
   emptyDir:
-    sizeLimit: 10Mi
+    sizeLimit: 16Mi
 {{- end -}}
 
 {{- define "zookeeper-service.tmpVolumeMount" -}}
