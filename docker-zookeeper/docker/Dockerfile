@@ -134,10 +134,7 @@ RUN set -eux; \
   done; \
   rm -f netty-*-4.1.119.Final.jar;
 
-# Copy config and script files
-COPY docker/config/logback.xml ${ZOOKEEPER_HOME}/conf/logback.xml
-COPY docker/config/zoo.cfg ${ZOOKEEPER_HOME}/conf/zoo.cfg
-COPY docker/config/jmx-exporter-config.yaml ${ZOOKEEPER_HOME}/conf/jmx-exporter-config.yaml
+COPY docker/config/ ${ZOOKEEPER_HOME}/conf/
 COPY docker/docker-entrypoint.sh /
 COPY docker/zkHealth.sh ${ZOOKEEPER_HOME}/bin
 COPY docker/dr_reconfig.sh ${ZOOKEEPER_HOME}/bin

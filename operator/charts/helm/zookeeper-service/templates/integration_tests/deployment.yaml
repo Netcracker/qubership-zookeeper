@@ -19,6 +19,7 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "zookeeper.defaultLabels" . | nindent 8 }}
       {{- with .Values.global.customLabels }}
         {{- toYaml . | nindent 8 -}}
       {{- end }}
@@ -159,6 +160,8 @@ spec:
               value: {{ .Values.integrationTests.environmentName | quote }}
             - name: RANDOM_RUN_TRIGGER
               value: {{ randAlphaNum 10 | quote }}
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
           resources:
             requests:
               memory: {{ default "256Mi" .Values.integrationTests.resources.requests.memory }}
@@ -167,6 +170,7 @@ spec:
               memory: {{ default "256Mi" .Values.integrationTests.resources.limits.memory }}
               cpu: {{ default "400m" .Values.integrationTests.resources.limits.cpu }}
           volumeMounts:
+            {{- include "zookeeper-service.tmpVolumeMount" . | nindent 12 }}
             - name: output
               mountPath: /opt/robot/output
           {{- if and (eq (include "zookeeper-service.enableSsl" .) "true") (include "zookeeper-service.sslSecretName" .) }}
@@ -201,6 +205,7 @@ spec:
             successThreshold: 1
             failureThreshold: 5
       volumes:
+        {{- include "zookeeper-service.tmpVolume" . | nindent 8 }}
         - name: output
           emptyDir: {}
       {{- if and (eq (include "zookeeper-service.enableSsl" .) "true") (include "zookeeper-service.sslSecretName" .) }}
