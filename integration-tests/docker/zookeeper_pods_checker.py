@@ -12,7 +12,7 @@ timeout = 500
 
 
 if __name__ == '__main__':
-    time.sleep(10)
+    time.sleep(20)
     try:
         k8s_lib = PlatformLibrary(managed_by_operator)
     except Exception as e:
