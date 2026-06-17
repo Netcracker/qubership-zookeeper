@@ -8,7 +8,7 @@ namespace = environ.get("ZOOKEEPER_OS_PROJECT")
 service = environ.get("ZOOKEEPER_HOST")
 backup_daemon = environ.get("ZOOKEEPER_BACKUP_DAEMON_HOST")
 managed_by_operator = environ.get("ZOOKEEPER_IS_MANAGED_BY_OPERATOR")
-timeout = 300
+timeout = 500
 
 
 if __name__ == '__main__':
