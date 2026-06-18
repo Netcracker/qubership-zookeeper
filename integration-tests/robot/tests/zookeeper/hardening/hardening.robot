@@ -17,8 +17,7 @@ Library    PlatformLibrary    managed_by_operator=%{ZOOKEEPER_IS_MANAGED_BY_OPER
 
 *** Test Cases ***
 Test Container Hardening
-    [Tags]    zookeeper    zookeeper_security_hardening
-    [Setup]    None
+    [Tags]    zookeeper    hardening
     ${part_of}=    Create List    %{PART_OF}
     ${exclusions}=    Create Dictionary    _all=CH12
     Check Container Hardening    ${part_of}    %{ZOOKEEPER_OS_PROJECT}    ${exclusions}
