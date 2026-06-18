@@ -193,6 +193,9 @@ func (r ReconcileZooKeeper) Reconcile() error {
 			if err := r.reconciler.createOrUpdateDeployment(serverDeployment, r.logger); err != nil {
 				return err
 			}
+			if err := r.reconciler.patchDeploymentSecretRestart(serverDeployment.Name, r.cr.Namespace, []*corev1.Secret{zooKeeperSecret}, r.logger); err != nil {
+				return err
+			}
 
 			//Checking for pod to be in running state
 			deploymentName := serverDeployment.Name

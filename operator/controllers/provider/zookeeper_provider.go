@@ -228,6 +228,27 @@ func (zrp ZooKeeperResourceProvider) NewServerDeploymentForCR(serverId int) *app
 		getTmpVolumeMount(),
 	}
 
+	if !IsVaultSecretManagementEnabled(zrp.cr) && zrp.spec.SecretName != "" {
+		podSecretsMount := GetPodSecretsMountPath("zookeeper")
+		envVars = append(envVars, corev1.EnvVar{
+			Name:  "ZOOKEEPER_SECRETS_DIR",
+			Value: podSecretsMount,
+		})
+		volumes = append(volumes, NewPodSecretsProjectedVolume("zookeeper-pod-secrets", []ProjectedSecretSource{
+			{
+				SecretName: zrp.spec.SecretName,
+				Items: []corev1.KeyToPath{
+					SecretKeyToPath("admin-username", "admin-username"),
+					SecretKeyToPath("admin-password", "admin-password"),
+					SecretKeyToPath("client-username", "client-username"),
+					SecretKeyToPath("client-password", "client-password"),
+					SecretKeyToPath("additional-users", "additional-users"),
+				},
+			},
+		}))
+		volumeMounts = append(volumeMounts, NewPodSecretsVolumeMount("zookeeper-pod-secrets", podSecretsMount))
+	}
+
 	diagnosticMode := zrp.spec.Diagnostics.Mode
 	if diagnosticMode == devMode || diagnosticMode == prodMode {
 		envVars = append(envVars, []corev1.EnvVar{
@@ -376,28 +397,7 @@ func (zrp ZooKeeperResourceProvider) getSecretEnvs() []corev1.EnvVar {
 			},
 		}
 	} else {
-		return []corev1.EnvVar{
-			{
-				Name:      "ADMIN_USERNAME",
-				ValueFrom: getSecretEnvVarSource(zrp.spec.SecretName, "admin-username"),
-			},
-			{
-				Name:      "ADMIN_PASSWORD",
-				ValueFrom: getSecretEnvVarSource(zrp.spec.SecretName, "admin-password"),
-			},
-			{
-				Name:      "CLIENT_USERNAME",
-				ValueFrom: getSecretEnvVarSource(zrp.spec.SecretName, "client-username"),
-			},
-			{
-				Name:      "CLIENT_PASSWORD",
-				ValueFrom: getSecretEnvVarSource(zrp.spec.SecretName, "client-password"),
-			},
-			{
-				Name:      "ADDITIONAL_USERS",
-				ValueFrom: getSecretEnvVarSource(zrp.spec.SecretName, "additional-users"),
-			},
-		}
+		return nil
 	}
 }
 

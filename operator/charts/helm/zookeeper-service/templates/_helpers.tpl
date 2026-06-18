@@ -506,7 +506,14 @@ Usage example:
   {{- if .Values.integrationTests.install }}
     {{- printf "deployment %s-integration-tests-runner zookeeper-integration-tests-runner %s, " (include "zookeeper.name" .) (include "zookeeper-service.findImage" (list . "zookeeper-integration-tests")) -}}
   {{- end -}}
-{{- end }}
+{{- end -}}
+
+{{/*
+Mount path for env→file migrated pod secrets (readOnly projected volume).
+*/}}
+{{- define "zookeeper.podSecretsMountPath" -}}
+{{- printf "/etc/secrets/%s-pod-secrets" .service -}}
+{{- end -}}
 
 {{/*
 Common Zookeeper chart related resources labels

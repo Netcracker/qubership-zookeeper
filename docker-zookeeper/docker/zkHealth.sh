@@ -1,5 +1,18 @@
 #!/bin/bash
 
+SECRETS_DIR="${ZOOKEEPER_SECRETS_DIR:-/etc/secrets/zookeeper-pod-secrets}"
+
+resolve_secret_value() {
+  local secret_key="$1"
+  local env_var_name="$2"
+  local secret_path="${SECRETS_DIR}/${secret_key}"
+  if [[ -r "${secret_path}" ]]; then
+    tr -d '\r' < "${secret_path}"
+    return 0
+  fi
+  printf "%s" "${!env_var_name:-}"
+}
+
 need_to_run_backup_server() {
   local is_process_present
   is_process_present=$(pgrep -a -f "/zookeeper-assistant -c backup" | grep "${ZOOKEEPER_BACKUP_SOURCE_DIR}")
@@ -76,8 +89,11 @@ liveness() {
 }
 
 readiness() {
-  if [[ -n ${ADMIN_USERNAME} && -n ${ADMIN_PASSWORD} ]]; then
-    if /zookeeper-assistant -c health -u "${ADMIN_USERNAME}:${ADMIN_PASSWORD}"; then
+  local admin_username admin_password
+  admin_username="$(resolve_secret_value "admin-username" "ADMIN_USERNAME")"
+  admin_password="$(resolve_secret_value "admin-password" "ADMIN_PASSWORD")"
+  if [[ -n ${admin_username} && -n ${admin_password} ]]; then
+    if /zookeeper-assistant -c health -u "${admin_username}:${admin_password}"; then
       return 0
     fi
   else

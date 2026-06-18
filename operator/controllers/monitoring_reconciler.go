@@ -128,6 +128,17 @@ func (r ReconcileMonitoring) Reconcile() error {
 		return err
 	}
 
+	secretsToWatch := []*corev1.Secret{monitoringSecret}
+	if r.cr.Spec.BackupDaemon != nil && r.cr.Spec.BackupDaemon.SecretName != "" {
+		backupSecret, backupErr := r.reconciler.findSecret(r.cr.Spec.BackupDaemon.SecretName, r.cr.Namespace, r.logger)
+		if backupErr == nil {
+			secretsToWatch = append(secretsToWatch, backupSecret)
+		}
+	}
+	if err := r.reconciler.patchDeploymentSecretRestart(r.monitoringProvider.GetServiceName(), r.cr.Namespace, secretsToWatch, r.logger); err != nil {
+		return err
+	}
+
 	r.logger.Info("Updating ZooKeeper Monitoring status")
 	if err := r.updateMonitoringStatus(r.cr); err != nil {
 		return err

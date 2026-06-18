@@ -12,6 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
+DEFAULT_SECRETS_DIR = '/etc/secrets/zookeeper-integration-tests-pod-secrets'
+
+
+def _secrets_dir(environ) -> str:
+    return environ.get('INTEGRATION_TESTS_SECRETS_DIR', DEFAULT_SECRETS_DIR)
+
+
 def check_that_parameters_are_presented(environ, *variable_names) -> bool:
     for variable in variable_names:
         if not environ.get(variable):
@@ -19,10 +28,15 @@ def check_that_parameters_are_presented(environ, *variable_names) -> bool:
     return True
 
 
+def secret_is_present(environ, name) -> bool:
+    path = os.path.join(_secrets_dir(environ), name)
+    return os.path.isfile(path) and os.path.getsize(path) > 0
+
+
 def get_excluded_tags(environ) -> list:
-    if not check_that_parameters_are_presented(environ,
-                                               'ZOOKEEPER_ADMIN_USERNAME',
-                                               'ZOOKEEPER_ADMIN_PASSWORD',
-                                               'ZOOKEEPER_CLIENT_USERNAME',
-                                               'ZOOKEEPER_CLIENT_PASSWORD'):
+    if not (secret_is_present(environ, 'ZOOKEEPER_ADMIN_USERNAME')
+            and secret_is_present(environ, 'ZOOKEEPER_ADMIN_PASSWORD')
+            and secret_is_present(environ, 'ZOOKEEPER_CLIENT_USERNAME')
+            and secret_is_present(environ, 'ZOOKEEPER_CLIENT_PASSWORD')):
         return ['zookeeper_sasl']
+    return []

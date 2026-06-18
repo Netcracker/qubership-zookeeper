@@ -4,6 +4,7 @@ ${ZOOKEEPER_PORT}  %{ZOOKEEPER_PORT}
 
 
 *** Settings ***
+Variables  %{ROBOT_HOME}/SecretData.py
 Library  ./lib/ZookeeperLibrary.py  zookeeper_os_project=%{ZOOKEEPER_OS_PROJECT}
 ...                                 zookeeper_host=${ZOOKEEPER_HOST}
 ...                                 zookeeper_port=${ZOOKEEPER_PORT}

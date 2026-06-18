@@ -25,11 +25,21 @@ from process_zookeeper_logs import copy_zookeeper_logs, \
 from zookeeper_client import ZooKeeperClient
 
 ZOOKEEPER_RESTORE_TMP_DIR = '/opt/zookeeper/backup-storage/recover'
+DEFAULT_SECRETS_DIR = '/etc/secrets/backup-daemon-pod-secrets'
+SECRETS_DIR = os.getenv('BACKUP_DAEMON_SECRETS_DIR', DEFAULT_SECRETS_DIR)
 
 loggingLevel = logging.DEBUG if os.getenv('ZOOKEEPER_BACKUP_DAEMON_DEBUG') else logging.INFO
 logging.basicConfig(level=loggingLevel,
                     format='[%(asctime)s,%(msecs)03d][%(levelname)s][category=Restore] %(message)s',
                     datefmt='%Y-%m-%dT%H:%M:%S')
+
+
+def get_env_or_file(name: str):
+    default_file_path = os.path.join(SECRETS_DIR, name)
+    if os.path.isfile(default_file_path):
+        with open(default_file_path, 'r', encoding='utf-8') as secret_file:
+            return secret_file.read().strip()
+    return os.getenv(name)
 
 
 class Restore:
@@ -38,8 +48,8 @@ class Restore:
         self._project = os.getenv("NAMESPACE")
         self._zookeeper_host = os.getenv("ZOOKEEPER_HOST")
         self._zookeeper_port = os.getenv("ZOOKEEPER_PORT")
-        self._zookeeper_username = os.getenv("ZOOKEEPER_ADMIN_USERNAME")
-        self._zookeeper_password = os.getenv("ZOOKEEPER_ADMIN_PASSWORD")
+        self._zookeeper_username = get_env_or_file("ZOOKEEPER_ADMIN_USERNAME")
+        self._zookeeper_password = get_env_or_file("ZOOKEEPER_ADMIN_PASSWORD")
         if not self._zookeeper_host or not self._zookeeper_port:
             logging.error("ZooKeeper service name or port isn't specified.")
             sys.exit(1)

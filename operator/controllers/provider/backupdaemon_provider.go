@@ -156,6 +156,39 @@ func (bdrp BackupDaemonResourceProvider) NewBackupDaemonDeployment() *appsv1.Dep
 
 	envVars = append(envVars, bdrp.getZooKeeperCredentialsEnvs()...)
 
+	if !IsVaultSecretManagementEnabled(bdrp.cr) {
+		podSecretsMount := GetPodSecretsMountPath("backup-daemon")
+		envVars = append(envVars, corev1.EnvVar{
+			Name:  "BACKUP_DAEMON_SECRETS_DIR",
+			Value: podSecretsMount,
+		})
+		var projectedSources []ProjectedSecretSource
+		if bdrp.spec.SecretName != "" {
+			projectedSources = append(projectedSources, ProjectedSecretSource{
+				SecretName: bdrp.spec.SecretName,
+				Items: []corev1.KeyToPath{
+					SecretKeyToPath("username", "BACKUP_DAEMON_API_CREDENTIALS_USERNAME"),
+					SecretKeyToPath("password", "BACKUP_DAEMON_API_CREDENTIALS_PASSWORD"),
+					SecretKeyToPath("zookeeper-admin-username", "ZOOKEEPER_ADMIN_USERNAME"),
+					SecretKeyToPath("zookeeper-admin-password", "ZOOKEEPER_ADMIN_PASSWORD"),
+				},
+			})
+		}
+		if bdrp.spec.S3 != nil && bdrp.spec.S3.Enabled && bdrp.spec.S3.SecretName != "" {
+			projectedSources = append(projectedSources, ProjectedSecretSource{
+				SecretName: bdrp.spec.S3.SecretName,
+				Items: []corev1.KeyToPath{
+					SecretKeyToPath("s3-key-id", "S3_KEY_ID"),
+					SecretKeyToPath("s3-key-secret", "S3_KEY_SECRET"),
+				},
+			})
+		}
+		if len(projectedSources) > 0 {
+			volumes = append(volumes, NewPodSecretsProjectedVolume("backup-daemon-pod-secrets", projectedSources))
+			volumeMounts = append(volumeMounts, NewPodSecretsVolumeMount("backup-daemon-pod-secrets", podSecretsMount))
+		}
+	}
+
 	if IsVaultSecretManagementEnabled(bdrp.cr) {
 		envVars = append(envVars, getVaultConnectionEnvVars(bdrp.GetServiceName(), bdrp.cr)...)
 		volumes = append(volumes, corev1.Volume{Name: "vault-env", VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}}})
@@ -386,38 +419,7 @@ func (bdrp BackupDaemonResourceProvider) getZooKeeperCredentialsEnvs() []corev1.
 			},
 		}
 	} else {
-		envs = []corev1.EnvVar{
-			{
-				Name:      "BACKUP_DAEMON_API_CREDENTIALS_USERNAME",
-				ValueFrom: getSecretEnvVarSource(bdrp.spec.SecretName, "username"),
-			},
-			{
-				Name:      "BACKUP_DAEMON_API_CREDENTIALS_PASSWORD",
-				ValueFrom: getSecretEnvVarSource(bdrp.spec.SecretName, "password"),
-			},
-			{
-				Name:      "ZOOKEEPER_ADMIN_USERNAME",
-				ValueFrom: getSecretEnvVarSource(bdrp.spec.SecretName, "zookeeper-admin-username"),
-			},
-			{
-				Name:      "ZOOKEEPER_ADMIN_PASSWORD",
-				ValueFrom: getSecretEnvVarSource(bdrp.spec.SecretName, "zookeeper-admin-password"),
-			},
-		}
-	}
-
-	if bdrp.spec.S3 != nil && bdrp.spec.S3.Enabled {
-		s3Envs := []corev1.EnvVar{
-			{
-				Name:      "S3_KEY_ID",
-				ValueFrom: getSecretEnvVarSource(bdrp.spec.S3.SecretName, "s3-key-id"),
-			},
-			{
-				Name:      "S3_KEY_SECRET",
-				ValueFrom: getSecretEnvVarSource(bdrp.spec.S3.SecretName, "s3-key-secret"),
-			},
-		}
-		envs = append(envs, s3Envs...)
+		return nil
 	}
 	return envs
 }

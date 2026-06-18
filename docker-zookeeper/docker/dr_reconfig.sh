@@ -1,5 +1,18 @@
 #!/bin/bash
 
+SECRETS_DIR="${ZOOKEEPER_SECRETS_DIR:-/etc/secrets/zookeeper-pod-secrets}"
+
+resolve_secret_value() {
+  local secret_key="$1"
+  local env_var_name="$2"
+  local secret_path="${SECRETS_DIR}/${secret_key}"
+  if [[ -r "${secret_path}" ]]; then
+    tr -d '\r' < "${secret_path}"
+    return 0
+  fi
+  printf "%s" "${!env_var_name:-}"
+}
+
 action=$1
 dr_active_side=$2
 
@@ -66,6 +79,8 @@ for (( order_number=SERVER_COUNT + 1; order_number <= SERVER_COUNT + SERVER_COUN
 done
 
 if [[ ${action} == "move" ]]; then
+  ADMIN_USERNAME="$(resolve_secret_value "admin-username" "ADMIN_USERNAME")"
+  ADMIN_PASSWORD="$(resolve_secret_value "admin-password" "ADMIN_PASSWORD")"
   if [[ -n ${ADMIN_USERNAME} ]] && [[ -n ${ADMIN_PASSWORD} ]]; then
     cat > "${ZK_CONF}/client_jaas.conf" << EOL
 Client {

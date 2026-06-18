@@ -149,6 +149,17 @@ func (r ReconcileBackupDaemon) Reconcile() error {
 		return err
 	}
 
+	secretsToWatch := []*corev1.Secret{backupDaemonSecret}
+	if r.cr.Spec.BackupDaemon.S3 != nil && r.cr.Spec.BackupDaemon.S3.Enabled && r.cr.Spec.BackupDaemon.S3.SecretName != "" {
+		s3Secret, s3Err := r.reconciler.findSecret(r.cr.Spec.BackupDaemon.S3.SecretName, r.cr.Namespace, r.logger)
+		if s3Err == nil {
+			secretsToWatch = append(secretsToWatch, s3Secret)
+		}
+	}
+	if err := r.reconciler.patchDeploymentSecretRestart(backupDaemonProvider.GetServiceName(), r.cr.Namespace, secretsToWatch, r.logger); err != nil {
+		return err
+	}
+
 	r.logger.Info("Updating ZooKeeper Backup Daemon status")
 	if err := r.updateBackupDaemonStatus(r.cr); err != nil {
 		return err
