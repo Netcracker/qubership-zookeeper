@@ -160,6 +160,8 @@ spec:
               value: {{ .Values.integrationTests.environmentName | quote }}
             - name: RANDOM_RUN_TRIGGER
               value: {{ randAlphaNum 10 | quote }}
+            - name: PART_OF
+              value: {{ .Values.PART_OF | quote }}
             - name: PYTHONDONTWRITEBYTECODE
               value: "1"
           resources:
