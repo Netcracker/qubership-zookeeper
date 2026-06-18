@@ -339,38 +339,6 @@ func getPodNames(pods []corev1.Pod) []string {
 	return podNames
 }
 
-// patchDeploymentSecretRestart annotates the live Deployment pod template when credential Secrets change.
-func (r *ZooKeeperServiceReconciler) patchDeploymentSecretRestart(deploymentName string, namespace string, secrets []*corev1.Secret, logger logr.Logger) error {
-	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-		foundDeployment, err := r.findDeployment(deploymentName, namespace, logger)
-		if err != nil {
-			return err
-		}
-		changed := false
-		if foundDeployment.Spec.Template.Annotations == nil {
-			foundDeployment.Spec.Template.Annotations = map[string]string{}
-		}
-		for _, secret := range secrets {
-			if secret == nil || secret.Name == "" {
-				continue
-			}
-			if secret.Annotations == nil || secret.Annotations[provider.AutoRestartAnnotation] != "true" {
-				continue
-			}
-			annotationName := fmt.Sprintf(provider.ResourceVersionAnnotationTemplate, secret.Name)
-			if foundDeployment.Spec.Template.Annotations[annotationName] != secret.ResourceVersion {
-				foundDeployment.Spec.Template.Annotations[annotationName] = secret.ResourceVersion
-				changed = true
-			}
-		}
-		if !changed {
-			return nil
-		}
-		logger.Info("Patching deployment pod template for secret rotation", "Deployment", deploymentName)
-		return r.Client.Update(context.TODO(), foundDeployment)
-	})
-}
-
 func (r *ZooKeeperServiceReconciler) scaleDeployment(name string, replicas int32, namespace string, logger logr.Logger) error {
 	logger.Info(fmt.Sprintf("Scaling [%s] deployment to [%d] replicas", name, replicas))
 	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {

@@ -26,6 +26,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -172,10 +173,14 @@ func (r *ZooKeeperServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			return !e.DeleteStateUnknown
 		},
 	}
+	secretPredicate := predicate.Funcs{
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			return e.ObjectNew.GetResourceVersion() != e.ObjectOld.GetResourceVersion()
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&zookeeperservice.ZooKeeperService{}).
-		Owns(&corev1.Secret{}).
-		WithEventFilter(statusPredicate).
+		For(&zookeeperservice.ZooKeeperService{}, builder.WithPredicates(statusPredicate)).
+		Owns(&corev1.Secret{}, builder.WithPredicates(secretPredicate)).
 		Complete(r)
 }
 

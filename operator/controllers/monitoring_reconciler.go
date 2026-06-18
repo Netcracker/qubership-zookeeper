@@ -78,7 +78,6 @@ func NewReconcileMonitoring(r *ZooKeeperServiceReconciler, cr *zookeeperservice.
 }
 
 func (r ReconcileMonitoring) Reconcile() error {
-
 	monitoringSecret, err := r.reconciler.watchSecret(r.cr.Spec.Monitoring.SecretName, r.cr, r.logger)
 	if err != nil {
 		if provider.IsVaultSecretManagementEnabled(r.cr) && errors.IsNotFound(err) {
@@ -89,63 +88,69 @@ func (r ReconcileMonitoring) Reconcile() error {
 		}
 	}
 
-	monitoringSpecHash, err := util.Hash(r.cr.Spec.Monitoring)
-	if err != nil {
-		return err
-	}
-	if r.reconciler.ResourceHashes[monitoringHashName] == monitoringSpecHash &&
-		r.reconciler.ResourceHashes[globalHashName] == globalSpecHash &&
-		(monitoringSecret.Name == "" || r.reconciler.ResourceVersions[monitoringSecret.Name] == monitoringSecret.ResourceVersion) {
-		r.logger.Info("ZooKeeper Monitoring configuration didn't change, skipping reconcile loop")
-		return nil
-	}
-
-	clientService := r.monitoringProvider.NewMonitoringClientService()
-	if err := controllerutil.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
-		return err
-	}
-	if err := r.reconciler.createOrUpdateService(clientService, r.logger); err != nil {
-		return err
-	}
-
-	serviceAccount := provider.NewServiceAccount(r.monitoringProvider.GetServiceAccountName(), r.cr.Namespace)
-	if err := r.reconciler.createServiceAccount(serviceAccount, r.logger); err != nil {
-		return err
-	}
-
-	if provider.IsVaultSecretManagementEnabled(r.cr) {
-		err := r.processVaultSecrets(monitoringSecret)
-		if err != nil {
+	var backupDaemonSecret *corev1.Secret
+	if r.cr.Spec.BackupDaemon != nil && r.cr.Spec.BackupDaemon.SecretName != "" {
+		backupDaemonSecret, err = r.reconciler.watchSecret(r.cr.Spec.BackupDaemon.SecretName, r.cr, r.logger)
+		if err != nil && !errors.IsNotFound(err) {
 			return err
 		}
 	}
 
-	deployment := r.monitoringProvider.NewMonitoringDeployment()
-	if err := controllerutil.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
+	monitoringSpecHash, err := util.Hash(r.cr.Spec.Monitoring)
+	if err != nil {
 		return err
 	}
-	if err := r.reconciler.createOrUpdateDeployment(deployment, r.logger); err != nil {
-		return err
-	}
-
-	secretsToWatch := []*corev1.Secret{monitoringSecret}
-	if r.cr.Spec.BackupDaemon != nil && r.cr.Spec.BackupDaemon.SecretName != "" {
-		backupSecret, backupErr := r.reconciler.findSecret(r.cr.Spec.BackupDaemon.SecretName, r.cr.Namespace, r.logger)
-		if backupErr == nil {
-			secretsToWatch = append(secretsToWatch, backupSecret)
+	if r.reconciler.ResourceHashes[monitoringHashName] != monitoringSpecHash ||
+		r.reconciler.ResourceHashes[globalHashName] != globalSpecHash ||
+		secretVersionChanged(r.reconciler.ResourceVersions, monitoringSecret) ||
+		secretVersionChanged(r.reconciler.ResourceVersions, backupDaemonSecret) {
+		clientService := r.monitoringProvider.NewMonitoringClientService()
+		if err := controllerutil.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
+			return err
 		}
+		if err := r.reconciler.createOrUpdateService(clientService, r.logger); err != nil {
+			return err
+		}
+
+		serviceAccount := provider.NewServiceAccount(r.monitoringProvider.GetServiceAccountName(), r.cr.Namespace)
+		if err := r.reconciler.createServiceAccount(serviceAccount, r.logger); err != nil {
+			return err
+		}
+
+		if provider.IsVaultSecretManagementEnabled(r.cr) {
+			err := r.processVaultSecrets(monitoringSecret)
+			if err != nil {
+				return err
+			}
+		}
+
+		deployment := r.monitoringProvider.NewMonitoringDeployment()
+		if err := controllerutil.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
+			return err
+		}
+		if err := r.reconciler.createOrUpdateDeployment(deployment, r.logger); err != nil {
+			return err
+		}
+
+		r.logger.Info("Updating ZooKeeper Monitoring status")
+		if err := r.updateMonitoringStatus(r.cr); err != nil {
+			return err
+		}
+	} else {
+		r.logger.Info("ZooKeeper Monitoring configuration didn't change, skipping reconcile loop")
 	}
-	if err := r.reconciler.patchDeploymentSecretRestart(r.monitoringProvider.GetServiceName(), r.cr.Namespace, secretsToWatch, r.logger); err != nil {
+
+	if err := updateDeploymentSecretRestartAnnotations(
+		r.reconciler.Client, r.cr.Namespace, r.monitoringProvider.GetServiceName(), r.logger,
+		monitoringSecret, backupDaemonSecret); err != nil {
 		return err
 	}
 
-	r.logger.Info("Updating ZooKeeper Monitoring status")
-	if err := r.updateMonitoringStatus(r.cr); err != nil {
-		return err
-	}
-
-	r.reconciler.ResourceHashes[monitoringHashName] = monitoringSpecHash
 	r.reconciler.ResourceVersions[monitoringSecret.Name] = monitoringSecret.ResourceVersion
+	if backupDaemonSecret != nil {
+		r.reconciler.ResourceVersions[backupDaemonSecret.Name] = backupDaemonSecret.ResourceVersion
+	}
+	r.reconciler.ResourceHashes[monitoringHashName] = monitoringSpecHash
 	return nil
 }
 
