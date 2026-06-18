@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -118,11 +119,19 @@ func (r *ZooKeeperServiceReconciler) createOrUpdateDeployment(deployment *appsv1
 		return r.Client.Create(context.TODO(), deployment)
 	} else if err != nil {
 		return err
-	} else {
+	}
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		foundDeployment := &appsv1.Deployment{}
+		if err := r.Client.Get(context.TODO(),
+			types.NamespacedName{Name: deployment.Name, Namespace: deployment.Namespace},
+			foundDeployment); err != nil {
+			return err
+		}
 		logger.Info("Updating the found deployment",
 			"Deployment.Namespace", deployment.Namespace, "Deployment.Name", deployment.Name)
+		deployment.ResourceVersion = foundDeployment.ResourceVersion
 		return r.Client.Update(context.TODO(), deployment)
-	}
+	})
 }
 
 func (r *ZooKeeperServiceReconciler) findDeployment(name string, namespace string, logger logr.Logger) (*appsv1.Deployment, error) {
@@ -332,40 +341,44 @@ func getPodNames(pods []corev1.Pod) []string {
 
 // patchDeploymentSecretRestart annotates the live Deployment pod template when credential Secrets change.
 func (r *ZooKeeperServiceReconciler) patchDeploymentSecretRestart(deploymentName string, namespace string, secrets []*corev1.Secret, logger logr.Logger) error {
-	foundDeployment, err := r.findDeployment(deploymentName, namespace, logger)
-	if err != nil {
-		return err
-	}
-	changed := false
-	if foundDeployment.Spec.Template.Annotations == nil {
-		foundDeployment.Spec.Template.Annotations = map[string]string{}
-	}
-	for _, secret := range secrets {
-		if secret == nil || secret.Name == "" {
-			continue
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		foundDeployment, err := r.findDeployment(deploymentName, namespace, logger)
+		if err != nil {
+			return err
 		}
-		if secret.Annotations == nil || secret.Annotations[provider.AutoRestartAnnotation] != "true" {
-			continue
+		changed := false
+		if foundDeployment.Spec.Template.Annotations == nil {
+			foundDeployment.Spec.Template.Annotations = map[string]string{}
 		}
-		annotationName := fmt.Sprintf(provider.ResourceVersionAnnotationTemplate, secret.Name)
-		if foundDeployment.Spec.Template.Annotations[annotationName] != secret.ResourceVersion {
-			foundDeployment.Spec.Template.Annotations[annotationName] = secret.ResourceVersion
-			changed = true
+		for _, secret := range secrets {
+			if secret == nil || secret.Name == "" {
+				continue
+			}
+			if secret.Annotations == nil || secret.Annotations[provider.AutoRestartAnnotation] != "true" {
+				continue
+			}
+			annotationName := fmt.Sprintf(provider.ResourceVersionAnnotationTemplate, secret.Name)
+			if foundDeployment.Spec.Template.Annotations[annotationName] != secret.ResourceVersion {
+				foundDeployment.Spec.Template.Annotations[annotationName] = secret.ResourceVersion
+				changed = true
+			}
 		}
-	}
-	if !changed {
-		return nil
-	}
-	logger.Info("Patching deployment pod template for secret rotation", "Deployment", deploymentName)
-	return r.Client.Update(context.TODO(), foundDeployment)
+		if !changed {
+			return nil
+		}
+		logger.Info("Patching deployment pod template for secret rotation", "Deployment", deploymentName)
+		return r.Client.Update(context.TODO(), foundDeployment)
+	})
 }
 
 func (r *ZooKeeperServiceReconciler) scaleDeployment(name string, replicas int32, namespace string, logger logr.Logger) error {
 	logger.Info(fmt.Sprintf("Scaling [%s] deployment to [%d] replicas", name, replicas))
-	foundDeployment, err := r.findDeployment(name, namespace, logger)
-	if err == nil {
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		foundDeployment, err := r.findDeployment(name, namespace, logger)
+		if err != nil {
+			return err
+		}
 		foundDeployment.Spec.Replicas = &replicas
 		return r.Client.Update(context.TODO(), foundDeployment)
-	}
-	return err
+	})
 }

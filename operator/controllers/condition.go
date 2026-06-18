@@ -19,7 +19,6 @@ import (
 	"fmt"
 	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"time"
 )
 
@@ -73,15 +72,4 @@ func hasFailedConditions(cr *zookeeperservice.ZooKeeperService) bool {
 		}
 	}
 	return false
-}
-
-func isTransientReconcileError(err error) bool {
-	return errors.IsConflict(err)
-}
-
-func reconcileErrorConditionType(err error) string {
-	if isTransientReconcileError(err) {
-		return typeInProgress
-	}
-	return typeFailed
 }

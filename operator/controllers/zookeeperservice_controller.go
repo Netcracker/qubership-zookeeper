@@ -91,7 +91,7 @@ func (r *ZooKeeperServiceReconciler) Reconcile(ctx context.Context, request ctrl
 
 	if provider.IsVaultSecretManagementEnabled(instance) {
 		if err := r.InitVaultClient(instance); err != nil {
-			r.writeReconcileErrorStatus(instance, err, fmt.Sprintf("An error occurred while creating Vault client: %v", err))
+			r.writeFailedStatus(instance, fmt.Sprintf("An error occurred while creating Vault client: %v", err))
 			return reconcile.Result{}, err
 		}
 	}
@@ -101,7 +101,7 @@ func (r *ZooKeeperServiceReconciler) Reconcile(ctx context.Context, request ctrl
 	for _, reconciler := range reconcilers {
 		if err := reconciler.Reconcile(); err != nil {
 			reqLogger.Error(err, fmt.Sprintf("Error when reconciling `%v`", reconciler))
-			r.writeReconcileErrorStatus(instance, err, fmt.Sprintf("Reconciliation cycle failed for %T due to: %v", reconciler, err))
+			r.writeFailedStatus(instance, fmt.Sprintf("Reconciliation cycle failed for %T due to: %v", reconciler, err))
 			return reconcile.Result{}, err
 		}
 	}
@@ -120,7 +120,7 @@ func (r *ZooKeeperServiceReconciler) Reconcile(ctx context.Context, request ctrl
 
 			for _, reconciler := range reconcilers {
 				if err := reconciler.Status(); err != nil {
-					r.writeReconcileErrorStatus(instance, err, fmt.Sprintf("The status reconciliation cycle failed for %T due to: %v", reconciler, err))
+					r.writeFailedStatus(instance, fmt.Sprintf("The status reconciliation cycle failed for %T due to: %v", reconciler, err))
 					return reconcile.Result{}, err
 				}
 			}
@@ -150,10 +150,10 @@ func (r *ZooKeeperServiceReconciler) Reconcile(ctx context.Context, request ctrl
 	return reconcile.Result{}, nil
 }
 
-func (r *ZooKeeperServiceReconciler) writeReconcileErrorStatus(instance *zookeeperservice.ZooKeeperService, cause error, errorMessage string) {
+func (r *ZooKeeperServiceReconciler) writeFailedStatus(instance *zookeeperservice.ZooKeeperService, errorMessage string) {
 	if err := r.updateConditions(instance,
 		NewCondition(statusFalse,
-			reconcileErrorConditionType(cause),
+			typeFailed,
 			zooKeeperServiceConditionReason,
 			errorMessage)); err != nil {
 		log.Error(err, "An error occurred while updating the status condition")
