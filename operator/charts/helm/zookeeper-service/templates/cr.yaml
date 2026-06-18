@@ -215,11 +215,11 @@ spec:
   {{- end }}
     resources:
       requests:
-        cpu: {{ default "25m" .Values.backupDaemon.resources.requests.cpu }}
-        memory: {{ default "512Mi" .Values.backupDaemon.resources.requests.memory }}
+        cpu: {{ default "125m" .Values.backupDaemon.resources.requests.cpu }}
+        memory: {{ default "128Mi" .Values.backupDaemon.resources.requests.memory }}
       limits:
-        cpu: {{ default "300m" .Values.backupDaemon.resources.limits.cpu }}
-        memory: {{ default "512Mi" .Values.backupDaemon.resources.limits.memory }}
+        cpu: {{ default "400m" .Values.backupDaemon.resources.limits.cpu }}
+        memory: {{ default "500Mi" .Values.backupDaemon.resources.limits.memory }}
   {{- if .Values.backupDaemon.backupSchedule }}
     backupSchedule: {{ .Values.backupDaemon.backupSchedule }}
   {{- end }}

@@ -119,8 +119,10 @@ func (zrp ZooKeeperResourceProvider) NewZooKeeperPersistentVolumeClaimForCR(serv
 		}
 	}
 	persistentVolumeClaimName := fmt.Sprintf(persistentVolumeClaimPattern, zrp.cr.Name, serverId)
+	labels := GetZooKeeperLabels(zrp.cr.Name, zrp.cr.Spec.Global.DefaultLabels)
+	labels["cloud-backuper.netcracker.com/exclude-from-physical-backup"] = "true"
 	return ProcessNonSharedPersistentVolumeClaim(persistentVolumeClaimName, persistentVolumeName, persistentVolumeLabel,
-		storageClassName, zrp.spec.Storage.Size, zrp.cr.Namespace, GetZooKeeperLabels(zrp.cr.Name, zrp.cr.Spec.Global.DefaultLabels), zrp.logger)
+		storageClassName, zrp.spec.Storage.Size, zrp.cr.Namespace, labels, zrp.logger)
 }
 
 // NewServerDeploymentForCR returns a deployment for specified ZooKeeper server

@@ -141,7 +141,11 @@ func (r ReconcileBackupDaemon) Reconcile() error {
 		}
 	}
 
-	deployment := backupDaemonProvider.NewBackupDaemonDeployment()
+	s3AliasesSecretName := fmt.Sprintf("%s-backup-daemon-s3-aliases", r.cr.Name)
+	s3AliasesSecret, aliasesErr := r.reconciler.findSecret(s3AliasesSecretName, r.cr.Namespace, r.logger)
+	s3AliasesEnabled := aliasesErr == nil
+
+	deployment := backupDaemonProvider.NewBackupDaemonDeployment(s3AliasesEnabled)
 	if err := controllerutil.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
@@ -155,6 +159,9 @@ func (r ReconcileBackupDaemon) Reconcile() error {
 		if s3Err == nil {
 			secretsToWatch = append(secretsToWatch, s3Secret)
 		}
+	}
+	if s3AliasesEnabled {
+		secretsToWatch = append(secretsToWatch, s3AliasesSecret)
 	}
 	if err := r.reconciler.patchDeploymentSecretRestart(backupDaemonProvider.GetServiceName(), r.cr.Namespace, secretsToWatch, r.logger); err != nil {
 		return err

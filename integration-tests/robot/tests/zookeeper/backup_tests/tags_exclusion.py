@@ -50,4 +50,9 @@ def get_excluded_tags(environ) -> list:
     if not (secret_is_present(environ, 'ZOOKEEPER_BACKUP_DAEMON_USERNAME')
             and secret_is_present(environ, 'ZOOKEEPER_BACKUP_DAEMON_PASSWORD')):
         excluded_tags.append('unauthorized_access')
+    if not check_that_parameters_are_presented(environ, 'S3_ENABLED') \
+            or environ.get('S3_ENABLED') != 'true':
+        excluded_tags.append('backup_v2')
+    elif not secret_is_present(environ, 'S3_KEY_SECRET'):
+        excluded_tags.append('backup_v2')
     return excluded_tags

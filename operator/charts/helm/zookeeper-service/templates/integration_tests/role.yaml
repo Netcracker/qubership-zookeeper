@@ -24,10 +24,12 @@ rules:
       - pods
       - pods/exec
       - services
+      - secrets
     verbs:
       - get
       - list
       - patch
       - update
       - watch
+      - create
 {{- end }}

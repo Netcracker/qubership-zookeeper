@@ -49,6 +49,7 @@ func (bdrp BackupDaemonResourceProvider) GetServiceName() string {
 // NewBackupDaemonClientService returns a client service for ZooKeeper Backup Daemon
 func (bdrp BackupDaemonResourceProvider) NewBackupDaemonClientService() *corev1.Service {
 	backupDaemonLabels := bdrp.GetBackupDaemonLabels()
+	backupDaemonLabels["cloud-backuper.netcracker.com/use-backup-daemon"] = "true"
 	selectorLabels := bdrp.GetBackupDaemonSelectorLabels()
 	backupDaemonPort := bdrp.getBackupDaemonPort()
 	ports := []corev1.ServicePort{
@@ -62,7 +63,7 @@ func (bdrp BackupDaemonResourceProvider) NewBackupDaemonClientService() *corev1.
 }
 
 // NewBackupDaemonDeployment returns a deployment for ZooKeeper Backup Daemon
-func (bdrp BackupDaemonResourceProvider) NewBackupDaemonDeployment() *appsv1.Deployment {
+func (bdrp BackupDaemonResourceProvider) NewBackupDaemonDeployment(s3AliasesEnabled bool) *appsv1.Deployment {
 	backupDaemonLabels := bdrp.GetBackupDaemonLabels()
 	backupDaemonLabels["app.kubernetes.io/instance"] = fmt.Sprintf("%s-%s", bdrp.serviceName, bdrp.cr.Namespace)
 	backupDaemonLabels["app.kubernetes.io/technology"] = "python"
@@ -238,6 +239,32 @@ func (bdrp BackupDaemonResourceProvider) NewBackupDaemonDeployment() *appsv1.Dep
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{Name: "s3-ssl-certs", MountPath: "/s3Certs"})
 	}
 
+	if s3AliasesEnabled {
+		aliasesSecretName := bdrp.getS3AliasesSecretName()
+		envVars = append(envVars, corev1.EnvVar{
+			Name:  "S3_ALIASES_USED",
+			Value: "true",
+		})
+		volumes = append(volumes, corev1.Volume{
+			Name: bdrp.getS3AliasesSecretName(),
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: aliasesSecretName,
+				},
+			},
+		})
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      bdrp.getS3AliasesSecretName(),
+			MountPath: "/aliases/",
+			ReadOnly:  true,
+		})
+	} else {
+		envVars = append(envVars, corev1.EnvVar{
+			Name:  "S3_ALIASES_USED",
+			Value: "false",
+		})
+	}
+
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      bdrp.serviceName,
@@ -328,9 +355,15 @@ func (bdrp BackupDaemonResourceProvider) getBackupDaemonVolumeMounts() []corev1.
 func (bdrp BackupDaemonResourceProvider) getLivenessProbe() *corev1.Probe {
 	probe := bdrp.getProbe()
 	backupDaemonPort := int(bdrp.getBackupDaemonPort())
+	scheme := corev1.URISchemeHTTP
+	if bdrp.spec.BackupDaemonSsl.Enabled {
+		scheme = corev1.URISchemeHTTPS
+	}
 	probe.ProbeHandler = corev1.ProbeHandler{
-		TCPSocket: &corev1.TCPSocketAction{
-			Port: intstr.FromInt(backupDaemonPort),
+		HTTPGet: &corev1.HTTPGetAction{
+			Path:   "/health/prometheus",
+			Port:   intstr.FromInt(backupDaemonPort),
+			Scheme: scheme,
 		},
 	}
 	return probe
@@ -346,9 +379,9 @@ func (bdrp BackupDaemonResourceProvider) getProbe() *corev1.Probe {
 	return &corev1.Probe{
 		InitialDelaySeconds: 30,
 		TimeoutSeconds:      5,
-		PeriodSeconds:       10,
+		PeriodSeconds:       5,
 		SuccessThreshold:    1,
-		FailureThreshold:    5,
+		FailureThreshold:    3,
 	}
 }
 
@@ -456,4 +489,8 @@ func (bdrp BackupDaemonResourceProvider) getBackupDaemonPort() int32 {
 	} else {
 		return 8080
 	}
+}
+
+func (bdrp BackupDaemonResourceProvider) getS3AliasesSecretName() string {
+	return fmt.Sprintf("%s-backup-daemon-s3-aliases", bdrp.cr.Name)
 }

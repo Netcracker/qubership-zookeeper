@@ -227,6 +227,9 @@ monitoring:
 ## Values for ZooKeeper Backup Daemon deployment
 backupDaemon:
   install: false
+  cloudBackuper:
+    useBackupDaemon: true
+    backupDaemonCredentials: true
   tls:
     enabled: true
     certificates:
@@ -291,13 +294,25 @@ backupDaemon:
     bucket: ""
     keyId: ""
     keySecret: ""
+  s3Aliases: []
+  # - name: default
+  #   spec:
+  #     default: true
+  #     storageBucket: backup-restore-bucket
+  #     storageProvider: aws
+  #     storageRegion: us-east-1
+  #     storageServerUrl: "https://s3.example.com"
+  #     storageUsername: name
+  #     storageSecret: storage-location-default
+  #   secretContent:
+  #     storagePassword: pass
   resources:
     requests:
-      cpu: 25m
-      memory: 512Mi
+      cpu: 125m
+      memory: 128Mi
     limits:
-      cpu: 300m
-      memory: 512Mi
+      cpu: 400m
+      memory: 500Mi
 #  backupSchedule: "0 * * * *"
 #  evictionPolicy: "0/1d,7d/delete"
   ipv6: false
