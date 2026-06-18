@@ -6,6 +6,9 @@ global:
   name: zookeeper
   waitForPodsReady: true
   podReadinessTimeout: 300
+  # When true, credential Secret changes trigger a rolling restart of operator-managed
+  # workloads (ZooKeeper, backup daemon, monitoring) so they re-read mounted secret files.
+  autoRestartOnSecretChange: true
   tls:
     enabled: false
     cipherSuites: []
