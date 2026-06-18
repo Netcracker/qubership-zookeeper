@@ -107,6 +107,10 @@ func (bdrp BackupDaemonResourceProvider) NewBackupDaemonDeployment() *appsv1.Dep
 			Name:  "ZOOKEEPER_ENABLE_SSL",
 			Value: strconv.FormatBool(bdrp.cr.Spec.Global.ZooKeeperSsl.Enabled),
 		},
+		{
+			Name:  "PYTHONDONTWRITEBYTECODE",
+			Value: "1",
+		},
 	}
 
 	if bdrp.spec.BackupSchedule != "" {
@@ -269,6 +273,8 @@ func (bdrp BackupDaemonResourceProvider) getBackupDaemonVolumes() []corev1.Volum
 			Name:         "backup-storage",
 			VolumeSource: volumeSource,
 		},
+		getTmpVolume("50Mi"),
+		getVarLogVolume(),
 	}
 }
 
@@ -280,6 +286,8 @@ func (bdrp BackupDaemonResourceProvider) getBackupDaemonVolumeMounts() []corev1.
 			ReadOnly:  false,
 			MountPath: "/opt/zookeeper/backup-storage",
 		},
+		getTmpVolumeMount(),
+		getVarLogVolumeMount(),
 	}
 }
 

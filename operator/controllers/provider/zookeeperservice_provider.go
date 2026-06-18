@@ -171,9 +171,50 @@ func buildEnvs(envVars []corev1.EnvVar, additionalEnvs []string, logger logr.Log
 // getDefaultContainerSecurityContext returns default security context for containers for deployment to restricted environment
 func getDefaultContainerSecurityContext() *corev1.SecurityContext {
 	falseValue := false
-	return &corev1.SecurityContext{AllowPrivilegeEscalation: &falseValue,
+	trueValue := true
+	return &corev1.SecurityContext{
+		AllowPrivilegeEscalation: &falseValue,
+		ReadOnlyRootFilesystem:   &trueValue,
 		Capabilities: &corev1.Capabilities{
 			Drop: []corev1.Capability{"ALL"},
 		},
+	}
+}
+
+func getTmpVolume(sizeLimitQuantity string) corev1.Volume {
+	sizeLimit := resource.MustParse(sizeLimitQuantity)
+	return corev1.Volume{
+		Name: "tmp",
+		VolumeSource: corev1.VolumeSource{
+			EmptyDir: &corev1.EmptyDirVolumeSource{
+				SizeLimit: &sizeLimit,
+			},
+		},
+	}
+}
+
+func getTmpVolumeMount() corev1.VolumeMount {
+	return corev1.VolumeMount{
+		Name:      "tmp",
+		MountPath: "/tmp",
+	}
+}
+
+func getVarLogVolume() corev1.Volume {
+	sizeLimit := resource.MustParse("10Mi")
+	return corev1.Volume{
+		Name: "var-log",
+		VolumeSource: corev1.VolumeSource{
+			EmptyDir: &corev1.EmptyDirVolumeSource{
+				SizeLimit: &sizeLimit,
+			},
+		},
+	}
+}
+
+func getVarLogVolumeMount() corev1.VolumeMount {
+	return corev1.VolumeMount{
+		Name:      "var-log",
+		MountPath: "/var/log",
 	}
 }

@@ -34,7 +34,7 @@ Usernames should be unique."
 enable_sasl_config() {
   export CONF_ZOOKEEPER_authProvider_1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
   export CONF_ZOOKEEPER_requireClientAuthScheme=sasl
-  export SERVER_JVMFLAGS="-Dzookeeper.superUser=${ADMIN_USERNAME} -Dzookeeper.allowSaslFailedClients=false -Djava.security.auth.login.config=${ZOOKEEPER_HOME}/conf/zookeeper_jaas.conf ${SERVER_JVMFLAGS}"
+  export SERVER_JVMFLAGS="-Dzookeeper.superUser=${ADMIN_USERNAME} -Dzookeeper.allowSaslFailedClients=false -Djava.security.auth.login.config=${ZK_CONF}/zookeeper_jaas.conf ${SERVER_JVMFLAGS}"
 
   usernames_array=${ADMIN_USERNAME}
   if [[ -n ${CLIENT_USERNAME} && -n ${CLIENT_PASSWORD} ]]; then
@@ -65,14 +65,14 @@ enable_sasl_config() {
   echo -en "Server {
     org.apache.zookeeper.server.auth.DigestLoginModule required
     \"user_${ADMIN_USERNAME}\"=\"${ADMIN_PASSWORD}\"${CLIENT_CREDENTIALS_MACROS}${ADDITIONAL_USERS_CREDENTIALS_MACROS};
-};"> ${ZOOKEEPER_HOME}/conf/zookeeper_jaas.conf
+};" > "${ZK_CONF}/zookeeper_jaas.conf"
 
   if [[ ${QUORUM_AUTH_ENABLED}  == "true" ]]; then
     export CONF_ZOOKEEPER_quorum_auth_enableSasl=true
     export CONF_ZOOKEEPER_quorum_auth_learnerRequireSasl=true
     export CONF_ZOOKEEPER_quorum_auth_serverRequireSasl=true
 
-    cat >> ${ZOOKEEPER_HOME}/conf/zookeeper_jaas.conf << EOL
+    cat >> "${ZK_CONF}/zookeeper_jaas.conf" << EOL
 
 QuorumServer {
        org.apache.zookeeper.server.auth.DigestLoginModule required
@@ -108,6 +108,12 @@ if [[ "$DEBUG" == true ]]; then
   printenv
 fi
 
+# Redirect runtime-writable config and keystore dirs to /tmp so the root FS can be read-only.
+export ZK_CONF=/tmp/zookeeper/config
+export ZK_TLS_KS=/tmp/zookeeper/tls-ks
+install -d -m 0755 "${ZK_CONF}" "${ZK_TLS_KS}"
+cp -r "${ZOOKEEPER_HOME}/conf/." "${ZK_CONF}/"
+
 # Create missing folders
 mkdir -p "${ZOOKEEPER_DATA}/dumps"
 mkdir -p "${ZOOKEEPER_DATA}/configs"
@@ -123,7 +129,7 @@ if [[ -n "$JMXPORT" ]]; then
 fi
 
 DIAGNOSTIC_OPTS="-XX:+ExitOnOutOfMemoryError"
-: ${NC_DIAGNOSTIC_MODE:="off"}
+: "${NC_DIAGNOSTIC_MODE:=off}"
 #DISABLE UNTIL CDC RELEASE
 #. ${NC_DIAGNOSTIC_FOLDER}/nc-diagnostic-bootstrap.sh
 if [[ -z "$X_JAVA_ARGS" ]]; then
@@ -134,10 +140,15 @@ fi
 export SERVER_JVMFLAGS="${DIAGNOSTIC_OPTS} ${SERVER_JVMFLAGS}"
 
 function apply_esc_configuration() {
-  echo 'for sig in $SIGNALS_TO_RETHROW; do trap "rethrow_java_handler $sig" $sig 2>&1 > /dev/null; done' > ${NC_DIAGNOSTIC_FOLDER}/java
-  echo /etc/alternatives/java "\${X_JAVA_ARGS}" "\$@" '&' >> ${NC_DIAGNOSTIC_FOLDER}/java
-  echo 'java_pid=$!' >> ${NC_DIAGNOSTIC_FOLDER}/java
-  echo 'wait "$java_pid"' >> ${NC_DIAGNOSTIC_FOLDER}/java
+  {
+    #shellcheck disable=SC2016
+    echo 'for sig in $SIGNALS_TO_RETHROW; do trap "rethrow_java_handler $sig" $sig > /dev/null 2>&1; done'
+    #shellcheck disable=SC2016
+    echo '/etc/alternatives/java "${X_JAVA_ARGS}" "$@" &'
+    echo 'java_pid=$!'
+    #shellcheck disable=SC2016
+    echo 'wait "$java_pid"'
+  } > "${NC_DIAGNOSTIC_FOLDER}/java"
 }
 
 must_send_crash_dump=false
@@ -229,7 +240,7 @@ if [[ -n "$JOLOKIA_PORT" ]]; then
   unset JOLOKIA_PORT
 fi
 
-export SERVER_JVMFLAGS="${SERVER_JVMFLAGS} -javaagent:/opt/zookeeper/lib/jmx_prometheus_javaagent-1.1.0.jar=8080:${ZOOKEEPER_HOME}/conf/jmx-exporter-config.yaml"
+export SERVER_JVMFLAGS="${SERVER_JVMFLAGS} -javaagent:/opt/zookeeper/lib/jmx_prometheus_javaagent-1.1.0.jar=8080:${ZK_CONF}/jmx-exporter-config.yaml"
 
 if [[ -n "$HEAP_OPTS" ]]; then
   export SERVER_JVMFLAGS="${HEAP_OPTS} ${SERVER_JVMFLAGS}"
@@ -238,11 +249,11 @@ fi
 
 # WA for https://issues.apache.org/jira/browse/ZOOKEEPER-2528
 if [[ -d ${ZOOKEEPER_DATA}/version-2 ]]; then
-  for empty_log in $(find ${ZOOKEEPER_DATA}/version-2 -type f -empty -name "log.*"); do
+  while IFS= read -r -d '' empty_log; do
     echo "[$(date +'%Y-%m-%dT%H:%M:%S,000')][ERROR] Zookeeper data directory contains empty transaction log $empty_log. Try to remove it."
-    rm ${empty_log}
+    rm "${empty_log}"
     echo "[$(date +'%Y-%m-%dT%H:%M:%S,001')][INFO] Empty transaction log file $empty_log has been removed."
-  done
+  done < <(find "${ZOOKEEPER_DATA}/version-2" -type f -empty -name "log.*" -print0)
 fi
 
 if [[ -n ${ADMIN_USERNAME} && -n ${ADMIN_PASSWORD} ]]; then
@@ -257,16 +268,16 @@ if [[ "${ENABLE_SSL}" == "true" ]]; then
   SSL_KEY_LOCATION=${zookeeper_tls_dir}/tls.key
   SSL_CERTIFICATE_LOCATION=${zookeeper_tls_dir}/tls.crt
   SSL_CA_LOCATION=${zookeeper_tls_dir}/ca.crt
-  zookeeper_tls_ks_dir=${ZOOKEEPER_HOME}/tls-ks
+  zookeeper_tls_ks_dir=${ZK_TLS_KS}
   SSL_KEYSTORE_LOCATION=${zookeeper_tls_ks_dir}/zookeeper.keystore.jks
   SSL_TRUSTSTORE_LOCATION=${zookeeper_tls_ks_dir}/zookeeper.truststore.jks
 
   if [[ -f ${SSL_KEY_LOCATION} && -f ${SSL_CERTIFICATE_LOCATION} && -f ${SSL_CA_LOCATION} ]]; then
-    mkdir -p ${zookeeper_tls_ks_dir}
-    openssl pkcs12 -export -in ${SSL_CERTIFICATE_LOCATION} -inkey ${SSL_KEY_LOCATION} -out ${zookeeper_tls_ks_dir}/zookeeper.keystore.p12 -passout pass:changeit
-    keytool -importkeystore -destkeystore ${SSL_KEYSTORE_LOCATION} -deststorepass changeit -srcstoretype PKCS12 -srckeystore ${zookeeper_tls_ks_dir}/zookeeper.keystore.p12 -srcstorepass changeit
-    keytool -import -trustcacerts -keystore ${SSL_KEYSTORE_LOCATION} -storepass changeit -noprompt -alias ca-cert -file ${SSL_CA_LOCATION}
-    keytool -import -trustcacerts -keystore ${SSL_TRUSTSTORE_LOCATION} -storepass changeit -noprompt -alias ca -file ${SSL_CA_LOCATION}
+    mkdir -p "${zookeeper_tls_ks_dir}"
+    openssl pkcs12 -export -in "${SSL_CERTIFICATE_LOCATION}" -inkey "${SSL_KEY_LOCATION}" -out "${zookeeper_tls_ks_dir}/zookeeper.keystore.p12" -passout pass:changeit
+    keytool -importkeystore -destkeystore "${SSL_KEYSTORE_LOCATION}" -deststorepass changeit -srcstoretype PKCS12 -srckeystore "${zookeeper_tls_ks_dir}/zookeeper.keystore.p12" -srcstorepass changeit
+    keytool -import -trustcacerts -keystore "${SSL_KEYSTORE_LOCATION}" -storepass changeit -noprompt -alias ca-cert -file "${SSL_CA_LOCATION}"
+    keytool -import -trustcacerts -keystore "${SSL_TRUSTSTORE_LOCATION}" -storepass changeit -noprompt -alias ca -file "${SSL_CA_LOCATION}"
 
     export CONF_ZOOKEEPER_serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory
     export CONF_ZOOKEEPER_authProvider_x509=org.apache.zookeeper.server.auth.X509AuthenticationProvider
@@ -304,8 +315,8 @@ function start() {
   if [[ -z "$LOG_LEVEL" ]]; then
     LOG_LEVEL="INFO"
   fi
-  sed -i -r -e "s|value=\"INFO\"|value=\"${LOG_LEVEL}\"|g" ${ZOOKEEPER_HOME}/conf/logback.xml
-  sed -i -r -e "s|level=\"INFO\"|level=\"${LOG_LEVEL}\"|g" ${ZOOKEEPER_HOME}/conf/logback.xml
+  sed -i -r -e "s|value=\"INFO\"|value=\"${LOG_LEVEL}\"|g" "${ZK_CONF}/logback.xml"
+  sed -i -r -e "s|level=\"INFO\"|level=\"${LOG_LEVEL}\"|g" "${ZK_CONF}/logback.xml"
   #
   # Configure cluster settings
   #
@@ -325,7 +336,7 @@ function start() {
   #
   # Generate the dynamic configuration only if it doesn't exist
   #
-  if [[ ! -f "$ZOOKEEPER_HOME/conf/zoo.cfg.dynamic" ]]; then
+  if [[ ! -f "${ZK_CONF}/zoo.cfg.dynamic" ]]; then
     #
     # Append the server addresses to the configuration file
     #
@@ -340,7 +351,7 @@ function start() {
         fi
         export CONF_ZOOKEEPER_reconfigEnabled=true
 
-        ${ZOOKEEPER_HOME}/bin/dr_reconfig.sh config ${DR_ACTIVE_SIDE}
+        "${ZOOKEEPER_HOME}/bin/dr_reconfig.sh" config "${DR_ACTIVE_SIDE}"
       else
         if [[ -n "$SERVER_DOMAIN" ]]; then
           SERVER_DOMAIN=".$SERVER_DOMAIN"
@@ -355,32 +366,32 @@ function start() {
             CLIENT_PORT=2182
           fi
         fi
-        echo "# Server List" >> ${ZOOKEEPER_HOME}/conf/zoo.cfg.dynamic
-        for (( order_number=1; order_number <= ${SERVER_COUNT}; order_number++ )); do
-          echo "server.$order_number=$SERVER_NAME-$order_number$SERVER_DOMAIN$SERVER_NAMESPACE:2888:3888:participant;$CLIENT_PORT" >> ${ZOOKEEPER_HOME}/conf/zoo.cfg.dynamic
+        echo "# Server List" >> "${ZK_CONF}/zoo.cfg.dynamic"
+        for (( order_number=1; order_number <= SERVER_COUNT; order_number++ )); do
+          echo "server.$order_number=$SERVER_NAME-$order_number$SERVER_DOMAIN$SERVER_NAMESPACE:2888:3888:participant;$CLIENT_PORT" >> "${ZK_CONF}/zoo.cfg.dynamic"
         done
       fi
     else
       export QUORUM_SERVERS=${QUORUM_SERVERS:="$SERVER_ID@0.0.0.0:$ZOOKEEPER_FOLLOWERS_PORT:$ZOOKEEPER_ELECTION_PORT:participant"}
 
       declare -a quorum_servers_array
-      IFS=',' read -r -a quorum_servers_array <<< ${QUORUM_SERVERS}
+      IFS=',' read -r -a quorum_servers_array <<< "${QUORUM_SERVERS}"
 
       if [[ ${#quorum_servers_array[@]} != "$SERVER_COUNT" ]]; then
         echo ERROR: "The number of QUORUM_SERVERS must be equal to SERVER_COUNT"
         exit 1
       fi
 
-      for (( i = 1; i <= "$SERVER_COUNT"; i++ )); do
+      for (( i = 1; i <= SERVER_COUNT; i++ )); do
         declare -a quorum_server
-        IFS='@' read -r -a quorum_server <<< ${quorum_servers_array[i-1]}
+        IFS='@' read -r -a quorum_server <<< "${quorum_servers_array[i-1]}"
 
         if [[ ${#quorum_server[@]} != 2 || -z ${quorum_server[0]} ]]; then
             echo ERROR: "Incorrect format of quorum server string (<server_id>@<zookeeper_host>:<follower_port>:<election_post>): ${quorum_servers_array[i-1]}."
             exit 1
         fi
 
-        echo "server.${quorum_server[0]}=${quorum_server[1]}" >> ${ZOOKEEPER_HOME}/conf/zoo.cfg.dynamic
+        echo "server.${quorum_server[0]}=${quorum_server[1]}" >> "${ZK_CONF}/zoo.cfg.dynamic"
       done
     fi
   fi
@@ -397,13 +408,13 @@ function start() {
   #
   # Persists the ID of the current instance of Zookeeper in the 'myid' file
   #
-  echo ${SERVER_ID} > ${ZOOKEEPER_DATA}/myid
+  echo "${SERVER_ID}" > "${ZOOKEEPER_DATA}/myid"
 
   # Copy backup from shared folder to internal structure
   if [[ -d "$ZOOKEEPER_RECOVERY_DIR" && "$(ls -A "$ZOOKEEPER_RECOVERY_DIR")" ]]; then
-    rm -rfv ${ZOOKEEPER_BACKUP_SOURCE_DIR}/*
+    rm -rfv "${ZOOKEEPER_BACKUP_SOURCE_DIR:?}"/*
     # Dot '.' allows to copy all files and folders included hidden ones
-    cp -rp ${ZOOKEEPER_RECOVERY_DIR}/. ${ZOOKEEPER_BACKUP_SOURCE_DIR}
+    cp -rp "${ZOOKEEPER_RECOVERY_DIR}/." "${ZOOKEEPER_BACKUP_SOURCE_DIR}"
     echo "Files are copied from $ZOOKEEPER_RECOVERY_DIR to $ZOOKEEPER_BACKUP_SOURCE_DIR"
   fi
 
@@ -416,38 +427,38 @@ function start() {
     export ZOOCFG="${ZOOKEEPER_DATA}/configs/zoo.cfg"
     # Copy the configuration only if it doesn't exist
     if [[ ! -f "$ZOOCFG" ]]; then
-      cp ${ZOOKEEPER_HOME}/conf/zoo.cfg ${ZOOCFG}
+      cp "${ZK_CONF}/zoo.cfg" "${ZOOCFG}"
     fi
     export CONF_ZOOKEEPER_reconfigEnabled=true
   else
-    export ZOOCFG="${ZOOKEEPER_HOME}/conf/zoo.cfg"
-    rm -fr ${ZOOKEEPER_DATA}/configs/*
+    export ZOOCFG="${ZK_CONF}/zoo.cfg"
+    rm -fr "${ZOOKEEPER_DATA}"/configs/*
   fi
 
   # Add missing EOF at the end of the config file
-  if [[ $(newline_at_eof ${ZOOCFG}) == false ]]; then
-    echo "" >> ${ZOOCFG}
+  if [[ $(newline_at_eof "${ZOOCFG}") == false ]]; then
+    echo "" >> "${ZOOCFG}"
   fi
 
-  for VAR in `env | grep ^CONF_ZOOKEEPER_` ; do
-    env_var=`echo "$VAR" | sed -r "s/(.*)=.*/\1/g"`
-    prop_name=`echo "$VAR" | sed -r "s/^CONF_ZOOKEEPER_(.*)=.*/\1/g" | tr _ .`
-    if egrep -q "(^|^#)$prop_name=" ${ZOOCFG}; then
+  while IFS= read -r VAR; do
+    env_var=$(echo "$VAR" | sed -r "s/(.*)=.*/\1/g")
+    prop_name=$(echo "$VAR" | sed -r "s/^CONF_ZOOKEEPER_(.*)=.*/\1/g" | tr _ .)
+    if grep -E -q "(^|^#)$prop_name=" "${ZOOCFG}"; then
       # Note that no config names or values may contain an '@' char
-      sed -r -i "s@(^|^#)($prop_name)=(.*)@\2=${!env_var}@g" ${ZOOCFG}
+      sed -r -i "s@(^|^#)($prop_name)=(.*)@\2=${!env_var}@g" "${ZOOCFG}"
     else
       #echo "Adding property $prop_name=${!env_var}"
-      echo "$prop_name=${!env_var}" >> ${ZOOCFG}
+      echo "$prop_name=${!env_var}" >> "${ZOOCFG}"
     fi
-  done
+  done < <(env | grep ^CONF_ZOOKEEPER_)
 
   echo "zoo.cfg file:"
-  cat ${ZOOCFG}
+  cat "${ZOOCFG}"
   echo -e
   echo "generated zoo.cfg.dynamic file:"
-  cat ${ZOOKEEPER_HOME}/conf/zoo.cfg.dynamic
+  cat "${ZK_CONF}/zoo.cfg.dynamic"
 
-  exec ${ZOOKEEPER_HOME}/bin/zkServer.sh start-foreground ${ZOOCFG}
+  exec "${ZOOKEEPER_HOME}/bin/zkServer.sh" start-foreground "${ZOOCFG}"
 }
 
 # Process some known arguments to run Zookeeper
@@ -463,7 +474,7 @@ case $1 in
       # Otherwise we need to rethrow signals to service to terminate it gracefully
       # in case of need, while also executing post-mortem if available.
 
-      for sig in ${SIGNALS_TO_RETHROW}; do trap "rethrow_handler $sig" ${sig} 2>&1 > /dev/null; done
+      for sig in ${SIGNALS_TO_RETHROW}; do trap 'rethrow_handler '"$sig" "$sig" > /dev/null 2>&1; done
       start &
       pid="$!"
       wait "$pid"; javaRetCode=$?
