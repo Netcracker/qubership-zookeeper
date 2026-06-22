@@ -108,6 +108,9 @@ if [[ "$DEBUG" == true ]]; then
   printenv
 fi
 
+# Clean up any state left in /tmp from a previous container run (emptyDir persists across restarts).
+rm -rf /tmp/zookeeper
+
 # Redirect runtime-writable config and keystore dirs to /tmp so the root FS can be read-only.
 export ZK_CONF=/tmp/zookeeper/config
 export ZK_TLS_KS=/tmp/zookeeper/tls-ks
