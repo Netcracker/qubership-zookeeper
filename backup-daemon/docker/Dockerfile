@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-backup-daemon-go:feat_sensitive_data_parsing
+FROM ghcr.io/netcracker/qubership-backup-daemon-go:0.1.17
 
 ENV ZOOKEEPER_HOME=/opt/zookeeper \
     ZOOKEEPER_BACKUP=/opt/zookeeper/backup-storage
