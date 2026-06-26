@@ -353,6 +353,15 @@ func (bdrp BackupDaemonResourceProvider) getBackupDaemonVolumeMounts() []corev1.
 
 // getLivenessProbe configures the liveness probe for ZooKeeper Backup Daemon
 func (bdrp BackupDaemonResourceProvider) getLivenessProbe() *corev1.Probe {
+	return bdrp.getHTTPProbe("/health/live")
+}
+
+// getReadinessProbe configures the readiness probe for ZooKeeper Backup Daemon
+func (bdrp BackupDaemonResourceProvider) getReadinessProbe() *corev1.Probe {
+	return bdrp.getHTTPProbe("/health/ready")
+}
+
+func (bdrp BackupDaemonResourceProvider) getHTTPProbe(path string) *corev1.Probe {
 	probe := bdrp.getProbe()
 	backupDaemonPort := int(bdrp.getBackupDaemonPort())
 	scheme := corev1.URISchemeHTTP
@@ -361,17 +370,12 @@ func (bdrp BackupDaemonResourceProvider) getLivenessProbe() *corev1.Probe {
 	}
 	probe.ProbeHandler = corev1.ProbeHandler{
 		HTTPGet: &corev1.HTTPGetAction{
-			Path:   "/health/prometheus",
+			Path:   path,
 			Port:   intstr.FromInt(backupDaemonPort),
 			Scheme: scheme,
 		},
 	}
 	return probe
-}
-
-// getReadinessProbe configures the readiness probe for ZooKeeper Backup Daemon
-func (bdrp BackupDaemonResourceProvider) getReadinessProbe() *corev1.Probe {
-	return bdrp.getLivenessProbe()
 }
 
 // getProbe configures common parameters for liveness and readiness probe for ZooKeeper Backup Daemon
