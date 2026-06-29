@@ -90,72 +90,98 @@ func (r ReconcileBackupDaemon) Reconcile() error {
 		}
 	}
 
-	backupDaemonSpecHash, err := util.Hash(r.cr.Spec.BackupDaemon)
-	if err != nil {
-		return err
-	}
-	if r.reconciler.ResourceHashes[backupDaemonHashName] == backupDaemonSpecHash &&
-		r.reconciler.ResourceHashes[globalHashName] == globalSpecHash &&
-		(backupDaemonSecret.Name == "" || r.reconciler.ResourceVersions[backupDaemonSecret.Name] == backupDaemonSecret.ResourceVersion) {
-		r.logger.Info("Backup Daemon configuration didn't change, skipping reconcile loop")
-		return nil
-	}
-	if r.cr.Spec.BackupDaemon.BackupStorage.PersistentVolumeType != "" {
-		backupStorage := r.cr.Spec.BackupDaemon.BackupStorage.DeepCopy()
-		if backupStorage.PersistentVolumeClaimName == "" {
-			backupStorage.PersistentVolumeClaimName = fmt.Sprintf(provider.SnapshotsPersistentVolumeClaimPattern, r.cr.Name)
-		}
-
-		// Persistent volume claim for snapshots could be created in ZooKeeper
-		_, err := r.reconciler.findPersistentVolumeClaim(backupStorage.PersistentVolumeClaimName, r.cr.Namespace, r.logger)
-		if err != nil {
-			backupPersistentVolumeClaim, err := r.reconciler.processSnapshotsPersistentVolumeClaim(*backupStorage, r.cr, r.logger)
-			if err != nil {
-				return err
-			}
-			if backupPersistentVolumeClaim != nil {
-				if err := r.reconciler.createPersistentVolumeClaim(backupPersistentVolumeClaim, r.logger); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	clientService := backupDaemonProvider.NewBackupDaemonClientService()
-	if err := controllerutil.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
-		return err
-	}
-	if err := r.reconciler.createOrUpdateService(clientService, r.logger); err != nil {
-		return nil
-	}
-
-	serviceAccount := provider.NewServiceAccount(r.backupDaemonProvider.GetServiceAccountName(), r.cr.Namespace)
-	if err := r.reconciler.createServiceAccount(serviceAccount, r.logger); err != nil {
-		return err
-	}
-
-	if provider.IsVaultSecretManagementEnabled(r.cr) {
-		err := r.processVaultSecrets(backupDaemonSecret)
-		if err != nil {
+	var s3Secret *corev1.Secret
+	if r.cr.Spec.BackupDaemon.S3 != nil && r.cr.Spec.BackupDaemon.S3.Enabled && r.cr.Spec.BackupDaemon.S3.SecretName != "" {
+		s3Secret, err = r.reconciler.watchSecret(r.cr.Spec.BackupDaemon.S3.SecretName, r.cr, r.logger)
+		if err != nil && !errors.IsNotFound(err) {
 			return err
 		}
 	}
 
-	deployment := backupDaemonProvider.NewBackupDaemonDeployment()
-	if err := controllerutil.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
+	s3AliasesSecretName := fmt.Sprintf("%s-backup-daemon-s3-aliases", r.cr.Name)
+	s3AliasesSecret, aliasesErr := r.reconciler.findSecret(s3AliasesSecretName, r.cr.Namespace, r.logger)
+	s3AliasesEnabled := aliasesErr == nil
+
+	backupDaemonSpecHash, err := util.Hash(r.cr.Spec.BackupDaemon)
+	if err != nil {
 		return err
 	}
-	if err := r.reconciler.createOrUpdateDeployment(deployment, r.logger); err != nil {
+	if r.reconciler.ResourceHashes[backupDaemonHashName] != backupDaemonSpecHash ||
+		r.reconciler.ResourceHashes[globalHashName] != globalSpecHash ||
+		secretVersionChanged(r.reconciler.ResourceVersions, backupDaemonSecret) ||
+		secretVersionChanged(r.reconciler.ResourceVersions, s3Secret) ||
+		secretVersionChanged(r.reconciler.ResourceVersions, s3AliasesSecret) {
+		if r.cr.Spec.BackupDaemon.BackupStorage.PersistentVolumeType != "" {
+			backupStorage := r.cr.Spec.BackupDaemon.BackupStorage.DeepCopy()
+			if backupStorage.PersistentVolumeClaimName == "" {
+				backupStorage.PersistentVolumeClaimName = fmt.Sprintf(provider.SnapshotsPersistentVolumeClaimPattern, r.cr.Name)
+			}
+
+			// Persistent volume claim for snapshots could be created in ZooKeeper
+			_, err := r.reconciler.findPersistentVolumeClaim(backupStorage.PersistentVolumeClaimName, r.cr.Namespace, r.logger)
+			if err != nil {
+				backupPersistentVolumeClaim, err := r.reconciler.processSnapshotsPersistentVolumeClaim(*backupStorage, r.cr, r.logger)
+				if err != nil {
+					return err
+				}
+				if backupPersistentVolumeClaim != nil {
+					if err := r.reconciler.createPersistentVolumeClaim(backupPersistentVolumeClaim, r.logger); err != nil {
+						return err
+					}
+				}
+			}
+		}
+
+		clientService := backupDaemonProvider.NewBackupDaemonClientService()
+		if err := controllerutil.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
+			return err
+		}
+		if err := r.reconciler.createOrUpdateService(clientService, r.logger); err != nil {
+			return err
+		}
+
+		serviceAccount := provider.NewServiceAccount(r.backupDaemonProvider.GetServiceAccountName(), r.cr.Namespace)
+		if err := r.reconciler.createServiceAccount(serviceAccount, r.logger); err != nil {
+			return err
+		}
+
+		if provider.IsVaultSecretManagementEnabled(r.cr) {
+			err := r.processVaultSecrets(backupDaemonSecret)
+			if err != nil {
+				return err
+			}
+		}
+
+		deployment := backupDaemonProvider.NewBackupDaemonDeployment(s3AliasesEnabled)
+		if err := controllerutil.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
+			return err
+		}
+		if err := r.reconciler.createOrUpdateDeployment(deployment, r.logger); err != nil {
+			return err
+		}
+
+		r.logger.Info("Updating ZooKeeper Backup Daemon status")
+		if err := r.updateBackupDaemonStatus(r.cr); err != nil {
+			return err
+		}
+	} else {
+		r.logger.Info("Backup Daemon configuration didn't change, skipping reconcile loop")
+	}
+
+	if err := updateDeploymentSecretRestartAnnotations(
+		r.reconciler.Client, r.cr.Namespace, r.backupDaemonProvider.GetServiceName(), r.logger,
+		backupDaemonSecret, s3Secret, s3AliasesSecret); err != nil {
 		return err
 	}
 
-	r.logger.Info("Updating ZooKeeper Backup Daemon status")
-	if err := r.updateBackupDaemonStatus(r.cr); err != nil {
-		return err
-	}
-
-	r.reconciler.ResourceHashes[backupDaemonHashName] = backupDaemonSpecHash
 	r.reconciler.ResourceVersions[backupDaemonSecret.Name] = backupDaemonSecret.ResourceVersion
+	if s3Secret != nil {
+		r.reconciler.ResourceVersions[s3Secret.Name] = s3Secret.ResourceVersion
+	}
+	if s3AliasesSecret != nil {
+		r.reconciler.ResourceVersions[s3AliasesSecret.Name] = s3AliasesSecret.ResourceVersion
+	}
+	r.reconciler.ResourceHashes[backupDaemonHashName] = backupDaemonSpecHash
 	return nil
 }
 

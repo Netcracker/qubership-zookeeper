@@ -18,11 +18,20 @@ from logging.handlers import RotatingFileHandler
 
 import requests
 
-ZOOKEEPER_BACKUP_DAEMON_USERNAME = os.getenv('ZOOKEEPER_BACKUP_DAEMON_USERNAME')
-ZOOKEEPER_BACKUP_DAEMON_PASSWORD = os.getenv('ZOOKEEPER_BACKUP_DAEMON_PASSWORD')
 logger = logging.getLogger(__name__)
 
+DEFAULT_SECRETS_DIR = '/etc/secrets/monitoring-pod-secrets'
+SECRETS_DIR = os.getenv('MONITORING_SECRETS_DIR', DEFAULT_SECRETS_DIR)
+
 MONITORING_LOGS = os.getenv('MONITORING_LOGS')
+
+
+def get_env_or_file(name: str):
+    default_file_path = os.path.join(SECRETS_DIR, name)
+    if os.path.isfile(default_file_path):
+        with open(default_file_path, 'r', encoding='utf-8') as secret_file:
+            return secret_file.read().strip()
+    return os.getenv(name)
 
 
 def __configure_logging(log):
@@ -55,7 +64,8 @@ TLS_ROOT_CA_CERTIFICATE = '/tls/backup/ca.crt' if BACKUP_DAEMON_TLS_ENABLED is n
 def _get_request_with_path(url: str, path: str):
     try:
         response = requests.get(f'{url}/{path}',
-                                auth=(ZOOKEEPER_BACKUP_DAEMON_USERNAME, ZOOKEEPER_BACKUP_DAEMON_PASSWORD),
+                                auth=(get_env_or_file('ZOOKEEPER_BACKUP_DAEMON_USERNAME'),
+                                      get_env_or_file('ZOOKEEPER_BACKUP_DAEMON_PASSWORD')),
                                 verify=TLS_ROOT_CA_CERTIFICATE)
         return response.json()
     except Exception:
@@ -119,7 +129,8 @@ def _collect_last_backup_metrics(zookeeper_backup_daemon_url: str, storage):
 
         last_backup_status = 'Failed' if last_backup['failed'] else 'Successful'
         response = requests.get(f'{zookeeper_backup_daemon_url}/jobstatus/{last_backup_id}',
-                                auth=(ZOOKEEPER_BACKUP_DAEMON_USERNAME, ZOOKEEPER_BACKUP_DAEMON_PASSWORD),
+                                auth=(get_env_or_file('ZOOKEEPER_BACKUP_DAEMON_USERNAME'),
+                                      get_env_or_file('ZOOKEEPER_BACKUP_DAEMON_PASSWORD')),
                                 verify=TLS_ROOT_CA_CERTIFICATE)
         if response.status_code != 404:
             last_backup_status = response.json().get('status') or 'Failed'

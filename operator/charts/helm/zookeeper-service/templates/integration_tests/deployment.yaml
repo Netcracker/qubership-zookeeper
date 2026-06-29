@@ -1,4 +1,12 @@
 {{- if .Values.integrationTests.install }}
+{{- $integrationTestsPodSecretsMount := include "zookeeper.podSecretsMountPath" (dict "service" "zookeeper-integration-tests") -}}
+{{- $s3AliasesData := fromYaml (include "backupDaemon.s3Aliases" .) }}
+{{- $defaultS3AliasName := "" }}
+{{- range $s3AliasesData.items }}
+  {{- if and .name .spec .spec.default }}
+    {{- $defaultS3AliasName = .name }}
+  {{- end }}
+{{- end }}
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -28,6 +36,8 @@ spec:
       {{- end }}
         name: {{ .Values.integrationTests.service.name }}
         app.kubernetes.io/name: {{ .Values.integrationTests.service.name }}
+      annotations:
+        checksum/zookeeper-integration-tests-pod-secrets: {{ printf "%v-%v-%v-%v" .Values.backupDaemon.install .Values.backupDaemon.s3.enabled .Values.integrationTests.atpReport.enabled (include "monitoring.install" .) | sha256sum }}
     spec:
       serviceAccountName: {{ .Values.integrationTests.service.name }}
       {{- if .Values.integrationTests.affinity }}
@@ -69,26 +79,8 @@ spec:
               value: {{ include "zookeeper-service.enableSsl" . | quote }}
             - name: ZOOKEEPER_VOLUME_SIZE
               value: {{ .Values.integrationTests.zookeeperVolumeSize | default 2 | quote }}
-            - name: ZOOKEEPER_ADMIN_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "zookeeper.name" . }}-secret
-                  key: admin-username
-            - name: ZOOKEEPER_ADMIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "zookeeper.name" . }}-secret
-                  key: admin-password
-            - name: ZOOKEEPER_CLIENT_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "zookeeper.name" . }}-secret
-                  key: client-username
-            - name: ZOOKEEPER_CLIENT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "zookeeper.name" . }}-secret
-                  key: client-password
+            - name: INTEGRATION_TESTS_SECRETS_DIR
+              value: {{ $integrationTestsPodSecretsMount | quote }}
             {{- if .Values.backupDaemon.install }}
             - name: PV_TYPE
               value: {{ .Values.integrationTests.pvType }}
@@ -102,29 +94,17 @@ spec:
             {{ else }}
               value: "8080"
             {{- end }}
-            - name: ZOOKEEPER_BACKUP_DAEMON_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "zookeeper.name" . }}-backup-daemon-secret
-                  key: username
-            - name: ZOOKEEPER_BACKUP_DAEMON_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "zookeeper.name" . }}-backup-daemon-secret
-                  key: password
+            {{- end }}
+            {{- if and .Values.backupDaemon.install .Values.backupDaemon.s3.enabled }}
+            - name: S3_ENABLED
+              value: "true"
+            - name: S3_ALIASES_SECRET_NAME
+              value: {{ template "zookeeper.name" . }}-backup-daemon-s3-aliases
+            - name: S3_DEFAULT_ALIAS_NAME
+              value: {{ default "default" $defaultS3AliasName | quote }}
             {{- end }}
             - name: PROMETHEUS_URL
               value: {{ .Values.integrationTests.prometheusUrl }}
-            - name: PROMETHEUS_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-secret
-                  key: prometheus-user
-            - name: PROMETHEUS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-secret
-                  key: prometheus-password
             {{- if .Values.integrationTests.monitoredImages }}
             - name: MONITORED_IMAGES
               value: {{ .Values.integrationTests.monitoredImages | quote }}
@@ -143,16 +123,6 @@ spec:
               value: {{ .Values.integrationTests.atpReport.atpStorage.bucket | quote }}
             - name: ATP_STORAGE_REGION
               value: {{ .Values.integrationTests.atpReport.atpStorage.region | quote }}
-            - name: ATP_STORAGE_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-atp-storage-secret
-                  key: atp-storage-username
-            - name: ATP_STORAGE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-atp-storage-secret
-                  key: atp-storage-password
             - name: ATP_REPORT_VIEW_UI_URL
               value: {{ .Values.integrationTests.atpReportViewUiUrl | quote }}
             {{- end }}
@@ -173,6 +143,9 @@ spec:
               cpu: {{ default "400m" .Values.integrationTests.resources.limits.cpu }}
           volumeMounts:
             {{- include "zookeeper-service.tmpVolumeMount" . | nindent 12 }}
+            - name: zookeeper-integration-tests-pod-secrets
+              mountPath: {{ $integrationTestsPodSecretsMount }}
+              readOnly: true
             - name: output
               mountPath: /opt/robot/output
           {{- if and (eq (include "zookeeper-service.enableSsl" .) "true") (include "zookeeper-service.sslSecretName" .) }}
@@ -208,6 +181,53 @@ spec:
             failureThreshold: 5
       volumes:
         {{- include "zookeeper-service.tmpVolume" . | nindent 8 }}
+        - name: zookeeper-integration-tests-pod-secrets
+          projected:
+            defaultMode: 420
+            sources:
+              - secret:
+                  name: {{ template "zookeeper.name" . }}-secret
+                  items:
+                    - key: admin-username
+                      path: ZOOKEEPER_ADMIN_USERNAME
+                    - key: admin-password
+                      path: ZOOKEEPER_ADMIN_PASSWORD
+                    - key: client-username
+                      path: ZOOKEEPER_CLIENT_USERNAME
+                    - key: client-password
+                      path: ZOOKEEPER_CLIENT_PASSWORD
+              {{- if .Values.backupDaemon.install }}
+              - secret:
+                  name: {{ template "zookeeper.name" . }}-backup-daemon-secret
+                  items:
+                    - key: username
+                      path: ZOOKEEPER_BACKUP_DAEMON_USERNAME
+                    - key: password
+                      path: ZOOKEEPER_BACKUP_DAEMON_PASSWORD
+              {{- if .Values.backupDaemon.s3.enabled }}
+              - secret:
+                  name: {{ template "zookeeper.name" . }}-s3-secret
+                  items:
+                    - key: s3-key-secret
+                      path: S3_KEY_SECRET
+              {{- end }}
+              {{- end }}
+              - secret:
+                  name: {{ .Values.integrationTests.service.name }}-secret
+                  items:
+                    - key: prometheus-user
+                      path: PROMETHEUS_USER
+                    - key: prometheus-password
+                      path: PROMETHEUS_PASSWORD
+              {{- if .Values.integrationTests.atpReport.enabled }}
+              - secret:
+                  name: {{ .Values.integrationTests.service.name }}-atp-storage-secret
+                  items:
+                    - key: atp-storage-username
+                      path: ATP_STORAGE_USERNAME
+                    - key: atp-storage-password
+                      path: ATP_STORAGE_PASSWORD
+              {{- end }}
         - name: output
           emptyDir: {}
       {{- if and (eq (include "zookeeper-service.enableSsl" .) "true") (include "zookeeper-service.sslSecretName" .) }}

@@ -97,17 +97,15 @@ func (r ReconcileZooKeeper) Reconcile() error {
 	if err != nil {
 		return err
 	}
-	if r.reconciler.ResourceHashes[zooKeeperHashName] == zooKeeperSpecHash &&
-		r.reconciler.ResourceHashes[globalHashName] == globalSpecHash &&
-		(zooKeeperSecret.Name == "" || r.reconciler.ResourceVersions[zooKeeperSecret.Name] == zooKeeperSecret.ResourceVersion) {
-		r.logger.Info("ZooKeeper configuration didn't change, skipping reconcile loop")
-		return nil
-	}
 	zkProvider := r.zkProvider
 	zookeeperSpec := r.cr.Spec.ZooKeeper
-	if zookeeperSpec.Replicas > 0 {
-		// Create snapshots persistent volume claim if SnapshotStorage.PersistentVolumeType is not empty
-		if zookeeperSpec.SnapshotStorage.PersistentVolumeType != "" && zookeeperSpec.SnapshotStorage.PersistentVolumeType != "standalone" {
+
+	if r.reconciler.ResourceHashes[zooKeeperHashName] != zooKeeperSpecHash ||
+		r.reconciler.ResourceHashes[globalHashName] != globalSpecHash ||
+		secretVersionChanged(r.reconciler.ResourceVersions, zooKeeperSecret) {
+		if zookeeperSpec.Replicas > 0 {
+			// Create snapshots persistent volume claim if SnapshotStorage.PersistentVolumeType is not empty
+			if zookeeperSpec.SnapshotStorage.PersistentVolumeType != "" && zookeeperSpec.SnapshotStorage.PersistentVolumeType != "standalone" {
 			snapshotPersistentVolumeClaim, err := r.reconciler.processSnapshotsPersistentVolumeClaim(zookeeperSpec.SnapshotStorage, r.cr, r.logger)
 			if err != nil {
 				return err
@@ -227,14 +225,25 @@ func (r ReconcileZooKeeper) Reconcile() error {
 			}
 
 		}
-	}
-	r.logger.Info("Updating ZooKeeper status")
-	if err := r.updateZooKeeperStatus(r.cr); err != nil {
-		return err
+		}
+		r.logger.Info("Updating ZooKeeper status")
+		if err := r.updateZooKeeperStatus(r.cr); err != nil {
+			return err
+		}
+	} else {
+		r.logger.Info("ZooKeeper configuration didn't change, skipping reconcile loop")
 	}
 
-	r.reconciler.ResourceHashes[zooKeeperHashName] = zooKeeperSpecHash
+	for serverId := 1; serverId <= zookeeperSpec.Replicas; serverId++ {
+		deploymentName := fmt.Sprintf("%s-%d", r.cr.Name, serverId)
+		if err := updateDeploymentSecretRestartAnnotations(
+			r.reconciler.Client, r.cr.Namespace, deploymentName, r.logger, zooKeeperSecret); err != nil {
+			return err
+		}
+	}
+
 	r.reconciler.ResourceVersions[zooKeeperSecret.Name] = zooKeeperSecret.ResourceVersion
+	r.reconciler.ResourceHashes[zooKeeperHashName] = zooKeeperSpecHash
 	return nil
 }
 

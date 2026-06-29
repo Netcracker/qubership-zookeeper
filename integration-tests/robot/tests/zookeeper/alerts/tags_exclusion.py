@@ -12,6 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
+DEFAULT_SECRETS_DIR = '/etc/secrets/zookeeper-integration-tests-pod-secrets'
+
+
+def _secrets_dir(environ) -> str:
+    return environ.get('INTEGRATION_TESTS_SECRETS_DIR', DEFAULT_SECRETS_DIR)
+
+
 def check_that_parameters_are_presented(environ, *variable_names) -> bool:
     for variable in variable_names:
         if not environ.get(variable):
@@ -19,7 +28,15 @@ def check_that_parameters_are_presented(environ, *variable_names) -> bool:
     return True
 
 
+def secret_is_present(environ, name) -> bool:
+    path = os.path.join(_secrets_dir(environ), name)
+    return os.path.isfile(path) and os.path.getsize(path) > 0
+
+
 def get_excluded_tags(environ) -> list:
-    if not check_that_parameters_are_presented(environ,
-                                               'PROMETHEUS_URL'):
+    if not check_that_parameters_are_presented(environ, 'PROMETHEUS_URL'):
         return ['prometheus']
+    if not (secret_is_present(environ, 'PROMETHEUS_USER')
+            and secret_is_present(environ, 'PROMETHEUS_PASSWORD')):
+        return ['prometheus']
+    return []

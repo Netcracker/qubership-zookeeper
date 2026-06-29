@@ -105,6 +105,37 @@ func (mrp MonitoringResourceProvider) NewMonitoringDeployment() *appsv1.Deployme
 	envVars := mrp.getMonitoringEnvironmentVariables()
 	envVars = append(envVars, mrp.getZooKeeperCredentialsEnvs()...)
 
+	if !IsVaultSecretManagementEnabled(mrp.cr) {
+		podSecretsMount := GetPodSecretsMountPath("monitoring")
+		envVars = append(envVars, corev1.EnvVar{
+			Name:  "MONITORING_SECRETS_DIR",
+			Value: podSecretsMount,
+		})
+		var projectedSources []ProjectedSecretSource
+		if mrp.spec.SecretName != "" {
+			projectedSources = append(projectedSources, ProjectedSecretSource{
+				SecretName: mrp.spec.SecretName,
+				Items: []corev1.KeyToPath{
+					SecretKeyToPath("zookeeper-client-username", "ZOOKEEPER_CLIENT_USERNAME"),
+					SecretKeyToPath("zookeeper-client-password", "ZOOKEEPER_CLIENT_PASSWORD"),
+				},
+			})
+		}
+		if mrp.cr.Spec.BackupDaemon != nil && mrp.cr.Spec.BackupDaemon.SecretName != "" {
+			projectedSources = append(projectedSources, ProjectedSecretSource{
+				SecretName: mrp.cr.Spec.BackupDaemon.SecretName,
+				Items: []corev1.KeyToPath{
+					SecretKeyToPath("username", "ZOOKEEPER_BACKUP_DAEMON_USERNAME"),
+					SecretKeyToPath("password", "ZOOKEEPER_BACKUP_DAEMON_PASSWORD"),
+				},
+			})
+		}
+		if len(projectedSources) > 0 {
+			volumes = append(volumes, NewPodSecretsProjectedVolume("monitoring-pod-secrets", projectedSources))
+			volumeMounts = append(volumeMounts, NewPodSecretsVolumeMount("monitoring-pod-secrets", podSecretsMount))
+		}
+	}
+
 	if mrp.spec.MonitoringType == "prometheus" {
 		// Name is reduced because it must be no more than 15 characters
 		ports = append(ports, corev1.ContainerPort{
@@ -258,14 +289,6 @@ func (mrp MonitoringResourceProvider) getMonitoringEnvironmentVariables() []core
 				Name:  "S3_ENABLED",
 				Value: strconv.FormatBool(s3Enabled),
 			},
-			{
-				Name:      "ZOOKEEPER_BACKUP_DAEMON_USERNAME",
-				ValueFrom: getSecretEnvVarSource(mrp.cr.Spec.BackupDaemon.SecretName, "username"),
-			},
-			{
-				Name:      "ZOOKEEPER_BACKUP_DAEMON_PASSWORD",
-				ValueFrom: getSecretEnvVarSource(mrp.cr.Spec.BackupDaemon.SecretName, "password"),
-			},
 		}...)
 	}
 	return environmentVariables
@@ -307,16 +330,7 @@ func (mrp MonitoringResourceProvider) getZooKeeperCredentialsEnvs() []corev1.Env
 			},
 		}
 	} else {
-		return []corev1.EnvVar{
-			{
-				Name:      "ZOOKEEPER_CLIENT_USERNAME",
-				ValueFrom: getSecretEnvVarSource(mrp.spec.SecretName, "zookeeper-client-username"),
-			},
-			{
-				Name:      "ZOOKEEPER_CLIENT_PASSWORD",
-				ValueFrom: getSecretEnvVarSource(mrp.spec.SecretName, "zookeeper-client-password"),
-			},
-		}
+		return nil
 	}
 }
 

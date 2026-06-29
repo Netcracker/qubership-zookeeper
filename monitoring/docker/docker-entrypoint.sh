@@ -4,16 +4,9 @@
 set -e
 if [[ "$DEBUG" == true ]]; then
   set -x
-  printenv
 fi
 
 : "${ZOOKEEPER_PROMETHEUS_PORT:=8080}"
-
-# Set environment variables used in telegraf.conf
-export ZOOKEEPER_CLIENT_USERNAME=${ZOOKEEPER_CLIENT_USERNAME}
-export ZOOKEEPER_CLIENT_PASSWORD=${ZOOKEEPER_CLIENT_PASSWORD}
-export SM_DB_USERNAME=${SM_DB_USERNAME}
-export SM_DB_PASSWORD=${SM_DB_PASSWORD}
 
 #Validate variable name that contains addresses.
 #$1 - variable with addresses to validate

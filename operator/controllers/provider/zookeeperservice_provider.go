@@ -44,16 +44,6 @@ func GetZooKeeperSelectorLabels(serviceName string) map[string]string {
 	}
 }
 
-// getSecretEnvVarSource returns EnvVarSource for secret value
-func getSecretEnvVarSource(secretName string, key string) *corev1.EnvVarSource {
-	return &corev1.EnvVarSource{
-		SecretKeyRef: &corev1.SecretKeySelector{
-			Key:                  key,
-			LocalObjectReference: corev1.LocalObjectReference{Name: secretName},
-		},
-	}
-}
-
 // newServiceForCR returns service with specified parameters
 func newServiceForCR(serviceName string, namespace string, labels map[string]string, selectorLabels map[string]string, ports []corev1.ServicePort) *corev1.Service {
 	return &corev1.Service{

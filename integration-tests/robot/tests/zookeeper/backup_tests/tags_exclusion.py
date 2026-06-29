@@ -12,11 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
+DEFAULT_SECRETS_DIR = '/etc/secrets/zookeeper-integration-tests-pod-secrets'
+
+
+def _secrets_dir(environ) -> str:
+    return environ.get('INTEGRATION_TESTS_SECRETS_DIR', DEFAULT_SECRETS_DIR)
+
+
 def check_that_parameters_are_presented(environ, *variable_names) -> bool:
     for variable in variable_names:
         if not environ.get(variable):
             return False
     return True
+
+
+def secret_is_present(environ, name) -> bool:
+    path = os.path.join(_secrets_dir(environ), name)
+    return os.path.isfile(path) and os.path.getsize(path) > 0
 
 
 def get_excluded_tags(environ) -> list:
@@ -33,8 +47,12 @@ def get_excluded_tags(environ) -> list:
     tags = environ.get('TAGS')
     if not tags or tags.find("full_eviction_test") == -1:
         excluded_tags.append('full_eviction_test')
-    if not check_that_parameters_are_presented(environ,
-                                               'ZOOKEEPER_BACKUP_DAEMON_USERNAME',
-                                               'ZOOKEEPER_BACKUP_DAEMON_PASSWORD'):
+    if not (secret_is_present(environ, 'ZOOKEEPER_BACKUP_DAEMON_USERNAME')
+            and secret_is_present(environ, 'ZOOKEEPER_BACKUP_DAEMON_PASSWORD')):
         excluded_tags.append('unauthorized_access')
+    if not check_that_parameters_are_presented(environ, 'S3_ENABLED') \
+            or environ.get('S3_ENABLED') != 'true':
+        excluded_tags.append('backup_v2')
+    elif not secret_is_present(environ, 'S3_KEY_SECRET'):
+        excluded_tags.append('backup_v2')
     return excluded_tags

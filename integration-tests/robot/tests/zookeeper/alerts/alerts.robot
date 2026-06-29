@@ -7,10 +7,10 @@ ${ALERT_RETRY_INTERVAL}                  10s
 ${SLEEP_TIME}                            30s
 
 *** Settings ***
-Library  MonitoringLibrary  host=%{PROMETHEUS_URL}
-...                         username=%{PROMETHEUS_USER}
-...                         password=%{PROMETHEUS_PASSWORD}
 Resource  ../../shared/keywords.robot
+Library  MonitoringLibrary  host=%{PROMETHEUS_URL}
+...                         username=${PROMETHEUS_USER}
+...                         password=${PROMETHEUS_PASSWORD}
 Library  PlatformLibrary  managed_by_operator=%{ZOOKEEPER_IS_MANAGED_BY_OPERATOR}
 
 *** Keywords ***

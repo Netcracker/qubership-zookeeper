@@ -418,6 +418,41 @@ Backup Daemon S3 SSL secret name
 {{- end -}}
 
 {{/*
+Backup Daemon S3 aliases list from values.
+*/}}
+{{- define "backupDaemon.s3Aliases" -}}
+{{- if and .Values.backupDaemon.s3Aliases -}}
+items: {{ toYaml .Values.backupDaemon.s3Aliases | nindent 2 }}
+{{- else -}}
+items: []
+{{- end -}}
+{{- end -}}
+
+{{/*
+Build backup daemon aliases payload as JSON object.
+*/}}
+{{- define "backupDaemon.s3AliasesJson" -}}
+{{- $s3Data := fromYaml (include "backupDaemon.s3Aliases" .) -}}
+{{- $aliases := dict -}}
+{{- range $s3Data.items }}
+  {{- $out := dict -}}
+  {{- if .spec }}
+    {{- $out = merge $out (omit .spec "storageBucket" "storageUsername" "storageRegion" "storageServerUrl") -}}
+    {{- if .spec.storageBucket }}{{- $out = set $out "bucketName" .spec.storageBucket }}{{- end -}}
+    {{- if .spec.storageUsername }}{{- $out = set $out "accessKeyId" .spec.storageUsername }}{{- end -}}
+    {{- $out = set $out "region" (default "us-east-1" .spec.storageRegion) -}}
+    {{- if .spec.storageServerUrl }}{{- $out = set $out "s3Url" .spec.storageServerUrl }}{{- end -}}
+  {{- end }}
+  {{- if .secretContent }}
+    {{- $out = merge $out (omit .secretContent "storagePassword") -}}
+    {{- if .secretContent.storagePassword }}{{- $out = set $out "accessKeySecret" .secretContent.storagePassword }}{{- end -}}
+  {{- end }}
+  {{- $aliases = set $aliases .name $out -}}
+{{- end }}
+{{- $aliases | toPrettyJson -}}
+{{- end -}}
+
+{{/*
 DNS names used to generate SSL certificate with "Subject Alternative Name" field for Backup Daemon
 */}}
 {{- define "backupDaemon.certDnsNames" -}}
@@ -506,7 +541,14 @@ Usage example:
   {{- if .Values.integrationTests.install }}
     {{- printf "deployment %s-integration-tests-runner zookeeper-integration-tests-runner %s, " (include "zookeeper.name" .) (include "zookeeper-service.findImage" (list . "zookeeper-integration-tests")) -}}
   {{- end -}}
-{{- end }}
+{{- end -}}
+
+{{/*
+Mount path for env→file migrated pod secrets (readOnly projected volume).
+*/}}
+{{- define "zookeeper.podSecretsMountPath" -}}
+{{- printf "/etc/secrets/%s-pod-secrets" .service -}}
+{{- end -}}
 
 {{/*
 Common Zookeeper chart related resources labels

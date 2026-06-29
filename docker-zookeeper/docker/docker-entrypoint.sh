@@ -1,5 +1,24 @@
 #!/bin/bash
 
+SECRETS_DIR="${ZOOKEEPER_SECRETS_DIR:-/etc/secrets/zookeeper-pod-secrets}"
+
+resolve_secret_value() {
+  local secret_key="$1"
+  local env_var_name="$2"
+  local secret_path="${SECRETS_DIR}/${secret_key}"
+  if [[ -r "${secret_path}" ]]; then
+    tr -d '\r' < "${secret_path}"
+    return 0
+  fi
+  printf "%s" "${!env_var_name:-}"
+}
+
+ADMIN_USERNAME="$(resolve_secret_value "admin-username" "ADMIN_USERNAME")"
+ADMIN_PASSWORD="$(resolve_secret_value "admin-password" "ADMIN_PASSWORD")"
+CLIENT_USERNAME="$(resolve_secret_value "client-username" "CLIENT_USERNAME")"
+CLIENT_PASSWORD="$(resolve_secret_value "client-password" "CLIENT_PASSWORD")"
+ADDITIONAL_USERS="$(resolve_secret_value "additional-users" "ADDITIONAL_USERS")"
+
 # Returns true if specified file ends on new line
 #$1 - file to check
 newline_at_eof() {

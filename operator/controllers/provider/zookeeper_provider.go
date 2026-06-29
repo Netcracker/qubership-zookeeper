@@ -119,8 +119,10 @@ func (zrp ZooKeeperResourceProvider) NewZooKeeperPersistentVolumeClaimForCR(serv
 		}
 	}
 	persistentVolumeClaimName := fmt.Sprintf(persistentVolumeClaimPattern, zrp.cr.Name, serverId)
+	labels := GetZooKeeperLabels(zrp.cr.Name, zrp.cr.Spec.Global.DefaultLabels)
+	labels["cloud-backuper.netcracker.com/exclude-from-physical-backup"] = "true"
 	return ProcessNonSharedPersistentVolumeClaim(persistentVolumeClaimName, persistentVolumeName, persistentVolumeLabel,
-		storageClassName, zrp.spec.Storage.Size, zrp.cr.Namespace, GetZooKeeperLabels(zrp.cr.Name, zrp.cr.Spec.Global.DefaultLabels), zrp.logger)
+		storageClassName, zrp.spec.Storage.Size, zrp.cr.Namespace, labels, zrp.logger)
 }
 
 // NewServerDeploymentForCR returns a deployment for specified ZooKeeper server
@@ -226,6 +228,27 @@ func (zrp ZooKeeperResourceProvider) NewServerDeploymentForCR(serverId int) *app
 		{Name: "log", MountPath: "/opt/zookeeper/log"},
 		{Name: "backup-storage", MountPath: "/opt/zookeeper/backup-storage"},
 		getTmpVolumeMount(),
+	}
+
+	if !IsVaultSecretManagementEnabled(zrp.cr) && zrp.spec.SecretName != "" {
+		podSecretsMount := GetPodSecretsMountPath("zookeeper")
+		envVars = append(envVars, corev1.EnvVar{
+			Name:  "ZOOKEEPER_SECRETS_DIR",
+			Value: podSecretsMount,
+		})
+		volumes = append(volumes, NewPodSecretsProjectedVolume("zookeeper-pod-secrets", []ProjectedSecretSource{
+			{
+				SecretName: zrp.spec.SecretName,
+				Items: []corev1.KeyToPath{
+					SecretKeyToPath("admin-username", "admin-username"),
+					SecretKeyToPath("admin-password", "admin-password"),
+					SecretKeyToPath("client-username", "client-username"),
+					SecretKeyToPath("client-password", "client-password"),
+					SecretKeyToPath("additional-users", "additional-users"),
+				},
+			},
+		}))
+		volumeMounts = append(volumeMounts, NewPodSecretsVolumeMount("zookeeper-pod-secrets", podSecretsMount))
 	}
 
 	diagnosticMode := zrp.spec.Diagnostics.Mode
@@ -376,28 +399,7 @@ func (zrp ZooKeeperResourceProvider) getSecretEnvs() []corev1.EnvVar {
 			},
 		}
 	} else {
-		return []corev1.EnvVar{
-			{
-				Name:      "ADMIN_USERNAME",
-				ValueFrom: getSecretEnvVarSource(zrp.spec.SecretName, "admin-username"),
-			},
-			{
-				Name:      "ADMIN_PASSWORD",
-				ValueFrom: getSecretEnvVarSource(zrp.spec.SecretName, "admin-password"),
-			},
-			{
-				Name:      "CLIENT_USERNAME",
-				ValueFrom: getSecretEnvVarSource(zrp.spec.SecretName, "client-username"),
-			},
-			{
-				Name:      "CLIENT_PASSWORD",
-				ValueFrom: getSecretEnvVarSource(zrp.spec.SecretName, "client-password"),
-			},
-			{
-				Name:      "ADDITIONAL_USERS",
-				ValueFrom: getSecretEnvVarSource(zrp.spec.SecretName, "additional-users"),
-			},
-		}
+		return nil
 	}
 }
 

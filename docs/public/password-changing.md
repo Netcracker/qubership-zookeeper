@@ -17,7 +17,8 @@ To update ZooKeeper credentials:
 4. Update the values for the `admin-username`, `admin-password`, `client-username`, `client-password`, and `additional-users` properties with new credentials in `BASE64` encoding.
    For more information about these credentials, refer to [ZooKeeper Security](/docs/public/security.md) section in the _Zookeeper Service Installation Procedure_.
 5. Click **Save**.
-6. Restart ZooKeeper to apply the newly specified credentials.
+6. If `global.autoRestartOnSecretChange` is `true` (default), the operator restarts ZooKeeper pods automatically after the Secret change is reconciled.
+   Otherwise, restart ZooKeeper manually to apply the newly specified credentials.
 
 where:
 
@@ -45,7 +46,8 @@ To update the ZooKeeper Backup Daemon credentials secret:
 1. Navigate to **Actions** > **Edit YAML**.
 1. Update the values of the `zookeeper-admin-username` and `zookeeper-admin-password` properties with new credentials in `BASE64` encoding.
 1. Click **Save**.
-1. Restart ZooKeeper Backup Daemon to apply the newly specified credentials.
+1. If `global.autoRestartOnSecretChange` is `true` (default), the operator restarts ZooKeeper Backup Daemon pods automatically after the Secret change is reconciled.
+   Otherwise, restart ZooKeeper Backup Daemon manually to apply the newly specified credentials.
 
 where:
 
