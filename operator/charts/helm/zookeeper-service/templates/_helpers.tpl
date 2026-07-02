@@ -359,6 +359,14 @@ Find a zookeeper-backup-daemon image in various places.
   {{- join "," $zookeeperHosts -}}
 {{- end -}}
 
+{{- define "monitoring.zookeeperServers" -}}
+  {{- $servers := list -}}
+  {{- range $replica, $e := until ((include "zookeeper.replicas" . ) | int) -}}
+    {{- $servers = append $servers (printf "\"%s-%d:2181\"" (include "zookeeper.name" $) (add1 $replica)) }}
+  {{- end -}}
+  [{{ join ", " $servers }}]
+{{- end -}}
+
 {{/*
 Backup Daemon Protocol
 */}}
