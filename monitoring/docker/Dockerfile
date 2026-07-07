@@ -3,8 +3,8 @@ FROM telegraf:1.38.2-alpine
 ENV ZOOKEEPER_MONITORING_HOME=/opt/zookeeper-monitoring \
     MONITORING_LOGS=/tmp/monitoring/logs
 
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/main" > /etc/apk/repositories && \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/community" >> /etc/apk/repositories
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
 
 RUN mkdir -p ${ZOOKEEPER_MONITORING_HOME}
 
