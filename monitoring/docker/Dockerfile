@@ -1,4 +1,4 @@
-FROM telegraf:1.38.2-alpine
+FROM telegraf:1.39.1-alpine
 
 ENV ZOOKEEPER_MONITORING_HOME=/opt/zookeeper-monitoring \
     MONITORING_LOGS=/tmp/monitoring/logs
@@ -33,9 +33,7 @@ RUN  python3 -m ensurepip \
 RUN set -x && apk upgrade --available
 
 # Upgrade tools from edge to avoid vulnerabilities
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
-    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --no-cache --upgrade \
+RUN apk add --update --no-cache --upgrade \
         pcre2 curl gnutls libcurl jq
 
 USER 1000:0
