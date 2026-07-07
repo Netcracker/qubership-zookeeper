@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.26-alpine3.23 as builder
+FROM --platform=$BUILDPLATFORM golang:1.26-alpine3.24 as builder
 ARG BUILDPLATFORM
 ARG TARGETOS
 ARG TARGETARCH
@@ -19,7 +19,7 @@ COPY main.go main.go
 # Build
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GO111MODULE=on go build -a -o zookeeper-assistant main.go
 
-FROM eclipse-temurin:21-jdk-alpine-3.23
+FROM eclipse-temurin:21-jdk-alpine-3.24
 
 ENV ZOOKEEPER_HOME=/opt/zookeeper \
     ZOOKEEPER_OPT=/var/opt/zookeeper \
@@ -153,9 +153,7 @@ RUN chgrp -R 0 ${ZOOKEEPER_HOME} \
 RUN set -x && apk upgrade --available
 
 # Upgrade tools from edge to avoid vulnerabilities
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
-    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --no-cache --upgrade \
+RUN  apk add --update --no-cache --upgrade \
         pcre2 curl gnutls libcurl jq musl-utils binutils libpng libcap2
 
 USER 1000:0

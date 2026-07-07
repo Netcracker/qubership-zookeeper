@@ -1,10 +1,10 @@
-FROM ghcr.io/netcracker/qubership-backup-daemon-go:0.1.17
+FROM ghcr.io/netcracker/qubership-backup-daemon-go:0.1.18
 
 ENV ZOOKEEPER_HOME=/opt/zookeeper \
     ZOOKEEPER_BACKUP=/opt/zookeeper/backup-storage
 
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/community" >> /etc/apk/repositories
 
 COPY backup-daemon.conf /etc/backup-daemon.conf
 COPY docker/requirements.txt ${ZOOKEEPER_HOME}/requirements.txt

@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.5.5
+FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.5.6
 
 # Switch to root for installation
 USER root
@@ -11,8 +11,8 @@ ENV ROBOT_OUTPUT=${ROBOT_HOME}/output \
 RUN mkdir -p ${ROBOT_HOME} \
     && mkdir -p ${ROBOT_OUTPUT}
 
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/community" >> /etc/apk/repositories
 
 COPY docker/requirements.txt ${ROBOT_HOME}/requirements.txt
 COPY docker/zookeeper_pods_checker.py ${ROBOT_HOME}/zookeeper_pods_checker.py
