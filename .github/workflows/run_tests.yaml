@@ -46,7 +46,7 @@ jobs:
 
   Zookeeper-Pipeline:
     needs: Wait-for-images
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@277bfa19072ddcbfe1e4df2253b9b70c61a1a68e # v1.13.1
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/zookeeper.yaml@006f4c99bd9167307208d09252aa005208a4af0d # v1.13.2
     permissions:
       contents: read
       actions: write
