@@ -2,7 +2,7 @@
 ${ZOOKEEPER_OS_PROJECT}              %{ZOOKEEPER_OS_PROJECT}
 ${ZOOKEEPER_IS_DEGRADED_ALERT_NAME}  ZooKeeper_Is_Degraded_Alarm
 ${ZOOKEEPER_IS_DOWN_ALERT_NAME}      ZooKeeper_Is_Down_Alarm
-${ALERT_RETRY_TIME}                      5min
+${ALERT_RETRY_TIME}                      10min
 ${ALERT_RETRY_INTERVAL}                  10s
 ${SLEEP_TIME}                            30s
 
