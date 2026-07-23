@@ -50,8 +50,9 @@ if __name__ == '__main__':
                 ready_deployments += k8s_lib.get_active_deployment_entities_count_for_service(namespace, backup_daemon, 'component')
 
             operator_name = f"{service}-service-operator"
-            operator_total = k8s_lib.get_deployment_entities_count_for_service(namespace, operator_name)
-            operator_ready = k8s_lib.get_active_deployment_entities_count_for_service(namespace, operator_name)
+            print(f"[Operator] name: {operator_name}")
+            operator_total = k8s_lib.get_deployment_entities_count_for_service(namespace, operator_name, 'component')
+            operator_ready = k8s_lib.get_active_deployment_entities_count_for_service(namespace, operator_name,'component')
 
             print(f"[Check status] deployments: {deployments}, ready deployments: {ready_deployments}")
             print(f"[Operator] active: {operator_ready}/{operator_total}")
