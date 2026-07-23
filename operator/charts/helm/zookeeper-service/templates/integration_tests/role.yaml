@@ -12,12 +12,20 @@ rules:
       - deployments
       - deployments/scale
       - statefulsets
-      - zookeeperservices/status
     verbs:
       - get
       - list
       - patch
       - update
+      - watch
+  - apiGroups:
+      - netcracker.com
+    resources:
+      - zookeeperservices
+      - zookeeperservices/status
+    verbs:
+      - get
+      - list
       - watch
   - apiGroups:
       - ""
