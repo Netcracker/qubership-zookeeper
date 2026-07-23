@@ -22,7 +22,7 @@ def get_desired_zk_replicas(k8s_lib):
 def check_cr_reconciled(k8s_lib):
     cr = k8s_lib.get_custom_resource(CR_API_VERSION, CR_KIND, namespace, service)
     for cond in cr.get("status", {}).get("conditions", []):
-        if cond.get("type") == "Successful" and cond.get("status") == "True":
+        if cond.get("type") == "Ready" and cond.get("reason") == "ZooKeeperReadinessStatus" and cond.get("status") == "True":
             return True
     conditions = [(c.get("type"), c.get("status"), c.get("reason"))
                   for c in cr.get("status", {}).get("conditions", [])]
