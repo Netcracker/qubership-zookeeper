@@ -12,6 +12,7 @@ rules:
       - deployments
       - deployments/scale
       - statefulsets
+      - zookeeperservices/status
     verbs:
       - get
       - list
