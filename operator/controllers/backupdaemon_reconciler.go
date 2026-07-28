@@ -156,6 +156,7 @@ func (r ReconcileBackupDaemon) Reconcile() error {
 		if err := controllerutil.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
 			return err
 		}
+		applyAutoRestartSecretAnnotations(deployment, r.logger, backupDaemonSecret, s3Secret, s3AliasesSecret)
 		if err := r.reconciler.createOrUpdateDeployment(deployment, r.logger); err != nil {
 			return err
 		}
