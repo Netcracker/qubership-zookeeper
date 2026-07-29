@@ -188,6 +188,7 @@ func (r ReconcileZooKeeper) Reconcile() error {
 			if err := controllerutil.SetControllerReference(r.cr, serverDeployment, r.reconciler.Scheme); err != nil {
 				return err
 			}
+			applyAutoRestartSecretAnnotations(serverDeployment, r.logger, zooKeeperSecret)
 			if err := r.reconciler.createOrUpdateDeployment(serverDeployment, r.logger); err != nil {
 				return err
 			}

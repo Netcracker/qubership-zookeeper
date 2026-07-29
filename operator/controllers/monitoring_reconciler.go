@@ -128,6 +128,7 @@ func (r ReconcileMonitoring) Reconcile() error {
 		if err := controllerutil.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
 			return err
 		}
+		applyAutoRestartSecretAnnotations(deployment, r.logger, monitoringSecret, backupDaemonSecret)
 		if err := r.reconciler.createOrUpdateDeployment(deployment, r.logger); err != nil {
 			return err
 		}
