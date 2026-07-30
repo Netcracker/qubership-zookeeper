@@ -19,15 +19,6 @@ rules:
       - update
       - watch
   - apiGroups:
-      - netcracker.com
-    resources:
-      - zookeeperservices
-      - zookeeperservices/status
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
       - ""
     resources:
       - pods

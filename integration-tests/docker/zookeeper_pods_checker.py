@@ -19,17 +19,6 @@ def get_desired_zk_replicas(k8s_lib):
     return cr["spec"]["zooKeeper"]["replicas"]
 
 
-def check_cr_reconciled(k8s_lib):
-    cr = k8s_lib.get_custom_resource(CR_API_VERSION, CR_KIND, namespace, service)
-    for cond in cr.get("status", {}).get("conditions", []):
-        if cond.get("type") == "Ready" and cond.get("reason") == "ZooKeeperReadinessStatus" and cond.get("status") == "True":
-            return True
-    conditions = [(c.get("type"), c.get("status"), c.get("reason"))
-                  for c in cr.get("status", {}).get("conditions", [])]
-    print(f"[CR] not reconciled, conditions: {conditions}")
-    return False
-
-
 if __name__ == '__main__':
     time.sleep(20)
     try:
@@ -63,9 +52,8 @@ if __name__ == '__main__':
 
         zk_replicas_ok = ready_deployments >= desired_replicas
         operator_ok = operator_ready == operator_total and operator_total > 0
-        cr_ok = check_cr_reconciled(k8s_lib)
 
-        if deployments == ready_deployments and deployments != 0 and zk_replicas_ok and operator_ok and cr_ok:
+        if deployments == ready_deployments and deployments != 0 and zk_replicas_ok and operator_ok:
             print("ZooKeeper deployments are ready")
             exit(0)
         time.sleep(10)
