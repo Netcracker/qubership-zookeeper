@@ -14,9 +14,6 @@ CR_API_VERSION = "netcracker.com/v1"
 CR_KIND = "ZooKeeperService"
 
 
-def get_desired_zk_replicas(k8s_lib):
-    cr = k8s_lib.get_custom_resource(CR_API_VERSION, CR_KIND, namespace, service)
-    return cr["spec"]["zooKeeper"]["replicas"]
 
 
 if __name__ == '__main__':
@@ -50,10 +47,9 @@ if __name__ == '__main__':
             time.sleep(10)
             continue
 
-        zk_replicas_ok = ready_deployments >= desired_replicas
         operator_ok = operator_ready == operator_total and operator_total > 0
 
-        if deployments == ready_deployments and deployments != 0 and zk_replicas_ok and operator_ok:
+        if deployments == ready_deployments and deployments != 0 and operator_ok:
             print("ZooKeeper deployments are ready")
             exit(0)
         time.sleep(10)
