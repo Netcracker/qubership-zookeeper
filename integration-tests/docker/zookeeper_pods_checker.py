@@ -20,8 +20,6 @@ if __name__ == '__main__':
     time.sleep(20)
     try:
         k8s_lib = PlatformLibrary(managed_by_operator)
-        desired_replicas = get_desired_zk_replicas(k8s_lib)
-        print(f"[CR] desired ZooKeeper replicas: {desired_replicas}")
     except Exception as e:
         print(e)
         exit(1)
