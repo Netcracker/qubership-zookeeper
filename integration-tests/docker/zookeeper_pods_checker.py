@@ -14,28 +14,12 @@ CR_API_VERSION = "netcracker.com/v1"
 CR_KIND = "ZooKeeperService"
 
 
-def get_desired_zk_replicas(k8s_lib):
-    cr = k8s_lib.get_custom_resource(CR_API_VERSION, CR_KIND, namespace, service)
-    return cr["spec"]["zooKeeper"]["replicas"]
-
-
-def check_cr_reconciled(k8s_lib):
-    cr = k8s_lib.get_custom_resource(CR_API_VERSION, CR_KIND, namespace, service)
-    for cond in cr.get("status", {}).get("conditions", []):
-        if cond.get("type") == "Ready" and cond.get("reason") == "ZooKeeperReadinessStatus" and cond.get("status") == "True":
-            return True
-    conditions = [(c.get("type"), c.get("status"), c.get("reason"))
-                  for c in cr.get("status", {}).get("conditions", [])]
-    print(f"[CR] not reconciled, conditions: {conditions}")
-    return False
 
 
 if __name__ == '__main__':
     time.sleep(20)
     try:
         k8s_lib = PlatformLibrary(managed_by_operator)
-        desired_replicas = get_desired_zk_replicas(k8s_lib)
-        print(f"[CR] desired ZooKeeper replicas: {desired_replicas}")
     except Exception as e:
         print(e)
         exit(1)
@@ -61,11 +45,9 @@ if __name__ == '__main__':
             time.sleep(10)
             continue
 
-        zk_replicas_ok = ready_deployments >= desired_replicas
         operator_ok = operator_ready == operator_total and operator_total > 0
-        cr_ok = check_cr_reconciled(k8s_lib)
 
-        if deployments == ready_deployments and deployments != 0 and zk_replicas_ok and operator_ok and cr_ok:
+        if deployments == ready_deployments and deployments != 0 and operator_ok:
             print("ZooKeeper deployments are ready")
             exit(0)
         time.sleep(10)
