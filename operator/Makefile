@@ -12,7 +12,7 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
-CONTROLLER_TOOLS_VERSION ?= v0.6.2
+CONTROLLER_TOOLS_VERSION ?= v0.18.0
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -88,8 +88,6 @@ help: ## Display this help.
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:maxDescLen=0 webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_zookeeperservices.yaml
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:crdVersions=v1beta1,trivialVersions=false,maxDescLen=0 webhook paths="./..." output:crd:artifacts:config=config/crd/old
-	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/old/netcracker.com_zookeeperservices.yaml
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
