@@ -70,7 +70,7 @@ func NewServiceAccount(serviceAccountName string, namespace string) *corev1.Serv
 // ProcessNonSharedPersistentVolumeClaim returns non-shared persistent volume claim according to the specified parameters.
 func ProcessNonSharedPersistentVolumeClaim(persistentVolumeClaimName string, persistentVolumeName string,
 	persistentVolumeLabel string, storageClassName *string, storageSize string, namespace string, labels map[string]string,
-	logger logr.Logger) *corev1.PersistentVolumeClaim {
+	annotations map[string]string, logger logr.Logger) *corev1.PersistentVolumeClaim {
 	var labelSelector *metav1.LabelSelector
 	var detailsLog string
 	if persistentVolumeName != "" {
@@ -95,12 +95,12 @@ func ProcessNonSharedPersistentVolumeClaim(persistentVolumeClaimName string, per
 	}
 
 	logger.Info(fmt.Sprintf("Persistent volume claim [%s] is created by %s.", persistentVolumeClaimName, detailsLog))
-	return NewPersistentVolumeClaim(persistentVolumeClaimName, namespace, labels, false, persistentVolumeName,
+	return NewPersistentVolumeClaim(persistentVolumeClaimName, namespace, labels, annotations, false, persistentVolumeName,
 		labelSelector, storageClassName, storageSize)
 }
 
 // NewPersistentVolumeClaim configures persistent volume claim based on the specified parameters
-func NewPersistentVolumeClaim(persistentVolumeClaimName string, namespace string, labels map[string]string, shared bool,
+func NewPersistentVolumeClaim(persistentVolumeClaimName string, namespace string, labels map[string]string, annotations map[string]string, shared bool,
 	persistentVolumeName string, labelSelector *metav1.LabelSelector, storageClassName *string, volumeSize string) *corev1.PersistentVolumeClaim {
 	accessMode := corev1.ReadWriteOnce
 	if shared {
@@ -109,9 +109,10 @@ func NewPersistentVolumeClaim(persistentVolumeClaimName string, namespace string
 
 	persistentVolumeClaim := &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      persistentVolumeClaimName,
-			Namespace: namespace,
-			Labels:    labels,
+			Name:        persistentVolumeClaimName,
+			Namespace:   namespace,
+			Labels:      labels,
+			Annotations: annotations,
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{
 			AccessModes: []corev1.PersistentVolumeAccessMode{accessMode},

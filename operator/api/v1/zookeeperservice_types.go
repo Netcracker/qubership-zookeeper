@@ -117,6 +117,17 @@ type Global struct {
 	CustomLabels     map[string]string `json:"customLabels,omitempty"`
 	DefaultLabels    map[string]string `json:"defaultLabels,omitempty"`
 	ZooKeeperSsl     ZooKeeperSsl      `json:"zooKeeperSsl,omitempty"`
+	PVC              PVC               `json:"pvc,omitempty"`
+}
+
+// PVC defines common configuration applied to all persistent volume claims created by the operator.
+type PVC struct {
+	PVCMetadata `json:"metadata,omitempty"`
+}
+
+// PVCMetadata defines metadata applied to all persistent volume claims created by the operator
+type PVCMetadata struct {
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // ZooKeeperSsl shows ssl configuration
@@ -174,6 +185,7 @@ type ZooKeeperServiceStatus struct {
 	ZooKeeperStatus             ZooKeeperStatus             `json:"zooKeeperStatus,omitempty"`
 	MonitoringStatus            MonitoringStatus            `json:"monitoringStatus,omitempty"`
 	BackupDaemonStatus          BackupDaemonStatus          `json:"backupDaemonStatus,omitempty"`
+	PVCStatus                   PVCStatus                   `json:"pvcStatus,omitempty"`
 	VaultSecretManagementStatus VaultSecretManagementStatus `json:"vaultSecretManagementStatus,omitempty"`
 	Conditions                  []StatusCondition           `json:"conditions,omitempty"`
 }
@@ -188,6 +200,10 @@ type MonitoringStatus struct {
 
 type BackupDaemonStatus struct {
 	Nodes []string `json:"nodes,omitempty"`
+}
+
+type PVCStatus struct {
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 type VaultSecretManagementStatus struct {

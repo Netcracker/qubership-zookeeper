@@ -22,6 +22,10 @@ spec:
     zooKeeperSsl:
       enabled: {{ template "zookeeper-service.enableSsl" . }}
       secretName: "{{ template "zookeeper-service.sslSecretName" . }}"
+  {{- with .Values.pvc }}
+    pvc:
+      {{- toYaml . | nindent 6 }}
+  {{- end }}
   zooKeeper:
     dockerImage: {{ template "zookeeper.image" . }}
   {{- with .Values.zooKeeper.customLabels }}

@@ -4,7 +4,7 @@
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
 VERSION ?= 0.0.1
-CRD_VERSION=0.9.0
+CRD_VERSION=0.13.0
 CAPMDGEN_DIR := target/capmdgen
 
 LOCALBIN ?= $(shell pwd)/bin
@@ -87,7 +87,7 @@ help: ## Display this help.
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:maxDescLen=0 webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_zookeeperservices.yaml
+	sed -i "/^  annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_zookeeperservices.yaml
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.

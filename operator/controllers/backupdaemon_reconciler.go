@@ -17,6 +17,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
+
 	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
 	"github.com/Netcracker/qubership-zookeeper/operator/controllers/provider"
 	"github.com/Netcracker/qubership-zookeeper/operator/util"
@@ -25,7 +27,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"time"
 )
 
 const (
@@ -117,17 +118,13 @@ func (r ReconcileBackupDaemon) Reconcile() error {
 				backupStorage.PersistentVolumeClaimName = fmt.Sprintf(provider.SnapshotsPersistentVolumeClaimPattern, r.cr.Name)
 			}
 
-			// Persistent volume claim for snapshots could be created in ZooKeeper
-			_, err := r.reconciler.findPersistentVolumeClaim(backupStorage.PersistentVolumeClaimName, r.cr.Namespace, r.logger)
+			backupPersistentVolumeClaim, err := r.reconciler.processSnapshotsPersistentVolumeClaim(*backupStorage, r.cr, r.logger)
 			if err != nil {
-				backupPersistentVolumeClaim, err := r.reconciler.processSnapshotsPersistentVolumeClaim(*backupStorage, r.cr, r.logger)
-				if err != nil {
+				return err
+			}
+			if backupPersistentVolumeClaim != nil {
+				if err := r.reconciler.createPersistentVolumeClaim(backupPersistentVolumeClaim, r.cr, r.logger); err != nil {
 					return err
-				}
-				if backupPersistentVolumeClaim != nil {
-					if err := r.reconciler.createPersistentVolumeClaim(backupPersistentVolumeClaim, r.logger); err != nil {
-						return err
-					}
 				}
 			}
 		}
