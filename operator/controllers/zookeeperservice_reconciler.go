@@ -17,6 +17,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"maps"
+
 	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
 	"github.com/Netcracker/qubership-zookeeper/operator/controllers/provider"
 	"github.com/Netcracker/qubership-zookeeper/operator/util"
@@ -82,19 +84,38 @@ func (r *ZooKeeperServiceReconciler) createServiceAccount(serviceAccount *corev1
 }
 
 // createPersistentVolumeClaim creates persistent volume claim if it does not exist; returns an error if any operation failed
-func (r *ZooKeeperServiceReconciler) createPersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, logger logr.Logger) error {
+func (r *ZooKeeperServiceReconciler) createPersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, cr *zookeeperservice.ZooKeeperService, logger logr.Logger) error {
 	// There is no ability to update PVC
 	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
 	foundPersistentVolumeClaim := &corev1.PersistentVolumeClaim{}
 	err := r.Client.Get(context.TODO(),
 		types.NamespacedName{Name: persistentVolumeClaim.Name, Namespace: persistentVolumeClaim.Namespace},
 		foundPersistentVolumeClaim)
-	if err != nil && errors.IsNotFound(err) {
-		logger.Info("Creating a new persistent volume claim",
-			"PersistentVolumeClaim.Namespace", persistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", persistentVolumeClaim.Name)
-		err = r.Client.Create(context.TODO(), persistentVolumeClaim)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			logger.Info("Creating a new persistent volume claim",
+				"PersistentVolumeClaim.Namespace", persistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", persistentVolumeClaim.Name)
+			return r.Client.Create(context.TODO(), persistentVolumeClaim)
+		}
+		return err
 	}
-	return err
+	return r.updatePersistentVolumeClaim(foundPersistentVolumeClaim, persistentVolumeClaim, cr, logger)
+}
+
+func (r *ZooKeeperServiceReconciler) updatePersistentVolumeClaim(foundPersistentVolumeClaim *corev1.PersistentVolumeClaim,
+	persistentVolumeClaim *corev1.PersistentVolumeClaim, cr *zookeeperservice.ZooKeeperService, logger logr.Logger) error {
+	if maps.Equal(persistentVolumeClaim.Annotations, cr.Status.PVCStatus.Annotations) {
+		return nil
+	}
+	maps.Copy(foundPersistentVolumeClaim.Annotations, persistentVolumeClaim.Annotations)
+	for key := range cr.Status.PVCStatus.Annotations {
+		if _, exists := persistentVolumeClaim.Annotations[key]; !exists {
+			delete(foundPersistentVolumeClaim.Annotations, key)
+		}
+	}
+	logger.Info("Updating the found persistent volume claim",
+		"PersistentVolumeClaim.Namespace", foundPersistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", foundPersistentVolumeClaim.Name)
+	return r.Client.Update(context.TODO(), foundPersistentVolumeClaim)
 }
 
 func (r *ZooKeeperServiceReconciler) findPersistentVolumeClaim(name string, namespace string, logger logr.Logger) (*corev1.PersistentVolumeClaim, error) {
@@ -270,6 +291,7 @@ func (r *ZooKeeperServiceReconciler) processSnapshotsPersistentVolumeClaim(snaps
 			snapshotStorage.VolumeSize,
 			cr.Namespace,
 			snapshotsLabels,
+			cr.Spec.Global.PVC.Annotations,
 			logger,
 		), nil
 
@@ -290,6 +312,7 @@ func (r *ZooKeeperServiceReconciler) processSnapshotsPersistentVolumeClaim(snaps
 			persistentVolumeClaimName,
 			cr.Namespace,
 			snapshotsLabels,
+			cr.Spec.Global.PVC.Annotations,
 			true,
 			snapshotStorage.PersistentVolumeName,
 			nil,
@@ -302,6 +325,7 @@ func (r *ZooKeeperServiceReconciler) processSnapshotsPersistentVolumeClaim(snaps
 			persistentVolumeClaimName,
 			cr.Namespace,
 			snapshotsLabels,
+			cr.Spec.Global.PVC.Annotations,
 			true,
 			"",
 			nil,

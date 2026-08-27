@@ -425,6 +425,11 @@ groupMigration:
   imagePullPolicy: Always
   runAsNonRoot: true
 
+pvc:
+  metadata:
+    annotations: {}
+#      argocd.argoproj.io/sync-options: Prune=false
+
 # Cloud Release Integration
 # The name of the Service exposed for the database.
 SERVICE_NAME: "zookeeper-service"

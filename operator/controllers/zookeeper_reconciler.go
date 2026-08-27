@@ -17,6 +17,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
+
 	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
 	"github.com/Netcracker/qubership-zookeeper/operator/controllers/provider"
 	"github.com/Netcracker/qubership-zookeeper/operator/util"
@@ -26,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"time"
 )
 
 const (
@@ -106,126 +107,126 @@ func (r ReconcileZooKeeper) Reconcile() error {
 		if zookeeperSpec.Replicas > 0 {
 			// Create snapshots persistent volume claim if SnapshotStorage.PersistentVolumeType is not empty
 			if zookeeperSpec.SnapshotStorage.PersistentVolumeType != "" && zookeeperSpec.SnapshotStorage.PersistentVolumeType != "standalone" {
-			snapshotPersistentVolumeClaim, err := r.reconciler.processSnapshotsPersistentVolumeClaim(zookeeperSpec.SnapshotStorage, r.cr, r.logger)
-			if err != nil {
-				return err
-			}
-			if snapshotPersistentVolumeClaim != nil {
-				if err := r.reconciler.createPersistentVolumeClaim(snapshotPersistentVolumeClaim, r.logger); err != nil {
-					return err
-				}
-			}
-		}
-
-		// Define a new client service object
-		clientService := zkProvider.NewZooKeeperClientServiceForCR()
-		if err := controllerutil.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
-			return err
-		}
-		if err := r.reconciler.createOrUpdateService(clientService, r.logger); err != nil {
-			return err
-		}
-		// Define a new domain service object
-		domainService := zkProvider.NewZooKeeperDomainServiceForCR()
-		if err := controllerutil.SetControllerReference(r.cr, domainService, r.reconciler.Scheme); err != nil {
-			return err
-		}
-		if err := r.reconciler.createOrUpdateService(domainService, r.logger); err != nil {
-			return err
-		}
-
-		currentReplicas, err := r.getCurrentDeploymentsCount()
-		if err != nil {
-			return err
-		}
-
-		if currentReplicas <= 2 || currentReplicas != zookeeperSpec.Replicas {
-			r.logger.Info("RollingUpdate value set to false")
-			r.cr.Spec.ZooKeeper.RollingUpdate = false
-		}
-
-		if currentReplicas > zookeeperSpec.Replicas {
-			r.logger.Info(fmt.Sprintf("There is an attempt to downscale ZooKeeper with %d replicas to ZooKeeper with %d replicas. For correct work excess ZooKeeper deployments need to be scaled down.", currentReplicas, zookeeperSpec.Replicas))
-			for i := zookeeperSpec.Replicas + 1; i <= currentReplicas; i++ {
-				if err := r.reconciler.scaleDeployment(fmt.Sprintf("%s-%d", r.cr.Name, i), 0, r.cr.Namespace, r.logger); err != nil {
-					return err
-				}
-			}
-		}
-
-		for serverId := 1; serverId <= zookeeperSpec.Replicas; serverId++ {
-			// Define a new server Service object
-			serverService := zkProvider.NewZooKeeperServerServiceForCR(serverId)
-			if err := controllerutil.SetControllerReference(r.cr, serverService, r.reconciler.Scheme); err != nil {
-				return err
-			}
-			if err := r.reconciler.createOrUpdateService(serverService, r.logger); err != nil {
-				return err
-			}
-
-			// Define a new PersistentVolumeClaim object
-			persistentVolumeClaim := zkProvider.NewZooKeeperPersistentVolumeClaimForCR(serverId)
-			if persistentVolumeClaim != nil {
-				if err := r.reconciler.createPersistentVolumeClaim(persistentVolumeClaim, r.logger); err != nil {
-					return err
-				}
-			}
-
-			serviceAccount := provider.NewServiceAccount(zkProvider.GetServiceAccountName(), r.cr.Namespace)
-			if err := r.reconciler.createServiceAccount(serviceAccount, r.logger); err != nil {
-				return err
-			}
-
-			if provider.IsVaultSecretManagementEnabled(r.cr) {
-				err := r.processVaultSecrets(zooKeeperSecret)
+				snapshotPersistentVolumeClaim, err := r.reconciler.processSnapshotsPersistentVolumeClaim(zookeeperSpec.SnapshotStorage, r.cr, r.logger)
 				if err != nil {
 					return err
 				}
-			}
-
-			// Define a new Deployment object
-			serverDeployment := zkProvider.NewServerDeploymentForCR(serverId)
-			if err := controllerutil.SetControllerReference(r.cr, serverDeployment, r.reconciler.Scheme); err != nil {
-				return err
-			}
-			applyAutoRestartSecretAnnotations(serverDeployment, r.logger, zooKeeperSecret)
-			if err := r.reconciler.createOrUpdateDeployment(serverDeployment, r.logger); err != nil {
-				return err
-			}
-
-			//Checking for pod to be in running state
-			deploymentName := serverDeployment.Name
-			r.logger.Info(fmt.Sprintf("Waiting for pod of %s deployment to be in 'Running' state.", deploymentName))
-			err = wait.PollUntilContextTimeout(context.Background(), waitingInterval, time.Duration(300)*time.Second, true, func(ctx context.Context) (done bool, err error) {
-				podRunning, err := r.isPodRunning(r.cr, deploymentName)
-				if err != nil {
-					r.logger.Error(err, "Error checking if pod is running.")
-					return false, err
+				if snapshotPersistentVolumeClaim != nil {
+					if err := r.reconciler.createPersistentVolumeClaim(snapshotPersistentVolumeClaim, r.cr, r.logger); err != nil {
+						return err
+					}
 				}
-				r.logger.Info("Pod is ready!")
+			}
 
-				return podRunning, nil
-			})
-
-			if err != nil {
-				r.logger.Error(err, fmt.Sprintf("Pod for deployment %s is not in 'Running' state within the expected time.", deploymentName))
+			// Define a new client service object
+			clientService := zkProvider.NewZooKeeperClientServiceForCR()
+			if err := controllerutil.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
+				return err
+			}
+			if err := r.reconciler.createOrUpdateService(clientService, r.logger); err != nil {
+				return err
+			}
+			// Define a new domain service object
+			domainService := zkProvider.NewZooKeeperDomainServiceForCR()
+			if err := controllerutil.SetControllerReference(r.cr, domainService, r.reconciler.Scheme); err != nil {
+				return err
+			}
+			if err := r.reconciler.createOrUpdateService(domainService, r.logger); err != nil {
 				return err
 			}
 
-			if r.cr.Spec.ZooKeeper.RollingUpdate {
-				deploymentName := fmt.Sprintf("%s-%d", r.cr.Name, serverId)
-				r.logger.Info(fmt.Sprintf("Waiting for %s deployment.", deploymentName))
-				time.Sleep(waitingInterval)
+			currentReplicas, err := r.getCurrentDeploymentsCount()
+			if err != nil {
+				return err
+			}
+
+			if currentReplicas <= 2 || currentReplicas != zookeeperSpec.Replicas {
+				r.logger.Info("RollingUpdate value set to false")
+				r.cr.Spec.ZooKeeper.RollingUpdate = false
+			}
+
+			if currentReplicas > zookeeperSpec.Replicas {
+				r.logger.Info(fmt.Sprintf("There is an attempt to downscale ZooKeeper with %d replicas to ZooKeeper with %d replicas. For correct work excess ZooKeeper deployments need to be scaled down.", currentReplicas, zookeeperSpec.Replicas))
+				for i := zookeeperSpec.Replicas + 1; i <= currentReplicas; i++ {
+					if err := r.reconciler.scaleDeployment(fmt.Sprintf("%s-%d", r.cr.Name, i), 0, r.cr.Namespace, r.logger); err != nil {
+						return err
+					}
+				}
+			}
+
+			for serverId := 1; serverId <= zookeeperSpec.Replicas; serverId++ {
+				// Define a new server Service object
+				serverService := zkProvider.NewZooKeeperServerServiceForCR(serverId)
+				if err := controllerutil.SetControllerReference(r.cr, serverService, r.reconciler.Scheme); err != nil {
+					return err
+				}
+				if err := r.reconciler.createOrUpdateService(serverService, r.logger); err != nil {
+					return err
+				}
+
+				// Define a new PersistentVolumeClaim object
+				persistentVolumeClaim := zkProvider.NewZooKeeperPersistentVolumeClaimForCR(serverId)
+				if persistentVolumeClaim != nil {
+					if err := r.reconciler.createPersistentVolumeClaim(persistentVolumeClaim, r.cr, r.logger); err != nil {
+						return err
+					}
+				}
+
+				serviceAccount := provider.NewServiceAccount(zkProvider.GetServiceAccountName(), r.cr.Namespace)
+				if err := r.reconciler.createServiceAccount(serviceAccount, r.logger); err != nil {
+					return err
+				}
+
+				if provider.IsVaultSecretManagementEnabled(r.cr) {
+					err := r.processVaultSecrets(zooKeeperSecret)
+					if err != nil {
+						return err
+					}
+				}
+
+				// Define a new Deployment object
+				serverDeployment := zkProvider.NewServerDeploymentForCR(serverId)
+				if err := controllerutil.SetControllerReference(r.cr, serverDeployment, r.reconciler.Scheme); err != nil {
+					return err
+				}
+				applyAutoRestartSecretAnnotations(serverDeployment, r.logger, zooKeeperSecret)
+				if err := r.reconciler.createOrUpdateDeployment(serverDeployment, r.logger); err != nil {
+					return err
+				}
+
+				//Checking for pod to be in running state
+				deploymentName := serverDeployment.Name
+				r.logger.Info(fmt.Sprintf("Waiting for pod of %s deployment to be in 'Running' state.", deploymentName))
 				err = wait.PollUntilContextTimeout(context.Background(), waitingInterval, time.Duration(300)*time.Second, true, func(ctx context.Context) (done bool, err error) {
-					return r.reconciler.isDeploymentReady(deploymentName, r.cr.Namespace, r.logger), nil
+					podRunning, err := r.isPodRunning(r.cr, deploymentName)
+					if err != nil {
+						r.logger.Error(err, "Error checking if pod is running.")
+						return false, err
+					}
+					r.logger.Info("Pod is ready!")
+
+					return podRunning, nil
 				})
+
 				if err != nil {
-					r.logger.Error(err, fmt.Sprintf("Deployment %s failed.", deploymentName))
+					r.logger.Error(err, fmt.Sprintf("Pod for deployment %s is not in 'Running' state within the expected time.", deploymentName))
 					return err
 				}
-			}
 
-		}
+				if r.cr.Spec.ZooKeeper.RollingUpdate {
+					deploymentName := fmt.Sprintf("%s-%d", r.cr.Name, serverId)
+					r.logger.Info(fmt.Sprintf("Waiting for %s deployment.", deploymentName))
+					time.Sleep(waitingInterval)
+					err = wait.PollUntilContextTimeout(context.Background(), waitingInterval, time.Duration(300)*time.Second, true, func(ctx context.Context) (done bool, err error) {
+						return r.reconciler.isDeploymentReady(deploymentName, r.cr.Namespace, r.logger), nil
+					})
+					if err != nil {
+						r.logger.Error(err, fmt.Sprintf("Deployment %s failed.", deploymentName))
+						return err
+					}
+				}
+
+			}
 		}
 		r.logger.Info("Updating ZooKeeper status")
 		if err := r.updateZooKeeperStatus(r.cr); err != nil {

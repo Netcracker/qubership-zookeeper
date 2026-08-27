@@ -17,6 +17,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"maps"
 	"time"
 
 	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
@@ -107,6 +108,11 @@ func (r *ZooKeeperServiceReconciler) Reconcile(ctx context.Context, request ctrl
 		}
 	}
 
+	reqLogger.Info("Updating global status")
+	if err := r.updateStatus(instance); err != nil {
+		return reconcile.Result{}, err
+	}
+
 	if isCustomResourceChanged {
 		if instance.Spec.Global != nil && instance.Spec.Global.WaitForPodsReady {
 			if err := r.updateConditions(instance, NewCondition(statusFalse,
@@ -149,6 +155,15 @@ func (r *ZooKeeperServiceReconciler) Reconcile(ctx context.Context, request ctrl
 	r.ResourceHashes["spec"] = specHash
 	r.ResourceHashes[globalHashName] = globalSpecHash
 	return reconcile.Result{}, nil
+}
+
+// updateStatus updates the global status
+func (r *ZooKeeperServiceReconciler) updateStatus(cr *zookeeperservice.ZooKeeperService) error {
+	if maps.Equal(cr.Status.PVCStatus.Annotations, cr.Spec.Global.PVC.Annotations) {
+		return nil
+	}
+	cr.Status.PVCStatus.Annotations = cr.Spec.Global.PVC.Annotations
+	return r.Client.Status().Update(context.TODO(), cr)
 }
 
 func (r *ZooKeeperServiceReconciler) writeFailedStatus(instance *zookeeperservice.ZooKeeperService, errorMessage string) {
