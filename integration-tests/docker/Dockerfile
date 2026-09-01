@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-docker-integration-tests:feature-add_tests_passrate_json
+FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.6.0
 
 # Switch to root for installation
 USER root
