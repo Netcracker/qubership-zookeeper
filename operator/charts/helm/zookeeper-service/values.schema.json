@@ -1,0 +1,615 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "zookeeper-service values",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "global": { "$ref": "#/$defs/global" },
+    "operator": { "$ref": "#/$defs/operator" },
+    "zooKeeper": { "$ref": "#/$defs/zooKeeper" },
+    "monitoring": { "$ref": "#/$defs/monitoring" },
+    "backupDaemon": { "$ref": "#/$defs/backupDaemon" },
+    "vaultSecretManagement": { "$ref": "#/$defs/vaultSecretManagement" },
+    "integrationTests": { "$ref": "#/$defs/integrationTests" },
+    "groupMigration": { "$ref": "#/$defs/groupMigration" },
+    "pvc": { "$ref": "#/$defs/pvc" },
+    "SERVICE_NAME": {
+      "type": "string",
+      "default": "zookeeper-service",
+      "description": "The name of the Service exposed for the database."
+    },
+    "PART_OF": {
+      "type": "string",
+      "default": "zookeeper-service",
+      "description": "Microservice belonging to a group."
+    },
+    "DELIMITER": {
+      "type": "string",
+      "default": "-",
+      "description": "Delimiter for labels."
+    },
+    "ARTIFACT_DESCRIPTOR_VERSION": {
+      "type": "string",
+      "default": "",
+      "description": "Artifact descriptor version which is installed."
+    },
+    "nameOverride": { "type": ["string", "null"] },
+    "fullnameOverride": { "type": ["string", "null"] },
+    "serviceAccount": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": { "type": "boolean" },
+        "name": { "type": ["string", "null"] }
+      }
+    }
+  },
+  "$defs": {
+    "resourceRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requests": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "properties": {
+            "cpu": {
+              "comment": "don't use type field, because it breaks backward compatibility"
+            },
+            "memory": { "type": "string" }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "properties": {
+            "cpu": {
+              "comment": "don't use type field, because it breaks backward compatibility"
+            },
+            "memory": { "type": "string" }
+          }
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string" },
+              "request": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "affinity": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "nodeAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            },
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "podAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            },
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "podAntiAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            },
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            }
+          }
+        }
+      }
+    },
+    "tolerations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": { "type": "string" },
+          "operator": { "type": "string", "enum": ["Equal", "Exists"] },
+          "value": { "type": "string" },
+          "effect": {
+            "type": "string",
+            "enum": ["NoSchedule", "PreferNoSchedule", "NoExecute"]
+          },
+          "tolerationSeconds": { "type": "integer" }
+        }
+      }
+    },
+    "tlsCertificates": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "crt": { "type": ["string", "null"] },
+        "key": { "type": ["string", "null"] },
+        "ca": { "type": ["string", "null"] }
+      }
+    },
+    "subjectAlternativeName": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "additionalDnsNames": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "additionalIpAddresses": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "volumes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "nodes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "labels": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "className": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "size": { "type": "string", "default": "2Gi" }
+      }
+    },
+    "snapshotStorage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "persistentVolumeType": { "type": ["string", "null"] },
+        "persistentVolumeName": { "type": ["string", "null"] },
+        "persistentVolumeClaimName": { "type": ["string", "null"] },
+        "nodeName": { "type": ["string", "null"] },
+        "volumeSize": { "type": "string", "default": "1Gi" },
+        "persistentVolumeLabel": { "type": ["string", "null"] },
+        "storageClass": { "type": ["string", "null"] },
+        "nfsServer": { "type": ["string", "null"] },
+        "nfsPath": { "type": ["string", "null"] }
+      }
+    },
+    "s3": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "url": { "type": ["string", "null"] },
+        "sslVerify": { "type": "boolean", "default": true },
+        "sslSecretName": { "type": ["string", "null"] },
+        "sslCert": { "type": ["string", "null"] },
+        "bucket": { "type": ["string", "null"] },
+        "keyId": { "type": ["string", "null"] },
+        "keySecret": { "type": ["string", "null"] }
+      }
+    },
+    "s3AliasItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "spec": { "type": "object", "additionalProperties": true },
+        "secretContent": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "diagnostics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["disable", "off", "dev", "prod"],
+          "default": "disable"
+        },
+        "agentService": {
+          "type": "string",
+          "default": "nc-diagnostic-agent"
+        }
+      }
+    },
+    "global": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "default": "zookeeper" },
+        "waitForPodsReady": { "type": "boolean", "default": true },
+        "podReadinessTimeout": { "type": "integer", "default": 300 },
+        "autoRestartOnSecretChange": { "type": "boolean", "default": true },
+        "cloudIntegrationEnabled": { "type": "boolean", "default": true },
+        "customLabels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "securityContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "cipherSuites": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "allowNonencryptedAccess": { "type": "boolean", "default": false },
+            "generateCerts": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": { "type": "boolean", "default": true },
+                "certProvider": {
+                  "type": "string",
+                  "enum": ["helm", "cert-manager"],
+                  "default": "cert-manager"
+                },
+                "durationDays": { "type": "integer", "default": 365 },
+                "clusterIssuerName": { "type": ["string", "null"] }
+              }
+            }
+          }
+        },
+        "secrets": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "zooKeeper": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "adminUsername": { "type": ["string", "null"] },
+                "adminPassword": { "type": ["string", "null"] },
+                "clientUsername": { "type": ["string", "null"] },
+                "clientPassword": { "type": ["string", "null"] },
+                "additionalUsers": { "type": ["string", "null"] }
+              }
+            },
+            "backupDaemon": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "username": { "type": ["string", "null"] },
+                "password": { "type": ["string", "null"] }
+              }
+            },
+            "integrationTests": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "prometheus": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "user": { "type": ["string", "null"] },
+                    "password": { "type": ["string", "null"] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "operator": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dockerImage": { "type": "string" },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": { "type": ["string", "null"] },
+        "customLabels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "securityContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "resources": { "$ref": "#/$defs/resourceRequirements" }
+      }
+    },
+    "zooKeeper": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dockerImage": { "type": "string" },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": { "type": ["string", "null"] },
+        "replicas": { "type": "integer", "default": 3 },
+        "disruptionBudget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "minAvailable": { "type": "integer", "default": 2 }
+          }
+        },
+        "storage": { "$ref": "#/$defs/storage" },
+        "snapshotStorage": { "$ref": "#/$defs/snapshotStorage" },
+        "heapSize": { "type": "integer", "default": 256 },
+        "jolokiaPort": { "type": "integer", "default": 9087 },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "quorumAuthEnabled": { "type": "boolean", "default": true },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "certificates": { "$ref": "#/$defs/tlsCertificates" },
+            "secretName": { "type": ["string", "null"] },
+            "cipherSuites": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "mTLS": { "type": "boolean", "default": false },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+          }
+        },
+        "securityContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "environmentVariables": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "auditEnabled": { "type": "boolean", "default": false },
+        "rollingUpdate": { "type": "boolean", "default": false },
+        "diagnostics": { "$ref": "#/$defs/diagnostics" },
+        "customLabels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "adminUsername": { "type": ["string", "null"] },
+        "adminPassword": { "type": ["string", "null"] },
+        "clientUsername": { "type": ["string", "null"] },
+        "clientPassword": { "type": ["string", "null"] },
+        "additionalUsers": { "type": ["string", "null"] }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": { "type": "boolean", "default": true },
+        "dockerImage": { "type": "string" },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": { "type": ["string", "null"] },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "monitoringType": { "type": "string", "default": "prometheus" },
+        "installGrafanaDashboard": { "type": "boolean", "default": true },
+        "zooKeeperBackupDaemonHost": { "type": ["string", "null"] },
+        "zooKeeperVolumes": { "type": ["string", "null"] },
+        "needToCleanInfluxDb": { "type": "boolean", "default": false },
+        "smDbHost": { "type": ["string", "null"] },
+        "smDbName": { "type": ["string", "null"] },
+        "securityContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "customLabels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "zooKeeperClientUsername": { "type": ["string", "null"] }
+      }
+    },
+    "backupDaemon": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": { "type": "boolean", "default": false },
+        "cloudBackuper": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "useBackupDaemon": { "type": "boolean", "default": true },
+            "backupDaemonCredentials": { "type": "boolean", "default": true }
+          }
+        },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "certificates": { "$ref": "#/$defs/tlsCertificates" },
+            "secretName": { "type": ["string", "null"] },
+            "cipherSuites": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+          }
+        },
+        "dockerImage": { "type": "string" },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": { "type": ["string", "null"] },
+        "backupStorage": { "$ref": "#/$defs/snapshotStorage" },
+        "s3": { "$ref": "#/$defs/s3" },
+        "s3Aliases": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/s3AliasItem" }
+        },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "backupSchedule": { "type": ["string", "null"] },
+        "evictionPolicy": { "type": ["string", "null"] },
+        "ipv6": { "type": "boolean", "default": false },
+        "zooKeeperHost": { "type": "string", "default": "zookeeper" },
+        "zooKeeperPort": { "type": "integer", "default": 2181 },
+        "securityContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "customLabels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "vaultSecretManagement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "dockerImage": { "type": ["string", "null"] },
+        "url": { "type": ["string", "null"] },
+        "method": { "type": "string", "default": "kubernetes" },
+        "role": { "type": "string", "default": "kubernetes-operator-role" },
+        "path": { "type": "string", "default": "secret" },
+        "writePolicies": { "type": "boolean", "default": true },
+        "passwordGenerationMechanism": {
+          "type": "string",
+          "enum": ["operator", "vault"],
+          "default": "operator"
+        },
+        "refreshCredentials": { "type": "boolean", "default": false }
+      }
+    },
+    "integrationTests": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": { "type": "boolean", "default": false },
+        "service": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "default": "zookeeper-integration-tests-runner"
+            }
+          }
+        },
+        "waitForResult": { "type": "boolean", "default": true },
+        "timeout": { "type": "integer", "default": 420 },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "image": { "type": "string" },
+        "tags": { "type": "string", "default": "zookeeper_crud" },
+        "url": { "type": "string" },
+        "zookeeperIsManagedByOperator": { "type": "boolean", "default": true },
+        "zookeeperHost": { "type": "string", "default": "zookeeper" },
+        "zookeeperPort": { "type": "integer", "default": 2181 },
+        "zookeeperVolumeSize": { "type": "integer", "default": 2 },
+        "pvType": { "type": "string", "default": "nfs" },
+        "prometheusUrl": { "type": ["string", "null"] },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "customLabels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "securityContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "monitoredImages": { "type": ["string", "null"] },
+        "atpReportViewUiUrl": { "type": ["string", "null"] },
+        "environmentName": { "type": "string", "default": "zookeeper" },
+        "atpReport": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "atpStorage": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": ["aws", "minio", "s3"],
+                  "default": "aws"
+                },
+                "serverUrl": { "type": ["string", "null"] },
+                "serverUiUrl": { "type": ["string", "null"] },
+                "bucket": { "type": ["string", "null"] },
+                "region": { "type": "string", "default": "us-east-1" },
+                "username": { "type": ["string", "null"] },
+                "password": { "type": ["string", "null"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "groupMigration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "oldGroupPrefix": { "type": "string", "default": "qubership.org/" },
+        "labelSelector": { "type": ["string", "null"] },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "image": { "type": "string" },
+        "imagePullPolicy": {
+          "type": "string",
+          "enum": ["Always", "IfNotPresent", "Never"],
+          "default": "Always"
+        },
+        "runAsNonRoot": { "type": "boolean", "default": true }
+      }
+    },
+    "pvc": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
