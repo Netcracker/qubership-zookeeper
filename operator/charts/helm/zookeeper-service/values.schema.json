@@ -51,11 +51,23 @@
       "properties": {
         "requests": {
           "type": "object",
-          "additionalProperties": { "type": "string" }
+          "additionalProperties": { "type": "string" },
+          "properties": {
+            "cpu": {
+              "comment": "don't use type field, because it breaks backward compatibility"
+            },
+            "memory": { "type": "string" }
+          }
         },
         "limits": {
           "type": "object",
-          "additionalProperties": { "type": "string" }
+          "additionalProperties": { "type": "string" },
+          "properties": {
+            "cpu": {
+              "comment": "don't use type field, because it breaks backward compatibility"
+            },
+            "memory": { "type": "string" }
+          }
         },
         "claims": {
           "type": "array",
