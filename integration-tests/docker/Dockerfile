@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.6.0
+FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.6.1
 
 # Switch to root for installation
 USER root
