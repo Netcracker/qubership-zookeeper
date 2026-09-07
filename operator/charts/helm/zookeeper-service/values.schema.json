@@ -33,6 +33,30 @@
       "default": "",
       "description": "Artifact descriptor version which is installed."
     },
+    "ZOOKEEPER_ADMIN_PASSWORD": {
+      "type": "string",
+      "description": "The password of the ZooKeeper administrator user."
+    },
+    "ZOOKEEPER_CLIENT_USERNAME": {
+      "type": "string",
+      "description": "The username of the ZooKeeper client user."
+    },
+    "ZOOKEEPER_CLIENT_PASSWORD": {
+      "type": "string",
+      "description": "The password of the ZooKeeper client user."
+    },
+    "INFRA_ZOOKEEPER_REPLICAS": {
+      "type": "integer",
+      "description": "The number of ZooKeeper servers."
+    },
+    "MONITORING_ENABLED": {
+      "type": "boolean",
+      "description": "Specifies whether ZooKeeper Monitoring component is to be deployed or not."
+    },
+    "STORAGE_RWO_CLASS": {
+      "type": "string",
+      "description": "This parameter specifies the ZooKeeper storage class."
+    },
     "nameOverride": { "type": ["string", "null"] },
     "fullnameOverride": { "type": ["string", "null"] },
     "serviceAccount": {
@@ -252,7 +276,7 @@
     },
     "global": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "name": { "type": "string", "default": "zookeeper" },
         "waitForPodsReady": { "type": "boolean", "default": true },
@@ -418,6 +442,10 @@
       "additionalProperties": false,
       "properties": {
         "install": { "type": "boolean", "default": true },
+        "enabled": {
+          "type": "boolean",
+          "description": "Deploy-time alias for install, injected by the platform."
+        },
         "dockerImage": { "type": "string" },
         "affinity": { "$ref": "#/$defs/affinity" },
         "tolerations": { "$ref": "#/$defs/tolerations" },
@@ -446,6 +474,10 @@
       "additionalProperties": false,
       "properties": {
         "install": { "type": "boolean", "default": false },
+        "enabled": {
+          "type": "boolean",
+          "description": "Deploy-time alias for install, injected by the platform."
+        },
         "cloudBackuper": {
           "type": "object",
           "additionalProperties": false,
@@ -518,6 +550,10 @@
       "additionalProperties": false,
       "properties": {
         "install": { "type": "boolean", "default": false },
+        "enabled": {
+          "type": "boolean",
+          "description": "Deploy-time alias for install, injected by the platform."
+        },
         "service": {
           "type": "object",
           "additionalProperties": false,
