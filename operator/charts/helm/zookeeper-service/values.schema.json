@@ -640,7 +640,7 @@
           "additionalProperties": false,
           "properties": {
             "annotations": {
-              "type": "object",
+              "type": ["object", "null"],
               "additionalProperties": { "type": "string" }
             }
           }

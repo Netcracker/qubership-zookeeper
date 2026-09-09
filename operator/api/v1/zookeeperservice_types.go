@@ -127,6 +127,8 @@ type PVC struct {
 
 // PVCMetadata defines metadata applied to all persistent volume claims created by the operator
 type PVCMetadata struct {
+	// +optional
+	// +nullable
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
@@ -203,6 +205,8 @@ type BackupDaemonStatus struct {
 }
 
 type PVCStatus struct {
+	// +optional
+	// +nullable
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
