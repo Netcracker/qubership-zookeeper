@@ -145,26 +145,30 @@ def _collect_last_backup_metrics(zookeeper_backup_daemon_url: str, storage):
 def _collect_successful_backups_metrics(zookeeper_backup_daemon_url: str, storage):
     logger.info('Start to collect successful backups metrics.')
 
-    successful_backups_count = _get_count_of_successful_backups(zookeeper_backup_daemon_url)
-    last_successful_backup_time = -1
-    if successful_backups_count:
-        last_successful_backup_time = storage['lastSuccessful']['ts']
+    successful_backups_count, last_successful_backup_time = _get_successful_backups_info(
+        zookeeper_backup_daemon_url, storage)
 
     return f'zookeeper_backup_metric successful_backups_count={successful_backups_count},' \
            f'last_successful_backup_time={last_successful_backup_time}'
 
 
-def _get_count_of_successful_backups(zookeeper_backup_daemon_url: str):
+def _get_successful_backups_info(zookeeper_backup_daemon_url: str, storage):
     backups_list = _get_request_with_path(zookeeper_backup_daemon_url, 'listbackups')
     logger.debug(f'IDs are {backups_list}')
     successful_backups_count = 0
+    last_successful_backup_time = -1
     for backup in backups_list:
         backup_info_json = _get_request_with_path(zookeeper_backup_daemon_url, f'listbackups/{backup}')
         if not backup_info_json['failed']:
             logger.debug(f'Backup {backup} is successful: {backup_info_json}')
             successful_backups_count += 1
+            backup_time = backup_info_json.get('ts', -1)
+            if backup_time > last_successful_backup_time:
+                last_successful_backup_time = backup_time
+    if last_successful_backup_time == -1:
+        last_successful_backup_time = storage.get('lastSuccessful', {}).get('ts', -1)
     logger.debug(f'The number of successful backups is {successful_backups_count}')
-    return successful_backups_count
+    return successful_backups_count, last_successful_backup_time
 
 
 def _get_status_code(status: str):
