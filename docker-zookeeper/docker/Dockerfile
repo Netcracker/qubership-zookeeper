@@ -19,7 +19,7 @@ COPY main.go main.go
 # Build
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} GO111MODULE=on go build -a -o zookeeper-assistant main.go
 
-FROM eclipse-temurin:21-jdk-alpine-3.23
+FROM eclipse-temurin:21-jdk-alpine-3.24
 
 ENV ZOOKEEPER_HOME=/opt/zookeeper \
     ZOOKEEPER_OPT=/var/opt/zookeeper \
@@ -67,8 +67,8 @@ RUN set -x \
     && usermod -a -G 0 zookeeper
 
 # Reminder: we don't upgrade it to 3.9.x until Clickhouse support
-ARG DISTRO_NAME=apache-zookeeper-3.8.6-bin
-ARG DISTRO_VERSION_NAME=zookeeper-3.8.6
+ARG DISTRO_NAME=apache-zookeeper-3.8.7-bin
+ARG DISTRO_VERSION_NAME=zookeeper-3.8.7
 # Download Apache Zookeeper and install
 RUN set -x \
     && export DISTR_DIR="$(mktemp -d)" \
@@ -84,7 +84,7 @@ RUN set -x \
     && mkdir -p ${ZOOKEEPER_OPT} \
     && mkdir -p ${ZOOKEEPER_DATA}
 
-ARG JOLOKIA_VERSION="1.7.2"
+ARG JOLOKIA_VERSION="1.7.3"
 # Download Jolokia
 RUN set -x \
     && wget \
@@ -114,25 +114,7 @@ RUN set -x \
     && ln -s /opt/async-profiler-3.0-linux-x64/profiler.sh /usr/local/bin/profiler \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-x64.tar.gz
 
-ARG NETTY_VER=4.1.125.Final
-RUN set -eux; \
-  ZOOKEEPER_LIB=${ZOOKEEPER_HOME}/lib; \
-  cd "$ZOOKEEPER_LIB"; \
-  for a in \
-    netty-buffer \
-    netty-codec \
-    netty-common \
-    netty-handler \
-    netty-resolver \
-    netty-transport \
-    netty-transport-classes-epoll \
-    netty-transport-native-epoll \
-    netty-transport-native-unix-common \
-  ; do \
-    curl -fL -o "${a}-${NETTY_VER}.jar" \
-      "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
-  done; \
-  rm -f netty-*-4.1.119.Final.jar;
+
 
 COPY docker/config/ ${ZOOKEEPER_HOME}/conf/
 COPY docker/docker-entrypoint.sh /
