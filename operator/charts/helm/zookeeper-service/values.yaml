@@ -36,7 +36,7 @@ global:
   securityContext: {}
 
 operator:
-  dockerImage: ghcr.io/netcracker/qubership-zookeeper-operator:main
+  dockerImage: ghcr.io/netcracker/qubership-zookeeper-operator:main@sha256:99d327d35c3f3769f53da7ba232f70d9af2cdf5c903f7fd6c0cb8765f646f132
 #  tolerations:
 #    - key: "key1"
 #      operator: "Equal"
@@ -79,7 +79,7 @@ operator:
 
 ## Values for ZooKeeper deployment
 zooKeeper:
-  dockerImage: "ghcr.io/netcracker/qubership-docker-zookeeper:main"
+  dockerImage: "ghcr.io/netcracker/qubership-docker-zookeeper:main@sha256:738b927d4a6b75d3491325a6da728ddcdcfec864ac2534cd9c25ecdd2e96f95a"
   affinity: {}
 #  affinity: {
 #    "podAntiAffinity": {
@@ -173,7 +173,7 @@ zooKeeper:
 ## Values for ZooKeeper Monitoring deployment
 monitoring:
   install: true
-  dockerImage: "ghcr.io/netcracker/qubership-zookeeper-monitoring:main"
+  dockerImage: "ghcr.io/netcracker/qubership-zookeeper-monitoring:main@sha256:2f2d21981aeb506836e8edf3f6f2fe98d8617f7762e9cb28d9a82a13665489f7"
 #  affinity: {
 #    "podAffinity": {
 #      "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -241,7 +241,7 @@ backupDaemon:
     subjectAlternativeName:
       additionalDnsNames: []
       additionalIpAddresses: []
-  dockerImage: "ghcr.io/netcracker/qubership-zookeeper-backup-daemon:main"
+  dockerImage: "ghcr.io/netcracker/qubership-zookeeper-backup-daemon:main@sha256:6d189ae39fbbd9d44a301e0456e49e26c3ea2160bf33ea155e4d2fb93ac6eb3b"
 #  affinity: {
 #    "podAffinity": {
 #      "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -366,7 +366,7 @@ integrationTests:
       ]
     }
   }
-  image: "ghcr.io/netcracker/qubership-zookeeper-integration-tests:main"
+  image: "ghcr.io/netcracker/qubership-zookeeper-integration-tests:main@sha256:a2bed264a5dc3e767ba1ed5bab77c6d3ce568fd76c8e52199aae997b52f1d5ff"
   tags: "zookeeper_crud"
   # Please override "url" parameter with "6443" port for Kubernetes environment and "8443" for Openshift environment
   url: "https://kube.com:6443"
@@ -421,7 +421,7 @@ groupMigration:
     limits:
       memory: 256Mi
       cpu: 100m
-  image: "ghcr.io/netcracker/qubership-docker-kubectl:0.0.8"
+  image: "ghcr.io/netcracker/qubership-docker-kubectl:0.0.8@sha256:8bc75f896fd042ef0a05f41550e0636e02a899c9cefc072fece54d84c47eb40b"
   imagePullPolicy: Always
   runAsNonRoot: true
 

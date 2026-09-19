@@ -1,7 +1,7 @@
 version: '2'
 services:
   zookeeper:
-    image: zookeeper:3.9.2
+    image: zookeeper:3.9.2@sha256:43d39109cbd4de394742efbfc162a8a0a93731e806374b71f3865f4ef4460a56
     ports:
     - 2181:2181
     environment:
