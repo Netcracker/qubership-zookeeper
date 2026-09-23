@@ -405,7 +405,7 @@ integrationTests:
       username: ""
       password: ""
   # URL for viewing Allure reports (e.g., https://reports.example.com)
-  atpReportViewUiUrl: "https://test.com"
+  atpReportViewUiUrl: "https://atp-reports.dev.qubership.org"
   # Environment name for organizing test results path in S3
   environmentName: "zookeeper"
 
