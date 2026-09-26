@@ -567,3 +567,18 @@ app.kubernetes.io/component: 'backend'
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: '{{ .Values.PART_OF }}'
 {{- end -}}
+
+{{- define "zookeeper.groupMigrationRequired" -}}
+  {{- $apiVersion := "qubership.org/v1" -}}
+  {{- $kind := "ZooKeeperService" -}}
+  {{- $name := include "zookeeper.name" . -}}
+  {{- $ns   := .Release.Namespace -}}
+  {{- $required := false -}}
+  {{- if and .Values.groupMigration.enabled (.Capabilities.APIVersions.Has $apiVersion) -}}
+    {{- $cr := lookup $apiVersion $kind $ns $name -}}
+    {{- if and $cr (eq (index $cr "apiVersion" | default "") $apiVersion) -}}
+      {{- $required = true -}}
+    {{- end -}}
+  {{- end -}}
+  {{- printf "%t" $required -}}
+{{- end }}
