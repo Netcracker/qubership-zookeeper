@@ -1,5 +1,4 @@
-{{- if .Values.groupMigration.enabled }}
-{{- if .Capabilities.APIVersions.Has "qubership.org/v1" }}
+{{- if eq (include "zookeeper.groupMigrationRequired" .) "true" }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -101,5 +100,4 @@ spec:
           securityContext:
             {{- include "zookeeper-service.globalContainerSecurityContext" . | nindent 12 }}
           {{- end }}
-{{- end }}
 {{- end }}
