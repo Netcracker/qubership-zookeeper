@@ -226,12 +226,8 @@ spec:
       limits:
         cpu: {{ default "400m" .Values.backupDaemon.resources.limits.cpu }}
         memory: {{ default "500Mi" .Values.backupDaemon.resources.limits.memory }}
-  {{- if .Values.backupDaemon.backupSchedule }}
-    backupSchedule: {{ .Values.backupDaemon.backupSchedule }}
-  {{- end }}
-  {{- if .Values.backupDaemon.evictionPolicy }}
-    evictionPolicy: {{ .Values.backupDaemon.evictionPolicy }}
-  {{- end }}
+    backupSchedule: {{ .Values.backupDaemon.backupSchedule | default "0 0 * * *" | quote }}
+    evictionPolicy: {{ .Values.backupDaemon.evictionPolicy | default "0/1d,7d/delete" | quote }}
     ipv6: {{ default false .Values.backupDaemon.ipv6 }}
     zooKeeperHost: {{ default "zookeeper" .Values.backupDaemon.zooKeeperHost }}
     zooKeeperPort: {{ default 2181 .Values.backupDaemon.zooKeeperPort }}

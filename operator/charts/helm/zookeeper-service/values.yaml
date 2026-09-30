@@ -313,8 +313,8 @@ backupDaemon:
     limits:
       cpu: 400m
       memory: 500Mi
-#  backupSchedule: "0 * * * *"
-#  evictionPolicy: "0/1d,7d/delete"
+  backupSchedule: "0 0 * * *"
+  evictionPolicy: "0/1d,7d/delete"
   ipv6: false
   zooKeeperHost: zookeeper
   zooKeeperPort: 2181
