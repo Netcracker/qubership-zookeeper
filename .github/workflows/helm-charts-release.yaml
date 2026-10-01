@@ -176,7 +176,7 @@ jobs:
 
       - name: Run chart-releaser
         #continue-on-error: true
-        uses: netcracker/chart-releaser-action@7015249576e76bfb228e6fe04b4869d44511c014  # main
+        uses: netcracker/chart-releaser-action@ec6582488ed05a759813cbeb6e56c33b541f56a8  # main
         with:
           charts_dir: operator/charts/helm
           release_name_template: "{{ .Version }}"
