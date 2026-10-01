@@ -3,7 +3,7 @@ module github.com/Netcracker/qubership-zookeeper/operator
 go 1.26
 
 require (
-	github.com/go-logr/logr v1.4.3
+	github.com/go-logr/logr v1.4.4
 	github.com/hashicorp/vault/api v1.22.0
 	github.com/sethvargo/go-password v0.3.1
 	k8s.io/api v0.35.0
