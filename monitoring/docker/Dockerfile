@@ -1,4 +1,4 @@
-FROM telegraf:1.39.3-alpine
+FROM telegraf:1.39.3-alpine@sha256:f11f13d46f6a778ae1fc733b059fc1a3e63a4e7b471f66df125090564e92fb60
 
 ENV ZOOKEEPER_MONITORING_HOME=/opt/zookeeper-monitoring \
     MONITORING_LOGS=/tmp/monitoring/logs
