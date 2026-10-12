@@ -1,6 +1,6 @@
 module mod
 
-go 1.26
+go 1.27.2
 
 require (
 	github.com/go-zookeeper/zk v1.0.4
