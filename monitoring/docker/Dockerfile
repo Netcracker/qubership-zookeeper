@@ -1,4 +1,4 @@
-FROM telegraf:1.39.3-alpine
+FROM telegraf:1.40-alpine
 
 ENV ZOOKEEPER_MONITORING_HOME=/opt/zookeeper-monitoring \
     MONITORING_LOGS=/tmp/monitoring/logs
