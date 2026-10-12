@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.6.1
+FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.6.2
 
 # Switch to root for installation
 USER root
@@ -22,7 +22,7 @@ COPY robot ${ROBOT_HOME}
 RUN set -x && apk upgrade --available
 
 RUN set -x \
-    && pip3 install --upgrade pip setuptools==80.10.1 jaraco.context==6.1.0 \
+    && pip3 install --upgrade pip setuptools==84.0.0 jaraco.context==6.1.2 \
     && pip3 install -r ${ROBOT_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*
 
