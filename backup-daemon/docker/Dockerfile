@@ -16,6 +16,7 @@ RUN set -x \
     python3 \
     py3-pip \
     && if pip3 install --help | grep -q -- '--break-system-packages'; then PIP_BREAK_FLAG='--break-system-packages'; else PIP_BREAK_FLAG=''; fi \
+    && pip3 install --no-cache-dir ${PIP_BREAK_FLAG} --upgrade pip==26.2.1 \
     && pip3 install --no-cache-dir ${PIP_BREAK_FLAG} setuptools \
     && pip3 install --no-cache-dir ${PIP_BREAK_FLAG} -r ${ZOOKEEPER_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*

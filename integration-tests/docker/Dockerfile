@@ -22,7 +22,8 @@ COPY robot ${ROBOT_HOME}
 RUN set -x && apk upgrade --available
 
 RUN set -x \
-    && pip3 install --upgrade pip setuptools==84.0.0 jaraco.context==6.1.2 \
+    && pip3 install --no-cache-dir --upgrade pip==26.2.1 \
+    && pip3 install --no-cache-dir setuptools==84.0.0 \
     && pip3 install -r ${ROBOT_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*
 
