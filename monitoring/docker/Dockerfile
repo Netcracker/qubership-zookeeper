@@ -3,8 +3,8 @@ FROM telegraf:1.40-alpine
 ENV ZOOKEEPER_MONITORING_HOME=/opt/zookeeper-monitoring \
     MONITORING_LOGS=/tmp/monitoring/logs
 
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/community" >> /etc/apk/repositories
 
 RUN mkdir -p ${ZOOKEEPER_MONITORING_HOME}
 
@@ -17,7 +17,7 @@ RUN set -x \
     && apk add --upgrade --no-cache bash curl tini python3 apk-tools openssl \
        net-snmp-tools net-snmp-agent-libs net-snmp-libs
 
-RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED
+RUN rm /usr/lib/python3.14/EXTERNALLY-MANAGED
 
 RUN  python3 -m ensurepip \
     && rm -r /usr/lib/python*/ensurepip \

@@ -175,11 +175,11 @@ data:
     ## If no port is specified, 2181 is used
     servers = {{ template "monitoring.zookeeperServers" . }}
     timeout = "10s"
-    fieldpass = ["znode_count", "ephemerals_count", "approximate_data_size", "avg_latency", "min_latency", "max_latency", "num_alive_connections", "packets_received", "packets_sent"]
+    fieldinclude = ["znode_count", "ephemerals_count", "approximate_data_size", "avg_latency", "min_latency", "max_latency", "num_alive_connections", "packets_received", "packets_sent"]
 
     {{- if eq (include "zookeeper-service.enableSsl" .) "true" }}
     ## Optional TLS Config
-    enable_tls = true
+    tls_enable = true
     tls_ca = "/tls/ca.crt"
     tls_cert = "/tls/tls.crt"
     tls_key = "/tls/tls.key"
