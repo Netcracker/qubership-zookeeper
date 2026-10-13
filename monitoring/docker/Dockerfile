@@ -17,7 +17,7 @@ RUN set -x \
     && apk add --upgrade --no-cache bash curl tini python3 apk-tools openssl \
        net-snmp-tools net-snmp-agent-libs net-snmp-libs
 
-RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED
+RUN rm /usr/lib/python3.14/EXTERNALLY-MANAGED
 
 RUN  python3 -m ensurepip \
     && rm -r /usr/lib/python*/ensurepip \
