@@ -21,7 +21,8 @@ RUN rm /usr/lib/python3.14/EXTERNALLY-MANAGED
 
 RUN  python3 -m ensurepip \
     && rm -r /usr/lib/python*/ensurepip \
-    && pip3 install --upgrade pip setuptools==84.0.0 jaraco.context==6.1.2 \
+    && pip3 install --no-cache-dir --upgrade pip==26.2.1 \
+    && pip3 install --no-cache-dir setuptools==84.0.0 \
     && pip3 install -r ${ZOOKEEPER_MONITORING_HOME}/requirements.txt \
     && chmod -R 777 ${ZOOKEEPER_MONITORING_HOME}/exec-scripts \
     && chmod +x /docker-entrypoint.sh \
