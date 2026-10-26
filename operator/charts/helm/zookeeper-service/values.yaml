@@ -421,7 +421,7 @@ groupMigration:
     limits:
       memory: 256Mi
       cpu: 100m
-  image: "ghcr.io/netcracker/qubership-docker-kubectl:0.0.8"
+  image: "ghcr.io/netcracker/qubership-docker-kubectl:0.0.11@sha256:f61a834889d79a335f693dc0a955da9f05e4061eb9810cc4db928d3e6ffca6ca"
   imagePullPolicy: Always
   runAsNonRoot: true
 
