@@ -1,1 +1,6 @@
 docs/public/capabilites.md
+
+# OpenSpec planning artifacts and generated Cursor workflows
+openspec/
+.cursor/skills/openspec-*/
+.cursor/commands/opsx-*.md
