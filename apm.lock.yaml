@@ -1,0 +1,111 @@
+lockfile_version: '1'
+apm_version: 0.35.0
+dependencies:
+- repo_url: _local/troubleshoot-zookeeper
+  name: troubleshoot-zookeeper
+  version: 1.0.0
+  package_type: apm_package
+  deployed_files:
+  - .agents/skills/troubleshoot-zookeeper
+  - .agents/skills/troubleshoot-zookeeper/SKILL.md
+  - .agents/skills/troubleshoot-zookeeper/references/troubleshooting.md
+  - .claude/rules/troubleshoot-zookeeper.md
+  - .claude/skills/troubleshoot-zookeeper
+  - .claude/skills/troubleshoot-zookeeper/SKILL.md
+  - .claude/skills/troubleshoot-zookeeper/references/troubleshooting.md
+  - .cursor/rules/troubleshoot-zookeeper.mdc
+  - .github/instructions/troubleshoot-zookeeper.instructions.md
+  deployed_file_hashes:
+    .agents/skills/troubleshoot-zookeeper/SKILL.md: sha256:a1292a4f0508790e355bdd47be8f2d682d87d02abfdd1bb05350c914a3ec2a86
+    .agents/skills/troubleshoot-zookeeper/references/troubleshooting.md: sha256:64447bbd46d02f4cb8135f86fede9581d1b62a2a38d7b910599426386bc1003a
+    .claude/rules/troubleshoot-zookeeper.md: sha256:6830f8a782dc3cbe9e899530c362184c9b858dc5e4e47fee90c7fe2586778829
+    .claude/skills/troubleshoot-zookeeper/SKILL.md: sha256:a1292a4f0508790e355bdd47be8f2d682d87d02abfdd1bb05350c914a3ec2a86
+    .claude/skills/troubleshoot-zookeeper/references/troubleshooting.md: sha256:64447bbd46d02f4cb8135f86fede9581d1b62a2a38d7b910599426386bc1003a
+    .cursor/rules/troubleshoot-zookeeper.mdc: sha256:4b640e2990c7f4570b49a7f6f3ad250e9501ea567e762860204967ca5f94a666
+    .github/instructions/troubleshoot-zookeeper.instructions.md: sha256:4cbba4156508e8527cce92423556e1a09d0ea9f9ce45974d345020149198ec9d
+  source: local
+  local_path: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:b603b7dc40aef01b141858b484ecc5de1b72c1a915f4e31780ae8610c4b6ed7f
+  is_dev: true
+deployments:
+- kind: project-relative
+  target: claude
+  value: .claude/rules/troubleshoot-zookeeper.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:6830f8a782dc3cbe9e899530c362184c9b858dc5e4e47fee90c7fe2586778829
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-zookeeper
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-zookeeper/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:a1292a4f0508790e355bdd47be8f2d682d87d02abfdd1bb05350c914a3ec2a86
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-zookeeper/references/troubleshooting.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:64447bbd46d02f4cb8135f86fede9581d1b62a2a38d7b910599426386bc1003a
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-zookeeper
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: null
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-zookeeper/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:a1292a4f0508790e355bdd47be8f2d682d87d02abfdd1bb05350c914a3ec2a86
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-zookeeper/references/troubleshooting.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:64447bbd46d02f4cb8135f86fede9581d1b62a2a38d7b910599426386bc1003a
+- kind: project-relative
+  target: copilot
+  value: .github/instructions/troubleshoot-zookeeper.instructions.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:4cbba4156508e8527cce92423556e1a09d0ea9f9ce45974d345020149198ec9d
+- kind: project-relative
+  target: cursor
+  value: .cursor/rules/troubleshoot-zookeeper.mdc
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:4b640e2990c7f4570b49a7f6f3ad250e9501ea567e762860204967ca5f94a666
