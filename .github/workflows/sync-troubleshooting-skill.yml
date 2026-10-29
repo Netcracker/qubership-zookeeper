@@ -31,7 +31,10 @@ jobs:
         with:
           files: |
             [
-              { "from": "docs/public/troubleshooting.md", "to": "agent-packages/troubleshoot-zookeeper/.apm/skills/troubleshoot-zookeeper/references/troubleshooting.md" }
+              { "from": "docs/public/troubleshooting.md", "to": "agent-packages/troubleshoot-zookeeper/.apm/skills/troubleshoot-zookeeper/references/troubleshooting.md" },
+              { "from": "docs/public/alerts.md", "to": "agent-packages/troubleshoot-zookeeper/.apm/skills/troubleshoot-zookeeper/references/alerts.md" },
+              { "from": "docs/public/troubleshooting-scenarios/memory_limit.md", "to": "agent-packages/troubleshoot-zookeeper/.apm/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/memory_limit.md" },
+              { "from": "docs/public/troubleshooting-scenarios/disk_filled_on_all_nodes.md", "to": "agent-packages/troubleshoot-zookeeper/.apm/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/disk_filled_on_all_nodes.md" }
             ]
           title: "chore: sync troubleshooting skill reference"
           commit-message: "chore: sync troubleshooting skill reference"
