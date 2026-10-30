@@ -1,0 +1,177 @@
+lockfile_version: '1'
+apm_version: 0.35.0
+dependencies:
+- repo_url: _local/troubleshoot-zookeeper
+  name: troubleshoot-zookeeper
+  version: 1.0.0
+  package_type: apm_package
+  deployed_files:
+  - .agents/skills/troubleshoot-zookeeper
+  - .agents/skills/troubleshoot-zookeeper/SKILL.md
+  - .agents/skills/troubleshoot-zookeeper/references/alerts.md
+  - .agents/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/disk_filled_on_all_nodes.md
+  - .agents/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/memory_limit.md
+  - .agents/skills/troubleshoot-zookeeper/references/troubleshooting.md
+  - .claude/rules/troubleshoot-zookeeper.md
+  - .claude/skills/troubleshoot-zookeeper
+  - .claude/skills/troubleshoot-zookeeper/SKILL.md
+  - .claude/skills/troubleshoot-zookeeper/references/alerts.md
+  - .claude/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/disk_filled_on_all_nodes.md
+  - .claude/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/memory_limit.md
+  - .claude/skills/troubleshoot-zookeeper/references/troubleshooting.md
+  - .cursor/rules/troubleshoot-zookeeper.mdc
+  - .github/instructions/troubleshoot-zookeeper.instructions.md
+  deployed_file_hashes:
+    .agents/skills/troubleshoot-zookeeper/SKILL.md: sha256:fa44d860d1e49675a74e821234f3afce7024fe1a2127e030e3db524d5a685038
+    .agents/skills/troubleshoot-zookeeper/references/alerts.md: sha256:582dd2ae8d8655987ea14f4d162d08c2f7410e7548d6c0b39165d418ac94d9ed
+    .agents/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/disk_filled_on_all_nodes.md: sha256:d37b8921a6a9500597f9bb59c6bd69f06912f603e52bbb38080933aa7fd4c862
+    .agents/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/memory_limit.md: sha256:3f8ee4eaf4c858546c383962580c97dffff18cde7c456c00a2bf887d6e534258
+    .agents/skills/troubleshoot-zookeeper/references/troubleshooting.md: sha256:64447bbd46d02f4cb8135f86fede9581d1b62a2a38d7b910599426386bc1003a
+    .claude/rules/troubleshoot-zookeeper.md: sha256:6830f8a782dc3cbe9e899530c362184c9b858dc5e4e47fee90c7fe2586778829
+    .claude/skills/troubleshoot-zookeeper/SKILL.md: sha256:fa44d860d1e49675a74e821234f3afce7024fe1a2127e030e3db524d5a685038
+    .claude/skills/troubleshoot-zookeeper/references/alerts.md: sha256:582dd2ae8d8655987ea14f4d162d08c2f7410e7548d6c0b39165d418ac94d9ed
+    .claude/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/disk_filled_on_all_nodes.md: sha256:d37b8921a6a9500597f9bb59c6bd69f06912f603e52bbb38080933aa7fd4c862
+    .claude/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/memory_limit.md: sha256:3f8ee4eaf4c858546c383962580c97dffff18cde7c456c00a2bf887d6e534258
+    .claude/skills/troubleshoot-zookeeper/references/troubleshooting.md: sha256:64447bbd46d02f4cb8135f86fede9581d1b62a2a38d7b910599426386bc1003a
+    .cursor/rules/troubleshoot-zookeeper.mdc: sha256:4b640e2990c7f4570b49a7f6f3ad250e9501ea567e762860204967ca5f94a666
+    .github/instructions/troubleshoot-zookeeper.instructions.md: sha256:4cbba4156508e8527cce92423556e1a09d0ea9f9ce45974d345020149198ec9d
+  source: local
+  local_path: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:525aef038ee52af372f1e407caad686144bda70d0d48577deb05308ac4abb99b
+  is_dev: true
+deployments:
+- kind: project-relative
+  target: claude
+  value: .claude/rules/troubleshoot-zookeeper.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:6830f8a782dc3cbe9e899530c362184c9b858dc5e4e47fee90c7fe2586778829
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-zookeeper
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-zookeeper/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:fa44d860d1e49675a74e821234f3afce7024fe1a2127e030e3db524d5a685038
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-zookeeper/references/alerts.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:582dd2ae8d8655987ea14f4d162d08c2f7410e7548d6c0b39165d418ac94d9ed
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/disk_filled_on_all_nodes.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:d37b8921a6a9500597f9bb59c6bd69f06912f603e52bbb38080933aa7fd4c862
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/memory_limit.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:3f8ee4eaf4c858546c383962580c97dffff18cde7c456c00a2bf887d6e534258
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-zookeeper/references/troubleshooting.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:64447bbd46d02f4cb8135f86fede9581d1b62a2a38d7b910599426386bc1003a
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-zookeeper
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: null
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-zookeeper/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:fa44d860d1e49675a74e821234f3afce7024fe1a2127e030e3db524d5a685038
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-zookeeper/references/alerts.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:582dd2ae8d8655987ea14f4d162d08c2f7410e7548d6c0b39165d418ac94d9ed
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/disk_filled_on_all_nodes.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:d37b8921a6a9500597f9bb59c6bd69f06912f603e52bbb38080933aa7fd4c862
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/memory_limit.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:3f8ee4eaf4c858546c383962580c97dffff18cde7c456c00a2bf887d6e534258
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-zookeeper/references/troubleshooting.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:64447bbd46d02f4cb8135f86fede9581d1b62a2a38d7b910599426386bc1003a
+- kind: project-relative
+  target: copilot
+  value: .github/instructions/troubleshoot-zookeeper.instructions.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:4cbba4156508e8527cce92423556e1a09d0ea9f9ce45974d345020149198ec9d
+- kind: project-relative
+  target: cursor
+  value: .cursor/rules/troubleshoot-zookeeper.mdc
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-zookeeper/
+  active_owner: ./agent-packages/troubleshoot-zookeeper/
+  content_hash: sha256:4b640e2990c7f4570b49a7f6f3ad250e9501ea567e762860204967ca5f94a666

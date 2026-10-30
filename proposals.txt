@@ -1,0 +1,280 @@
+Principles
+One skill is one decision to load. Everything in it must apply whenever its description matches, so the triage discipline of a whole tracker is one skill, while "everything about Kafka" is not — a consumer-lag ticket would carry the broker-installation part in with it.
+The description decides invocation. The analyst session sees the name and description of every installed skill and invokes the ones that fit, so write symptoms, tracker names, and error signatures rather than a summary.
+Visibility metadata decides installation. The visible-for-* keys control which tickets see the skill at all; without them it is offered everywhere.
+The body is instructions for a run. Concrete commands, log locations, decision steps — leave out background theory.
+Test the skill on a real ticket before you merge it. A skill nothing triggers is dead weight.
+Bundle Layout
+A bundle is a directory in Git, and the Git path of the bundle must point at it. Each skill lives in its own directory under .apm/skills/:
+
+my-bundle/                  ← the bundle's Git path points here
+├─ apm.yml                  ← manifest
+└─ .apm/
+   └─ skills/
+      ├─ troubleshoot-kafka/
+      │  ├─ SKILL.md
+      │  └─ broker-error-codes.md   ← optional reference material
+      └─ ocs-ssh-connect/
+         └─ SKILL.md
+Skill Format
+Each skill is a SKILL.md file in the Agent Skills format: YAML frontmatter, then the instruction body. Use the directory name as the name in the frontmatter, so that the name and the folder on the nodes are the same. The check does not require this.
+
+---
+name: troubleshoot-kafka       # use the directory name
+description: >-
+  Use when consumer lag grows, brokers flap,
+  or ISR shrinks after a broker restart.
+---
+
+1. Check controller logs at /var/log/kafka/ …
+Supporting Files
+A skill can carry more than its SKILL.md. Every file in the skill's directory ships with it, so the body can name one and the analyst opens it when a step calls for it.
+
+Keep the procedure in SKILL.md and move out reference material only. What separates the two is what the analyst does with the content: an error-code table, the layout of a diagnostic pack, or a long list of component names is looked up when a step points at it, whereas a step is followed. A step that lives outside SKILL.md is a step the analyst can skip, because the assessment runs unattended and nobody is there to notice the file it never opened.
+
+Length alone is rarely a reason to split. The five skills that ship with the product hold their whole procedure in one file, between 120 and 360 lines each. When a document does outgrow that, prefer two skills whose descriptions choose between them over one skill that spreads its procedure across files.
+
+Validation
+Only the directory .apm/skills/<name>/ is copied to the nodes. A file elsewhere in the repository does not exist for the analyst, so a skill must be self-contained: keep every file it uses inside its own directory and link to it with a relative path.
+
+A symlink inside a skill directory is allowed. The sync copies the file that the symlink points to, so the analyst gets a regular file with that content, not a link. This lets several skills share one file of the same repository. The sync follows a symlink only when its target is a regular file in the repository of the bundle, and outside the .git directory. It skips every other symlink and does not fail the bundle. The skipped symlinks are:
+
+a symlink to a file outside the repository, for example an absolute path such as /etc/hosts
+a symlink to a file in the .git directory
+a symlink to a directory
+a symlink to a file that does not exist
+A file of a dependency is not part of the repository of the bundle. To use it, copy it into the repository of the bundle. A Markdown link to a skipped symlink is reported as a missing file.
+
+Each sync, and each check in the Add and Edit dialogs and in the trial run, reads every skill and lists the problems it finds as issues. The check covers the skills of the bundle and the skills of its dependencies. The issues are listed under the name of the skill they belong to, and they never block a bundle. Every other skill in the bundle is still installed.
+
+An issue is either critical or not:
+
+Critical. The issue prevents the model from loading or discovering the skill. The skill is not published, so no assessment gets it.
+Not critical. The issue does not prevent the model from loading the skill, but it might affect the quality of the assessment.
+The checks are:
+
+SKILL.md has valid YAML frontmatter. Without it, the model cannot discover the skill (critical).
+name is present, is a string and is not empty. Otherwise the model cannot discover the skill (critical).
+name holds none of the characters that Claude Code refuses: control and zero-width characters, characters that change the text direction, private-use or unassigned characters, < and >, and any space other than one plain space between words. Otherwise the model cannot discover the skill (critical).
+description is present, is a string and is not empty. Otherwise the model cannot discover the skill (critical).
+name has at most 128 characters and description has at most 1536 characters. A longer text takes too much space in the model context (critical).
+Every Markdown link in the skill body and in the other Markdown files of the skill points to a file that exists in the skill directory. The model might not find the file, which might affect the quality of the assessment (not critical).
+The Agent Skills specification at agentskills.io sets lower limits: 64 characters for name and 1024 characters for description. Not every AI harness enforces them strictly, so Bill does not enforce them either. Bill still needs a hard limit, so it uses 128 and 1536 characters. This is an accepted deviation from the specification. A skill that follows the specification always passes the check.
+
+The link check ignores fenced code blocks, inline code and web links. A link that leaves the skill directory is reported as a missing file, because only the skill directory is copied to the nodes. The issue text is "the referenced file is absent in the skill directory or has not been installed".
+
+For example, ../../instructions/tickets.md fails the check even when the file exists in your repository. Move tickets.md into the skill directory and link to it as tickets.md.
+
+Each issue links to the file and line that hold the problem. The link opens the repository that supplied the skill, at the commit that was checked. For a skill that comes from a dependency, this is the repository of the dependency, not the repository of the bundle. A skill from a local path has no link. The same links appear in the popup that opens when you point at a skill name that has issues, in the Skills column of the bundle list.
+
+The optional fields and the body are not checked for length.
+
+Metadata Reference
+Key	Required	Description
+name	yes	Skill id. Use the skill's directory name, in kebab-case.
+description	yes	When the skill applies. The analyst invokes skills by description.
+netcracker.com/visible-for-ticket-boxes	no	Offer the skill only for tickets in these ticket boxes.
+netcracker.com/visible-for-domains	no	Offer the skill only for tickets in these domains.
+netcracker.com/visible-for-pipeline-assessment	no	Offer the skill only for pipeline assessments.
+The visibility keys go under metadata:, take a comma-separated list, and are matched case-insensitively.
+
+visible-for-ticket-boxes
+By default a skill is offered for every ticket. This key limits it to the listed ticket boxes — the part of the Jira key before the hyphen, so PSUPICEOC-1904 belongs to the PSUPICEOC box.
+
+---
+name: nrm-tickets-triage
+description: >-
+  Tracker hierarchy and triage rules
+  for Cloud NRM tickets.
+metadata:
+  netcracker.com/visible-for-ticket-boxes: PSUPICEOC, PSUPICE, RMCR
+---
+A misspelled name raises no error: the skill is simply never offered. Copy the exact ids from the Ticket Boxes page.
+
+visible-for-domains
+The same idea one level up, for skills that apply to a whole product area whatever the tracker — deployment guides, product architecture, and the like.
+
+---
+name: backup-restore-troubleshooting
+description: >-
+  Use for backup or restore failures
+  in any platform component.
+metadata:
+  netcracker.com/visible-for-domains: OCS, NRM, Platform
+---
+How the two keys combine:
+
+Neither key is set, so the skill is universal and offered for every ticket.
+Both keys are set, and they are combined with OR: the skill is offered when the ticket's box is listed or its domain matches.
+Visibility gates installation only. The description still decides whether the analyst invokes the skill.
+A disabled bundle is never offered, whatever the keys say, and on a name collision the built-in skill wins.
+Domain names are in the domain switcher at the top of the menu, and on the Domain badge of any bundle.
+
+visible-for-pipeline-assessment
+This key is optional. A skill with "true" here is offered for pipeline assessments of the Build Cop, and only there, so it never affects ticket assessments:
+
+---
+name: my-component-pipeline-assessment
+description: >-
+  Use when a pipeline of my-component fails.
+metadata:
+  netcracker.com/visible-for-pipeline-assessment: "true"
+---
+Use the key to keep a pipeline skill out of ticket assessments. A skill without it is universal and is offered for pipeline assessments as well as for tickets, so a pipeline skill without the key can influence ticket assessments too. The ticket-box and domain keys do not apply to pipelines.
+
+Examples
+Two complete skills, showing the two ends of the visibility rules.
+
+A universal skill, offered everywhere:
+
+---
+name: troubleshoot-kafka
+description: >-
+  Use when consumer lag grows or
+  brokers flap after a restart.
+---
+
+1. Check broker logs …
+2. Compare ISR to the replica set …
+A scoped skill, offered for Cloud NRM trackers only:
+
+---
+name: nrm-triage-discipline
+description: >-
+  Tracker hierarchy and triage
+  rules for Cloud NRM tickets.
+metadata:
+  netcracker.com/visible-for-ticket-boxes: PSUPICEOC, PSUPICE, RMCR
+  netcracker.com/visible-for-domains: NRM
+---
+
+# Cloud NRM trackers and triage …
+Pipeline Assessment Skills
+A pipeline skill teaches the agent how one component's pipeline is built and what its failures mean. To adopt the Build Cop for a component, follow the Onboarding Guide; this section covers only the skill.
+
+Add netcracker.com/visible-for-pipeline-assessment: "true" to limit the skill to pipeline assessments, as described under visible-for-pipeline-assessment. Then use the body to tell the agent:
+
+how to read the stages, jobs and job artifacts, and which job names matter;
+how to classify a failure, for example product bug, test bug, or infrastructure;
+which actions to recommend for the different issues, for example restart job, revert MR, file a bug or escalate to the responsible team;
+which issues to put first when several jobs fail;
+which artifacts and logs to open for each kind of failure.
+For a complete example, see the Infra.Automation pipeline assessment skill. Before you publish, try the skill on a real failed pipeline, as described in Trial run.
+
+Trial run
+A skill can be tried on one ticket before it is published. On the tickets page, open Request assessment and enable Try an unpublished skill bundle on this run — the same Git URL, ref, and path fields as Add Bundle appear. The source must be a valid APM bundle root (apm.yml). The run is always record-only: the Jira ticket is never commented on or moved.
+
+A pipeline can be tried the same way. On the Pipelines page, open Request assessment, select the Git project, and enable Try an unpublished skill bundle on this run. The access check runs as the domain of that Git project, so it starts only after you select the project. A trial run on a pipeline never sends a Webex notification. It also does not replace a normal run: a CI trigger for the same pipeline still gets its own assessment, and the trial run is compared with the last normal run of that pipeline.
+
+Install order on that run is bundled skills, then published APM skills, then the trial bundle. A trial skill with the same name as a stored skill replaces it for this run only; a new name is added. Visibility keys (visible-for-*) are ignored for the trial overlay.
+
+The clone lives only in that assessment's workdir. The node's published skills volume is not written, and the SkillBundle catalogue is not updated. After the run the workdir is deleted.
+
+The Skills tab lists every trial skill whether the analyst invoked it or not, with source attached. Production statistics, Grafana aggregates, and the feedback export omit trial rows. The assessment counts of a Git project and the Pipelines menu count also omit trial runs.
+
+Available Tools
+The tools below are what the analyst session can call. The set is fixed by the platform: a skill cannot add a tool, and it does not need to declare the ones it uses. What a skill contributes is the judgement around them — which tool answers which question, what to look at in the output, and when the answer is good enough to stop.
+
+Name a tool the way the agent sees it, exactly as spelled here. Several tools are offered only when the ticket's domain has the matching feature configured, which each section notes.
+
+This list is generated from the worker, so it is what the current release actually offers.
+
+Built-in Tools
+Claude Code's own tools, always available. They operate on the per-ticket working directory, which holds the ticket text, its attachments, anything the other tools download, and the skills installed for this ticket.
+
+Tool	Description
+Read	Read a file from the working directory: the ticket text, a downloaded attachment, a build log, or a file in a mounted repository.
+Glob	List files matching a pattern, to find out what a downloaded artefact or a mounted repository contains.
+Grep	Search file contents by regular expression. The usual way to trace an error signature through logs and source.
+Bash	Run a shell command in the working directory, for the cases the file tools do not cover — unpacking an archive, counting matches, following a chain of includes.
+Skill	Load one of the skills installed for this ticket. The analyst reads the name and description of every installed skill and calls this tool when one fits the symptom in front of it.
+Agent	Delegate a search to the read-only explore-repository subagent, one repository per call. Use it to keep a wide code search out of the main context.
+Jira
+Read-only Jira access as the service account of the tenant owning the ticket. The ticket under assessment is already in the working directory; these tools are for the tickets around it.
+
+Tool	Description
+jira-ticket-read	Read a Jira ticket by key. Returns full ticket details as markdown, including comments. Tickets on tms.netcracker.com are addressed by bare key (ABC-123). To reach an Atlassian Cloud site, pass the full ticket URL instead, for example https://it-cyta.atlassian.net/browse/ABC-123. LOE, stream, customer, sprint and the original estimate are tms-only and are omitted for a Cloud ticket.
+jira-search-jql	Search Jira tickets using JQL. Returns key, status, and summary by default. Use 'fields' to request additional data: description, labels, loe, assignee, reporter, priority, type, fixVersions, affectsVersions, components, stream, customer, created, updated, resolved, parent, epicLink, comments, issueLinks, attachments, sprint, originalEstimate, environment, subtasks, customFields. Write JQL comparison operators literally (e.g. created <= "2026-01-01"); do not HTML-escape them as &lt; or &gt; — the query is sent to Jira verbatim. Atlassian Cloud site URL, for example https://it-cyta.atlassian.net. Omit it for tms.netcracker.com. An Atlassian Cloud search reports no total, only a nextPageToken.
+jira-attachment-download	Download a Jira ticket attachment by filename. Fetches the ticket, finds the attachment by name, downloads it, and saves to the local filesystem. The output path can be either a directory (will use original filename) or a complete file path. Tickets on tms.netcracker.com are addressed by bare key (ABC-123). To reach an Atlassian Cloud site, pass the full ticket URL instead, for example https://it-cyta.atlassian.net/browse/ABC-123.
+Research
+The Netcracker knowledge base, reached through a research agent rather than searched directly.
+
+Offered only when the owning tenant has a research MCP endpoint configured.
+
+Tool	Description
+research	Deep research agent with an internal agentic RAG pipeline. Investigates the given prompt by autonomously searching product documentation, API specifications, and Jira tickets across all Netcracker domains. The agent's output should be trusted as authoritative — do not call this tool again for the same topic with rephrased queries.
+Source Code
+Mounting a registered repository into the working directory. The registry is written to `.repos.jsonl` in the working directory, one JSON record per line, which the analyst greps to find a repository and the branches on offer.
+
+Offered when the tenant's domains have repositories registered on the Source Code page with a branch synced on this node.
+
+Tool	Description
+repo	Mount a registered source-code repository branch into your workspace for code analysis. Pass the repository `id` and one of its `branches` from the matching line of `.repos.jsonl` in your working directory (grep that file to find the repository). The repository is checked out read-only; the tool returns a path you can inspect with Read, Glob, Grep, and Bash.
+GitLab
+Read-only access to merge requests, pipelines and jobs on git.netcracker.com. They also list the projects of a group and browse a repository tree. Use them when a ticket points at a failed pipeline, a merge request, or a file in a repository.
+
+Tool	Description
+gitlab-mr-get	Retrieves comprehensive information about a single GitLab merge request including title, description, state, labels, branches, author, draft status, merge status, and conflict information.
+gitlab-mr-list	Lists merge requests for a GitLab project with optional filtering by state, source/target branch, search text, labels, author username and update time. Each item carries the draft flag, the author name and the created, updated and merged times. Results are paged: pass nextPage as page until it is 0.
+gitlab-mr-diff-download	Downloads the complete diff of a GitLab merge request and saves it to a local file in unified diff format. Identify the merge request either by its web URL in mergeRequestURL (for example https://git.netcracker.com/PROD.Billing.Applications/nrm/-/merge_requests/59541), or by projectID (numeric id or path with namespace, for example 18803 or PROD.Billing.Applications/nrm) together with IID. Retrieves all changes across all files in the merge request; a file whose diff GitLab withholds (too large or collapsed) is listed with a note instead of its body. When the merge request is not found, the error says whether the project or the merge request is missing. Returns the local path, the size and the number of changed files; read the file with the Read tool.
+gitlab-pipeline-get	Retrieves a GitLab pipeline with all jobs. Identify the pipeline either by its web URL in pipelineURL (a pipeline or job page, for example https://git.netcracker.com/PROD.Billing.Applications/nrm/-/pipelines/16385431), or by projectID (numeric id or path with namespace, for example 18803 or PROD.Billing.Applications/nrm) together with pipelineID for a specific pipeline or IID for the HEAD pipeline of a merge request. Returns pipeline ID, project ID, name, status, web URL, and job metadata (ID, project ID, name, kind, status, stage, timestamps). Jobs with kind 'bridge' are trigger jobs that spawn a child pipeline; the jobs of that child pipeline follow with the bridge name in their 'pipeline' field. A child pipeline can live in another project, so pass the projectID of the job, not of the pipeline, to gitlab-job-logs-download, gitlab-job-artifact-download and the other job tools. A job with status 'manual' (for example the 'Run PreSubmit' bridge of a merge request pipeline) is started with gitlab-job-play; a failed or cancelled job is re-run with gitlab-job-retry. The pipeline name contains the PIPELINE_TYPE prefix (e.g. '[post_submit] ...' or '[release_candidate] ...') — use it to identify the pipeline type. A non-zero artifactsSizeBytes indicates the job has a downloadable zip archive; use gitlab-job-artifact-download to fetch it (the response lists the files inside). For job.log use gitlab-job-logs-download. When the pipeline is not found, the error says whether the project is missing or the pipeline belongs to another project. When debugging pipeline failures, load the 'gitlab' skill first — it contains pipeline structure knowledge and debugging workflow.
+gitlab-pipeline-list	Lists pipelines for a GitLab project with optional filtering by ref (branch/tag), status, and sorting. Use this to find the latest Night CI pipelines (filter by ref=master and look for '[Night CI]' in the name field). Returns pipeline ID, name, ref, SHA, status, web URL, and timestamps. The pipeline name contains the PIPELINE_TYPE prefix (e.g. '[post_submit] ...', '[release_candidate] ...', or '[Night CI] ...') — use it to identify the pipeline type.
+gitlab-job-logs-download	Downloads the complete execution log (/trace) of a GitLab CI/CD job and saves it to a local file. Returns the absolute path of the saved file (outputPath) and job metadata: pipelineID, status, stage, ref, failureReason, and archive artifact size/TTL. Use this as the first stop when given only a job URL — the response tells you which pipeline the job belongs to and whether it is worth pulling artifacts next (gitlab-job-artifact-download) or looking at sibling jobs (gitlab-pipeline-get).
+gitlab-job-artifact-download	Downloads an artifact of a GitLab CI/CD job and saves it to a local file and returns its absolute path (outputPath). Without artifactPath the full artifacts archive (zip) is downloaded and the response lists the files inside (their paths can be used as artifactPath in a subsequent call). With artifactPath the single file at that path inside the archive is downloaded directly. Check artifactsSizeBytes in gitlab-pipeline-get first — downloading the full archive for listing alone is wasteful for very large artifacts. For job.log use gitlab-job-logs-download.
+gitlab-job-test-results-get	Downloads job artifacts and parses Allure test results into a local markdown file. Always written when Allure data is present — contains test statistics summary (total/passed/failed) and, when there are failures, per-test details: assertion errors, HTTP request/response, and the log store queries by X-Request-Id. Returns the path to the written file — read it with the Read tool. Returns empty outputPath if the job has no Allure report in its artifacts.
+gitlab-job-cluster-logs-collect	Downloads job artifacts, reads ci-context.json from the outputs.zip files to find the namespace and the window of each failed deployment target, and collects from the cluster log store: which build logged there, the narrow failure signatures measured as specific to failing runs, the problem-level lines of that build inside the window of each failed test case, the lookups by X-Request-Id and by task id, and — for a run that died in deployment — the operator and the services it could not bring up. Writes markdown under outputDir/logs/, with QUERIES.md describing how to keep looking. A run whose environment never came up has nothing in the store; the file says so. Use for deploy jobs (Night CI Deploy, the deploy phase of Integration Tests) in parallel with gitlab-job-logs-download.
+gitlab-repository-file-download	Downloads the raw contents of a single file from a GitLab repository and saves it to the local file path given in outputPath. Accepts either a full blob URL (e.g. .../-/blob/<ref>/<path>) or the structural fields gitHost, projectID, ref and filePath — structural fields override values parsed from the URL (useful when the branch name contains slashes). A directory (/-/tree/) URL is not accepted: use gitlab-repository-tree-list for it. When the file is not found, the error says whether the project, the ref or the path is missing: it names the branch the caller cut at a slash, the place where the file is, or what the nearest existing directory holds. A hexadecimal ref shorter than 8 characters that names no branch or tag (a year such as 2026) is refused, because git reads it as a prefix of an arbitrary commit SHA. Returns the local path, the size and commit, the full SHA of the commit the file was read from; read the file with the Read tool.
+gitlab-mr-notes-list	Lists all comments (notes) on a GitLab merge request, including system notes and inline diff comments. Returns note IDs, authors, body text, resolution status and, for inline comments, the file path and line.
+gitlab-mr-note-get	Retrieves a single comment (note) from a GitLab merge request by its note ID.
+gitlab-project-list	Lists the projects of a GitLab group, optionally with all subgroups, or searches projects by name across the instance. Use it when a project path is uncertain or a download reports `project not found`. The result names the path-with-namespace and default branch to pass to the other GitLab tools, plus the direct subgroups of the group. Archived projects are hidden unless includeArchived is set.
+gitlab-repository-tree-list	Lists the files and directories of a GitLab repository directory, optionally the whole subtree. Accepts a directory URL (.../-/tree/<ref>/<dir>), a blob URL (its directory is listed) or the structural fields gitHost, projectID, ref and path, which override values parsed from the URL. Use it to find the path of a file before gitlab-repository-file-download. A hexadecimal ref shorter than 8 characters is resolved first and returned as commit, the full SHA; one that names no branch or tag (a year such as 2026) is refused, because git reads it as a prefix of an arbitrary commit SHA. An empty listing of a path is reported as a missing directory, because git has no empty directories. When the directory is not found, the error says whether the project, the ref or the path is missing: it names the branch the caller cut at a slash, the place where the name exists, or what the nearest existing directory holds.
+Jenkins
+Console logs and artefacts of a Jenkins build, downloaded into the working directory so the other tools can read them.
+
+Tool	Description
+jenkins-console-download	Downloads the full console log (/consoleText) of a Jenkins build and saves it to a local file. Accepts either a full build URL (e.g. .../job/<folder>/job/<job>/<number>/) or the structural fields jenkinsHost, jobPath and buildNumber — structural fields override values parsed from the URL. Returns the log size and build metadata (result, building); the absolute path of the saved file (outputPath) is returned; read the file from that path.
+jenkins-artifact-download	Downloads a single build artifact of a Jenkins build and saves it to a local file. Accepts either a full artifact URL (e.g. .../job/<folder>/job/<job>/<number>/artifact/<path>) or the structural fields jenkinsHost, jobPath, buildNumber and artifactPath — structural fields override values parsed from the URL. Console logs often reference artifact URLs; use this tool to fetch them. Returns the artifact size, build metadata and the absolute path of the saved file (outputPath); read the file from that path.
+Argo CD
+Read-only inspection of a deployed environment: what is running, how it differs from the desired state, and what its pods logged. Use them for tickets about a specific installation. The login diagnostic (argocd-userinfo-get) is not offered.
+
+Tool	Description
+argocd-application-list	Lists Argo CD applications with their sync and health status, optionally filtered by project. Use it to find the exact application name to drill into, or to confirm a prerequisite application (e.g. an operator) is present.
+argocd-application-get	Returns the status of one Argo CD application: sync (Synced/OutOfSync), health, the last sync operation phase and its error message, auto-sync/self-heal flags, revision and conditions. The first thing to check when a deployment is failing or stuck. The sync error text lives in operation.message and conditions.
+argocd-application-resource-tree-get	Returns the flattened managed-resource tree of an application: each resource's kind, name, namespace, health, container images and pod restart count. Use it to spot missing CRDs, degraded resources and crash-looping pods.
+argocd-application-diff-get	Returns the desired-vs-live drift of each out-of-sync managed resource as a compact line diff (- live, + target). Use it to explain why an application is OutOfSync: value mismatches, schema rejections, fields the cluster normalised. In-sync resources are omitted.
+argocd-application-resource-get	Returns the live manifest (YAML/JSON) of a single managed resource. Use it to inspect a custom resource's status.conditions, annotations (e.g. tracking-id) and the exact fields a controller rejected.
+argocd-application-events-get	Returns Kubernetes events for an application (or a single resource): reason, type, message, count and when last seen. Use it to see reconcile errors and event-volume/leader-election problems.
+argocd-application-pod-logs-get	Returns a snapshot of a pod's logs for an application (last N lines, no live tailing). Use it to find crash-loop causes and reconcile errors.
+argocd-application-manifests-get	Returns the desired manifests Argo CD renders from an application's source (merged Helm values, etc.) at a revision. This can be large; for pinpoint analysis prefer argocd-application-diff-get or argocd-application-resource-get.
+argocd-project-get	Returns an Argo CD AppProject's configuration: cluster-resource allow-list, destinations and source repos. Use it to explain 'resource X is not permitted in project' errors.
+Web Search
+Public web search, for vendor documentation and error signatures that are not part of the Netcracker knowledge base.
+
+Tool	Description
+web-search	Search the web for current information. Returns search results with links and a synthesized summary.
+Sandbox Environment
+The Bash tool runs inside a fixed container. The skill can create files freely under the working directory, but the rest of the filesystem is read-only, and the only way out to the network is the tools listed above plus curl against URLs that the ticket itself references.
+
+Nothing can be installed. Write instructions against the commands below and nothing else, because a skill that reaches for a missing utility fails at the point where the analyst needed the answer.
+
+Available Commands
+Shell and coreutils: bash, sh, env, cat, cut, head, tail, tr, sort, uniq, wc, find, grep, sed, awk, tee, xargs, ls, mkdir, rm, cp, mv, chmod.
+Archives and compression: tar, unzip, gzip, gunzip, bzip2, bunzip2, xz, unxz.
+Data tools: jq, python3, diff, cmp, patch, file, xxd, strings.
+Network: curl, and only for URLs the ticket links to. GitLab, Jenkins, and Jira are reachable through their tools alone — a raw curl to those hosts carries no credentials and fails.
+Present but constrained: git, ssh, openssl. Source code arrives through the repo tool, which mounts a branch on disk, so a skill never needs git clone.
+Not available: wget, rsync, node, npm, and package managers such as apt and pip. Never write a step that installs something.
+
+Two habits are worth stating in a skill that drives Bash. Read files larger than 1 MB through grep or a script rather than the Read tool, which spends the analyst's context on them. Leave everything under attachments/ untouched, because the raw attachments are the evidence; unpack into a sibling directory and work on that copy.
+
+Python
+python3 is the standard library plus one third-party module, PyYAML, imported as yaml. The modules that earn their place in a skill are json, re, csv, sqlite3, hashlib, gzip, tarfile, zipfile, tomllib, datetime, html.parser, xml.etree, and urllib.
+
+Installing a new module is not possible: there is no pip, and the filesystem outside the working directory is read-only. If a procedure needs a library that is not there, rewrite it around the standard library.
+
+Prefer Python over Shell Scripts
+Anything longer than a single command belongs in Python — either python3 -c '...' for a couple of lines, or a .py file written into the working directory and run. Reserve the shell for one self-contained command, such as a grep over a log, an unzip, or a head.
+
+Failures stay visible. A Python error is a traceback that names the line; a shell pipeline reports the exit code of its last stage, so a failure in the middle passes for success.
+Structured data is parsed, not matched. JSON, CSV, and YAML go through a parser that understands quoting and nesting, instead of grep and awk patterns that break on the first unusual record.
+Multi-step logic stays readable. Conditions, loops, and intermediate results are easier to follow, and easier for the analyst to correct when a step returns nothing.
