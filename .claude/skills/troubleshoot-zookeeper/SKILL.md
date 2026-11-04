@@ -5,9 +5,9 @@ description: Diagnose qubership-zookeeper failures in Jira tickets, CI/CD pipeli
 
 # Troubleshoot ZooKeeper
 
-Fast entrypoint for ZooKeeper assessment. Failure steps stay in `references/troubleshooting.md`. This file does not repeat them.
+Fast entrypoint for ZooKeeper assessment. Failure steps stay in [references/troubleshooting.md](./references/troubleshooting.md). This file does not repeat them.
 
-`references/troubleshooting.md` is the fact source for known failure modes. It is a copy of `docs/public/troubleshooting.md`. `references/alerts.md` and `references/troubleshooting-scenarios/` are the files that guide links to. Do not read a reference file in full for a single symptom.
+[references/troubleshooting.md](./references/troubleshooting.md) is the fact source for known failure modes. It is a copy of `docs/public/troubleshooting.md`. [references/alerts.md](./references/alerts.md) and [references/troubleshooting-scenarios/](./references/troubleshooting-scenarios/) are the files that guide links to. Do not read a reference file in full for a single symptom.
 
 1. Grep headers with line numbers first: `grep -n '^#' references/troubleshooting.md`
 2. Match the symptom against the jump table below, or the raw headers if the table is stale.
@@ -15,8 +15,8 @@ Fast entrypoint for ZooKeeper assessment. Failure steps stay in `references/trou
 
 Read another file in this skill the same way only when the section already loaded points at it. Grep `^#` in that file, then read one section with `offset` and `limit`.
 
-- Memory Limit Guide → `references/troubleshooting-scenarios/memory_limit.md`
-- Disk Filled Guide → `references/troubleshooting-scenarios/disk_filled_on_all_nodes.md`
+- Memory Limit Guide → [references/troubleshooting-scenarios/memory_limit.md](./references/troubleshooting-scenarios/memory_limit.md)
+- Disk Filled Guide → [references/troubleshooting-scenarios/disk_filled_on_all_nodes.md](./references/troubleshooting-scenarios/disk_filled_on_all_nodes.md)
 
 ## Deployment
 
