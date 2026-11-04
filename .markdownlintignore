@@ -6,3 +6,5 @@ openspec/
 .cursor/commands/
 .claude/skills/
 .claude/commands/
+.agents/
+agent-packages/

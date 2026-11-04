@@ -1,0 +1,13 @@
+name: troubleshoot-zookeeper
+version: 1.0.0
+description: Diagnose ZooKeeper ensemble, backup, disk, and client connection failures.
+author: Netcracker
+targets:
+  - claude
+  - copilot
+  - cursor
+dependencies:
+  apm: []
+  mcp: []
+includes: auto
+scripts: {}
