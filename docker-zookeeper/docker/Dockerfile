@@ -67,8 +67,8 @@ RUN set -x \
     && usermod -a -G 0 zookeeper
 
 # Reminder: we don't upgrade it to 3.9.x until Clickhouse support
-ARG DISTRO_NAME=apache-zookeeper-3.8.7-bin
-ARG DISTRO_VERSION_NAME=zookeeper-3.8.7
+ARG DISTRO_NAME=apache-zookeeper-3.8.8-bin
+ARG DISTRO_VERSION_NAME=zookeeper-3.8.8
 # Download Apache Zookeeper and install
 RUN set -x \
     && export DISTR_DIR="$(mktemp -d)" \
@@ -76,7 +76,7 @@ RUN set -x \
         --no-check-certificate \
         -nv \
         -O ${DISTR_DIR}/${DISTRO_NAME}.tar.gz \
-        "https://downloads.apache.org/zookeeper/${DISTRO_VERSION_NAME}/${DISTRO_NAME}.tar.gz" \
+        "https://archive.apache.org/dist/zookeeper/${DISTRO_VERSION_NAME}/${DISTRO_NAME}.tar.gz" \
     && tar -xf ${DISTR_DIR}/${DISTRO_NAME}.tar.gz -C ${DISTR_DIR} \
     && mkdir -p ${ZOOKEEPER_HOME} \
     && mv ${DISTR_DIR}/${DISTRO_NAME}/* ${ZOOKEEPER_HOME} \
