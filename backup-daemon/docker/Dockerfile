@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-backup-daemon-go:0.1.26
+FROM ghcr.io/netcracker/qubership-backup-daemon-go:0.1.27@sha256:2dbf4cac27195f13797c9049f803f9f6d4cb977ca3f9390d845f3c69f9d712b4
 
 ENV ZOOKEEPER_HOME=/opt/zookeeper \
     ZOOKEEPER_BACKUP=/opt/zookeeper/backup-storage
