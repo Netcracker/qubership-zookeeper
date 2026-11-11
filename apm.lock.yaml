@@ -22,13 +22,13 @@ dependencies:
   - .cursor/rules/troubleshoot-zookeeper.mdc
   - .github/instructions/troubleshoot-zookeeper.instructions.md
   deployed_file_hashes:
-    .agents/skills/troubleshoot-zookeeper/SKILL.md: sha256:d014a989a24de412085ea66c8ab87ed7c1d6171188b03575aeeecb92be35caf3
+    .agents/skills/troubleshoot-zookeeper/SKILL.md: sha256:1494295addee18999f32633dca8ec0c4345bceb736d754d3f39860b03f4d5409
     .agents/skills/troubleshoot-zookeeper/references/alerts.md: sha256:582dd2ae8d8655987ea14f4d162d08c2f7410e7548d6c0b39165d418ac94d9ed
     .agents/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/disk_filled_on_all_nodes.md: sha256:d37b8921a6a9500597f9bb59c6bd69f06912f603e52bbb38080933aa7fd4c862
     .agents/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/memory_limit.md: sha256:3f8ee4eaf4c858546c383962580c97dffff18cde7c456c00a2bf887d6e534258
     .agents/skills/troubleshoot-zookeeper/references/troubleshooting.md: sha256:64447bbd46d02f4cb8135f86fede9581d1b62a2a38d7b910599426386bc1003a
     .claude/rules/troubleshoot-zookeeper.md: sha256:6830f8a782dc3cbe9e899530c362184c9b858dc5e4e47fee90c7fe2586778829
-    .claude/skills/troubleshoot-zookeeper/SKILL.md: sha256:d014a989a24de412085ea66c8ab87ed7c1d6171188b03575aeeecb92be35caf3
+    .claude/skills/troubleshoot-zookeeper/SKILL.md: sha256:1494295addee18999f32633dca8ec0c4345bceb736d754d3f39860b03f4d5409
     .claude/skills/troubleshoot-zookeeper/references/alerts.md: sha256:582dd2ae8d8655987ea14f4d162d08c2f7410e7548d6c0b39165d418ac94d9ed
     .claude/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/disk_filled_on_all_nodes.md: sha256:d37b8921a6a9500597f9bb59c6bd69f06912f603e52bbb38080933aa7fd4c862
     .claude/skills/troubleshoot-zookeeper/references/troubleshooting-scenarios/memory_limit.md: sha256:3f8ee4eaf4c858546c383962580c97dffff18cde7c456c00a2bf887d6e534258
@@ -37,7 +37,7 @@ dependencies:
     .github/instructions/troubleshoot-zookeeper.instructions.md: sha256:4cbba4156508e8527cce92423556e1a09d0ea9f9ce45974d345020149198ec9d
   source: local
   local_path: ./agent-packages/troubleshoot-zookeeper/
-  content_hash: sha256:863a5a2eaf7f06c9e08b6e6a8f32bfe13ec625e61450f00c1a04a3547f8b9be3
+  content_hash: sha256:a560306d03e561f8fd271e2ed2d49053769afe8fd1f6ab6bc68f064322021b3e
   is_dev: true
 deployments:
 - kind: project-relative
@@ -66,7 +66,7 @@ deployments:
   owners:
   - ./agent-packages/troubleshoot-zookeeper/
   active_owner: ./agent-packages/troubleshoot-zookeeper/
-  content_hash: sha256:d014a989a24de412085ea66c8ab87ed7c1d6171188b03575aeeecb92be35caf3
+  content_hash: sha256:1494295addee18999f32633dca8ec0c4345bceb736d754d3f39860b03f4d5409
 - kind: project-relative
   target: claude
   value: .claude/skills/troubleshoot-zookeeper/references/alerts.md
@@ -120,7 +120,7 @@ deployments:
   owners:
   - ./agent-packages/troubleshoot-zookeeper/
   active_owner: ./agent-packages/troubleshoot-zookeeper/
-  content_hash: sha256:d014a989a24de412085ea66c8ab87ed7c1d6171188b03575aeeecb92be35caf3
+  content_hash: sha256:1494295addee18999f32633dca8ec0c4345bceb736d754d3f39860b03f4d5409
 - kind: project-relative
   target: copilot
   value: .agents/skills/troubleshoot-zookeeper/references/alerts.md
