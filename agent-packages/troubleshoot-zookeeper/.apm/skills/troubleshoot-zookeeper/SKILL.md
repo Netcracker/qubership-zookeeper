@@ -44,7 +44,7 @@ Optional overlays in `resource-profiles/` (`small`, `medium`, `large`) replace h
 | `zooKeeper.replicas` | Ensemble size. Default 3. `INFRA_ZOOKEEPER_REPLICAS` replaces it when `global.cloudIntegrationEnabled` is true |
 | `zooKeeper.heapSize` | Heap in MiB for every member. Default 256. The operator writes `HEAP_OPTS=-Xms<n>m -Xmx<n>m` |
 | `zooKeeper.resources` | CPU request 50m and limit 300m. Memory request and limit default to 512Mi and stay equal |
-| `zooKeeper.storage.size` | Data-volume request used when a PVC is created. Default 2Gi. A later change does not resize an existing PVC |
+| `zooKeeper.storage.size` | Data-volume request. Default 2Gi. Increasing this value resizes an existing PVC when the StorageClass has `allowVolumeExpansion: true`. Decreasing the size is not supported |
 | `zooKeeper.storage.className`, `.volumes`, `.labels` | Choose a PVC `pvc-<name>-<id>`. With none of these set, the data volume is emptyDir and `storage.size` is unused |
 | `zooKeeper.environmentVariables` | Extra `NAME=VALUE` strings. `CONF_ZOOKEEPER_*` is written into `zoo.cfg`. `SERVER_JVMFLAGS` is appended after the heap |
 | `zooKeeper.snapshotStorage` | Optional snapshot volume on ZooKeeper pods at `/opt/zookeeper/backup-storage`. Default is emptyDir |
@@ -95,7 +95,7 @@ Never recommend these without explicit user approval and ticket evidence that th
 - `kill -9 $(pidof java)`, unless the Connection Loss section's scale-down of every ZooKeeper deployment already failed `./bin/zkCli.sh ls /`.
 - Treating a full `/opt/zookeeper/backup-storage/` as a full data volume, or the reverse. On the backup-daemon pod that path is backup storage. On a ZooKeeper pod it is snapshot storage. Ensemble data is `/var/opt/zookeeper/data`.
 - Editing `zoo.cfg` or `zoo.cfg.dynamic` inside a pod, or setting `HEAP_OPTS` with `kubectl`. Reconciliation and the container entrypoint replace them. Change `zooKeeper.heapSize`, `zooKeeper.resources`, `zooKeeper.replicas`, or `zooKeeper.environmentVariables` and redeploy through the chart.
-- Deleting a PVC, PV, Secret, or znode, or changing credentials, outside the documented procedure. The operator does not resize an existing data PVC; deleting it drops the ensemble data on that node.
+- Deleting a PVC, PV, Secret, or znode, or changing credentials, outside the documented procedure. Decreasing `zooKeeper.storage.size` is not supported; deleting a data PVC drops the ensemble data on that node.
 - Raising `autopurge.snapRetainCount` to free disk space. A higher retain count keeps more snapshots.
 
 ## Common Failure Modes
@@ -104,7 +104,7 @@ Never recommend these without explicit user approval and ticket evidence that th
 
 Symptom: `No space left on device` while writing `/var/opt/zookeeper/data/version-2/currentEpoch`, or `Unable to load database on disk` after the disk filled.
 
-Check `df -h /var/opt/zookeeper/data` and whether the `data` volume is a PVC (`pvc-<name>-<id>`) or emptyDir before changing configuration. `autopurge.snapRetainCount` defaults to 3 snapshots and `autopurge.purgeInterval` defaults to 6 hours. Change them only through `CONF_ZOOKEEPER_autopurge_snapRetainCount` and `CONF_ZOOKEEPER_autopurge_purgeInterval` in `zooKeeper.environmentVariables`. Raising the retain count fills the disk sooner. `zooKeeper.storage.size` is applied when the PVC is created. The operator does not resize an existing data PVC. Follow the Disk Filled on All Nodes section and its scenario for cleanup. Follow Data Is Out of Space only when the node cannot load its snapshot.
+Check `df -h /var/opt/zookeeper/data` and whether the `data` volume is a PVC (`pvc-<name>-<id>`) or emptyDir before changing configuration. `autopurge.snapRetainCount` defaults to 3 snapshots and `autopurge.purgeInterval` defaults to 6 hours. Change them only through `CONF_ZOOKEEPER_autopurge_snapRetainCount` and `CONF_ZOOKEEPER_autopurge_purgeInterval` in `zooKeeper.environmentVariables`. Raising the retain count fills the disk sooner. `zooKeeper.storage.size` is applied when the PVC is created and increased later when the StorageClass allows volume expansion. Decreasing the size is not supported. The operator restarts each server pod when that volume needs a filesystem resize. Follow the Disk Filled on All Nodes section and its scenario for cleanup. Follow Data Is Out of Space only when the node cannot load its snapshot.
 
 ### Heap pressure
 
