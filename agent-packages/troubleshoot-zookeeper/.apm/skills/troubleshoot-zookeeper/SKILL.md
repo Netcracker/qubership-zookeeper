@@ -1,6 +1,6 @@
 ---
 name: troubleshoot-zookeeper
-description: Diagnose and resolve ZooKeeper failures in ensembles managed by the `zookeeper-service` operator (`operator/charts/helm/zookeeper-service` chart). Use when ZooKeeperService (netcracker.com/v1) is degraded or down, a node hits a CPU or memory limit, the data volume is full or a snapshot will not load, the last backup failed, clients report ConnectionLoss, a pod is refused with runAsNonRoot, or the backup daemon fails with PermissionError. Also use for ZooKeeper_Is_Degraded_Alarm, ZooKeeper_Is_Down_Alarm, ZooKeeper_CPU_Load_Alarm, ZooKeeper_Memory_Usage_Alarm, ZooKeeper_Last_Backup_Has_Failed_Alarm, heap size, autopurge, zoo.cfg, or backup storage.
+description: Diagnose and resolve ZooKeeper failures in ensembles managed by the `zookeeper-service` operator. Use when ZooKeeperService is degraded or down, a node hits a CPU or memory limit, the data volume is full or a snapshot will not load, the last backup failed, clients report ConnectionLoss, a pod is refused with runAsNonRoot, or the backup daemon fails with PermissionError.
 ---
 
 # Troubleshoot ZooKeeper
