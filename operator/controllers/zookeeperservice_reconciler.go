@@ -83,9 +83,8 @@ func (r *ZooKeeperServiceReconciler) createServiceAccount(serviceAccount *corev1
 	return err
 }
 
-// createPersistentVolumeClaim creates persistent volume claim if it does not exist; returns an error if any operation failed
+// createPersistentVolumeClaim creates persistent volume claim if it does not exist and updates storage size otherwise
 func (r *ZooKeeperServiceReconciler) createPersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, cr *zookeeperservice.ZooKeeperService, logger logr.Logger) error {
-	// There is no ability to update PVC
 	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
 	foundPersistentVolumeClaim := &corev1.PersistentVolumeClaim{}
 	err := r.Client.Get(context.TODO(),
@@ -104,18 +103,44 @@ func (r *ZooKeeperServiceReconciler) createPersistentVolumeClaim(persistentVolum
 
 func (r *ZooKeeperServiceReconciler) updatePersistentVolumeClaim(foundPersistentVolumeClaim *corev1.PersistentVolumeClaim,
 	persistentVolumeClaim *corev1.PersistentVolumeClaim, cr *zookeeperservice.ZooKeeperService, logger logr.Logger) error {
-	if maps.Equal(persistentVolumeClaim.Annotations, cr.Status.PVCStatus.Annotations) {
+	desired := persistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]
+	current := foundPersistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]
+	if desired.Cmp(current) < 0 {
+		return fmt.Errorf("PVC shrinking is forbidden, current PVC size is %s, desired is %s", current.String(), desired.String())
+	}
+	sizeChanged := desired.Cmp(current) > 0
+	annotationsChanged := !maps.Equal(persistentVolumeClaim.Annotations, cr.Status.PVCStatus.Annotations)
+	if !sizeChanged && !annotationsChanged {
 		return nil
 	}
-	maps.Copy(foundPersistentVolumeClaim.Annotations, persistentVolumeClaim.Annotations)
-	for key := range cr.Status.PVCStatus.Annotations {
-		if _, exists := persistentVolumeClaim.Annotations[key]; !exists {
-			delete(foundPersistentVolumeClaim.Annotations, key)
+	if annotationsChanged {
+		if foundPersistentVolumeClaim.Annotations == nil {
+			foundPersistentVolumeClaim.Annotations = map[string]string{}
 		}
+		maps.Copy(foundPersistentVolumeClaim.Annotations, persistentVolumeClaim.Annotations)
+		for key := range cr.Status.PVCStatus.Annotations {
+			if _, exists := persistentVolumeClaim.Annotations[key]; !exists {
+				delete(foundPersistentVolumeClaim.Annotations, key)
+			}
+		}
+		logger.Info("Updating annotations on the found persistent volume claim",
+			"PersistentVolumeClaim.Namespace", foundPersistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", foundPersistentVolumeClaim.Name)
+	}
+	if sizeChanged {
+		if foundPersistentVolumeClaim.Spec.Resources.Requests == nil {
+			foundPersistentVolumeClaim.Spec.Resources.Requests = corev1.ResourceList{}
+		}
+		foundPersistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage] = desired
 	}
 	logger.Info("Updating the found persistent volume claim",
 		"PersistentVolumeClaim.Namespace", foundPersistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", foundPersistentVolumeClaim.Name)
-	return r.Client.Update(context.TODO(), foundPersistentVolumeClaim)
+	err := r.Client.Update(context.TODO(), foundPersistentVolumeClaim)
+	if err != nil {
+		// There is no ability to update PVC for some environments.
+		log.Error(err, "Error occurred during updating existing PVC, skipping it")
+		return nil
+	}
+	return nil
 }
 
 func (r *ZooKeeperServiceReconciler) findPersistentVolumeClaim(name string, namespace string, logger logr.Logger) (*corev1.PersistentVolumeClaim, error) {
