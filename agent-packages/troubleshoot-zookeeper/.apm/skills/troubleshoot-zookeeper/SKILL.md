@@ -35,7 +35,10 @@ Key components:
 
 ### Critical configuration paths
 
-Helm chart: `operator/charts/helm/zookeeper-service/`.
+The ZooKeeper solution consists of two parts:
+
+- **ZooKeeper** (`zookeeper-service`) — Helm chart `operator/charts/helm/zookeeper-service/`. It deploys the operator, the ensemble, monitoring, and the backup daemon. The Helm values in the table below belong to this chart.
+- **ZooKeeper CRD** (`zookeeper-crd`) — the `ZooKeeperService` custom resource definition (`netcracker.com/v1`). In this repository the definition is `operator/charts/helm/zookeeper-service/crds/crd.yaml`. Apply the CRD before the `zookeeper-service` chart.
 
 Optional overlays in `resource-profiles/` (`small`, `medium`, `large`) replace heap, CPU, and memory together. Read the live `ZooKeeperService` spec before recommending a number. Chart defaults below apply when no profile is installed.
 
@@ -163,6 +166,8 @@ When several rows match, read the more specific section first: start failure (`r
 If no row matches (for example, `Pending` or `Evicted`), say the reference does not cover it and ask for `kubectl describe pod` events. Do not infer a capacity problem without evidence.
 
 ## Log Analysis Tips
+
+Read logs from the ticket attachments before running `kubectl logs`. Use an attached operator, ZooKeeper, backup-daemon, or monitoring log when it covers the failing component and the time of the symptom. Run `kubectl logs` only when the ticket has no such attachment, or the attachment does not contain the error you need.
 
 Use `<name>` from the release (`global.name`, default `zookeeper`). Run read-only commands only.
 
