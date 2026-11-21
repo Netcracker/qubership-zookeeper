@@ -1,7 +1,7 @@
 version: '2'
 services:
   zookeeper-1:
-    image: zookeeper:3.8.0
+    image: zookeeper:3.8.0@sha256:907227c11e8ad438abc3d8d8c545d006862274a2014756f3eb61c20eb80a33b0
     ports:
       - 12181:2181
       - 12182:2182
@@ -19,7 +19,7 @@ services:
       - ENABLE_2WAY_SSL=false
       - ALLOW_NONENCRYPTED_ACCESS=true
   zookeeper-2:
-    image: zookeeper:3.8.0
+    image: zookeeper:3.8.0@sha256:907227c11e8ad438abc3d8d8c545d006862274a2014756f3eb61c20eb80a33b0
     ports:
       - 22181:2181
       - 22182:2182
@@ -37,7 +37,7 @@ services:
       - ENABLE_2WAY_SSL=false
       - ALLOW_NONENCRYPTED_ACCESS=true
   zookeeper-3:
-    image: zookeeper:3.8.0
+    image: zookeeper:3.8.0@sha256:907227c11e8ad438abc3d8d8c545d006862274a2014756f3eb61c20eb80a33b0
     ports:
       - 32181:2181
       - 32182:2182
