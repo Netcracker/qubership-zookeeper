@@ -1,5 +1,166 @@
 The following topics are covered in this chapter:
 
+<!-- TOC -->
+* [Deployment Structure](#deployment-structure)
+  * [Deployment Units](#deployment-units)
+  * [Main app: zookeeper-service](#main-app-zookeeper-service)
+  * [CRD app: zookeeper-crd](#crd-app-zookeeper-crd)
+  * [Installation and Upgrade Order](#installation-and-upgrade-order)
+* [Prerequisites](#prerequisites)
+  * [Common](#common)
+    * [Custom Resource Definitions](#custom-resource-definitions)
+    * [Deployment Permissions](#deployment-permissions)
+  * [Kubernetes](#kubernetes)
+  * [OpenShift](#openshift)
+  * [Google Cloud](#google-cloud)
+  * [AWS](#aws)
+* [Best Practices and Recommendations](#best-practices-and-recommendations)
+  * [HWE](#hwe)
+    * [Small](#small)
+    * [Medium](#medium)
+    * [Large](#large)
+* [Configure ZooKeeper](#configure-zookeeper)
+  * [ZooKeeper Properties](#zookeeper-properties)
+  * [Dedicated Values](#dedicated-values)
+  * [What Not to Do](#what-not-to-do)
+* [Parameters](#parameters)
+  * [Cloud Integration Parameters](#cloud-integration-parameters)
+  * [Global](#global)
+    * [Secrets](#secrets)
+  * [Operator](#operator)
+  * [ZooKeeper](#zookeeper)
+  * [Monitoring](#monitoring)
+  * [Backup Daemon](#backup-daemon)
+  * [Integration Tests](#integration-tests)
+  * [Vault Credentials Management](#vault-credentials-management)
+  * [Integration test tags description](#integration-test-tags-description)
+* [Installation](#installation)
+  * [Before You Begin](#before-you-begin)
+    * [Ops Portal Preparation](#ops-portal-preparation)
+    * [Helm](#helm)
+  * [On-Prem Examples](#on-prem-examples)
+    * [HA Scheme](#ha-scheme)
+    * [DR Scheme](#dr-scheme)
+  * [Google Cloud Examples](#google-cloud-examples)
+    * [HA Scheme](#ha-scheme-1)
+    * [DR Scheme](#dr-scheme-1)
+  * [AWS Examples](#aws-examples)
+    * [HA Scheme](#ha-scheme-2)
+    * [DR Scheme](#dr-scheme-2)
+  * [Azure Examples](#azure-examples)
+    * [HA Scheme](#ha-scheme-3)
+    * [DR Scheme](#dr-scheme-3)
+* [Upgrade](#upgrade)
+  * [Common](#common-1)
+  * [Rolling Upgrade](#rolling-upgrade)
+  * [CRD Upgrade](#crd-upgrade)
+  * [HA to DR Scheme](#ha-to-dr-scheme)
+* [Rollback](#rollback)
+* [Additional Features](#additional-features)
+  * [Multiple Availability Zone Deployment](#multiple-availability-zone-deployment)
+    * [Affinity](#affinity)
+      * [Affinity cross Kubernetes Nodes](#affinity-cross-kubernetes-nodes)
+      * [Replicas Fewer Than Availability Zones](#replicas-fewer-than-availability-zones)
+      * [Replicas More Than Availability Zones](#replicas-more-than-availability-zones)
+* [Frequently Asked Questions](#frequently-asked-questions)
+  * [Deploy job failed with some error in templates](#deploy-job-failed-with-some-error-in-templates)
+<!-- TOC -->
+
+# Deployment Structure
+
+ZooKeeper is delivered as two **applications** (deployment units): one carries the Custom Resource Definition,
+one carries the workload. Each application is built, versioned and promoted separately by the CI pipeline,
+and is installed separately — with its own set of deployment parameters and its own set of rights required from the deployment user.
+
+## Deployment Units
+
+ZooKeeper is delivered with the following applications:
+
+- Main app: `zookeeper-service`
+- CRD app: `zookeeper-crd`
+
+| Application             | Type       | Contents                                                                                                          | Custom resource       | Service account             | Deploy user rights                          |
+|-------------------------|------------|-------------------------------------------------------------------------------------------------------------------|-----------------------|-----------------------------|---------------------------------------------|
+| `zookeeper-service`     | Main app   | ZooKeeper operator, ZooKeeper nodes, the supplementary services listed below, and the `ZooKeeperService` CR       | `ZooKeeperService`    | `<name>-service-operator`   | Namespace `admin` / project-level Role      |
+| `zookeeper-crd`         | CRD app    | `ZooKeeperService` CRD (`zookeeperservices.netcracker.com`)                                                       | n/a                   | n/a                         | Cluster administrator (CRD create/update)   |
+
+Definitions of the deployment unit types:
+
+- **Main app** — the primary deployment unit of the product. It installs the operator and the product's own workloads
+  (ZooKeeper pods, services, secrets, config maps, PVCs) into a single namespace. This is the unit you redeploy when
+  you change ZooKeeper configuration. ZooKeeper keeps the core cluster and the supplementary services in a single main
+  application: they are installed, upgraded and scaled together in one namespace.
+- **CRD app** — a deployment unit that contains only the Custom Resource Definitions of the main app. CRDs are
+  cluster-scoped objects, so creating or updating them requires cluster administrator rights that a namespace-level
+  deployment user normally does not have. Splitting the CRDs into their own application lets the cluster
+  administrator install and upgrade them independently of (and before) the namespace deployments that consume them.
+  The CRD app installs nothing into the product namespace.
+
+**Note**: The main app ships its CRD in the `crds/` folder of the chart, so a plain `helm install`/`helm upgrade`
+creates the `ZooKeeperService` CRD together with the rest of the release. In environments where the deployment user
+has no cluster-wide rights, the CRD is not created by Helm — it is installed by the `zookeeper-crd`
+application, or applied out-of-band by a cluster administrator. See
+[Custom Resource Definitions](#custom-resource-definitions), [Deployment Permissions](#deployment-permissions)
+and [CRD Upgrade](#crd-upgrade).
+
+## Main app: zookeeper-service
+
+The `zookeeper-service` application installs the ZooKeeper cluster and the operator that manages it. It consists
+of the following components:
+
+| Component                       | Deployment parameter   | Purpose                                                                                                                                                                                                                                                                                       |
+|---------------------------------|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ZooKeeper Service operator`    | always installed       | Kubernetes operator that reconciles the `ZooKeeperService` custom resource: creates the ZooKeeper server workloads, services and persistent volume claims, manages the supplementary services, waits for the pods to become ready and publishes the deployment status to the custom resource. |
+| `ZooKeeper nodes`               | `zooKeeper`            | The ZooKeeper servers themselves — one Deployment per server, `zooKeeper.replicas` pods in total. The data and snapshots are kept in the persistent volumes of the servers.                                                                                                                   |
+| `ownerref-migrator` job         |                        | Pre-deploy job (Helm `pre-install`/`pre-upgrade` hook) that migrates the owner references of the existing resources when upgrading a cluster created with the legacy `qubership.org` API group. Runs when `groupMigration.enabled` is set and an old-group custom resource is found.          |
+
+In addition to the core components, the same application ships the following supplementary services. Each one has its
+own `install` flag, so a deployment enables only the services it needs:
+
+| Service             | Deployment parameter   | Purpose                                                                                                                                                                                               | `install` default   |
+|---------------------|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|
+| Monitoring          | `monitoring`           | Collects the ZooKeeper metrics (the four-letter-word stats and the JVM metrics of the Prometheus exporter) and ships them to the monitoring stack. Ships the Grafana dashboards and Prometheus rules. | `true`              |
+| Backup Daemon       | `backupDaemon`         | Creates the ZooKeeper snapshots on a schedule, restores them and applies the eviction policy. Supports the S3 storage for the backups.                                                                | `false`             |
+| Integration tests   | `integrationTests`     | Integration test suite executed during installation or upgrade to verify the deployment.                                                                                                              | `false`             |
+
+**Note**: The `install` column lists the defaults of the `zookeeper-service` chart. In cloud environments the
+deployment tooling resolves the flags from the cloud parameters, which may override the chart defaults — for example,
+the `MONITORING_ENABLED` cloud parameter is `false` by default, so monitoring is disabled by default in the cloud even
+though the chart default of `monitoring.install` is `true`.
+
+For the deployment parameters of each service, see the [Parameters](#parameters) section.
+
+## CRD app: zookeeper-crd
+
+Installs the `ZooKeeperService` CRD (`zookeeperservices.netcracker.com`) only. Deploying it has no effect in the
+product namespace.
+
+## Installation and Upgrade Order
+
+Install and upgrade the applications in this order:
+
+1. `zookeeper-crd` — the `ZooKeeperService` CRD must be in place before the main app. The other CRDs listed
+   in [Custom Resource Definitions](#custom-resource-definitions) are the monitoring CRDs (`GrafanaDashboard`,
+   `PrometheusRule` and `ServiceMonitor`), provided by the Monitoring Operator service and installed by it.
+   See [CRD Upgrade](#crd-upgrade).
+2. `zookeeper-service` — wait for all servers to be ready before you continue:
+
+    ```bash
+    kubectl -n <namespace> get pods --selector component=zookeeper
+    ```
+
+   All `zooKeeper.replicas` ZooKeeper pods should be `Running` and `1/1 Ready`.
+
+The CRD and the application that uses it must be the same version. A version mismatch makes the operator send a CR
+that the installed schema rejects, which surfaces as CR apply and validation errors.
+
+The following deviation from this order is supported:
+
+- In environments without cluster-wide permissions, the CRD is created out-of-band by a cluster administrator instead
+  of by the CRD app. See [Custom Resource Definitions](#custom-resource-definitions).
+
+To change ZooKeeper configuration of an installed cluster, see [Configure ZooKeeper](#configure-zookeeper).
+
 # Prerequisites
 
 ## Common
@@ -15,9 +176,9 @@ Before you start the installation and configuration of a ZooKeeper cluster, ensu
 
 The following Custom Resource Definitions should be installed to the cloud before the installation of ZooKeeper:
 
-* `ZooKeeperService` 
+* `ZooKeeperService`
 * `GrafanaDashboard`, `PrometheusRule`, and `ServiceMonitor` - It should be installed when you install ZooKeeper monitoring with `monitoring.monitoringType=prometheus`.
-You need to install the Monitoring Operator service before the ZooKeeper installation.
+  You need to install the Monitoring Operator service before the ZooKeeper installation.
 
 **Important**: To create CRDs, you must have cloud rights for `CustomResourceDefinitions`.
 
@@ -372,6 +533,80 @@ backupDaemon:
 
 </details>
 
+# Configure ZooKeeper
+
+ZooKeeper node configuration is delivered through the values of the **`zookeeper-service`** Helm chart: the ZooKeeper
+server properties are the values of the `zooKeeper` section. Use this section when the change has to survive
+redeploys — that is, in any environment delivered through the deployment pipeline (App Deployer, deployment tooling)
+or through plain `helm upgrade`.
+
+## ZooKeeper Properties
+
+ZooKeeper server properties — the tick time, synchronization limits, connection settings, and similar — are set
+through the `zooKeeper.environmentVariables` value as `CONF_ZOOKEEPER_<PROPERTY_NAME>=<value>` entries, where
+`<PROPERTY_NAME>` is the property name from the [Apache ZooKeeper configuration reference](https://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_configuration)
+with dots replaced by underscores and the case preserved. For example, `tickTime` becomes `CONF_ZOOKEEPER_tickTime`.
+
+Example — shorten the tick time and raise the initial synchronization limit:
+
+```yaml
+zooKeeper:
+  environmentVariables:
+    - CONF_ZOOKEEPER_tickTime=2000
+    - CONF_ZOOKEEPER_initLimit=15
+```
+
+Keep in mind the following:
+
+* Write property names exactly as in the ZooKeeper documentation: the entrypoint only replaces the underscores
+  with dots and keeps the case, so `tickTime` is set as `CONF_ZOOKEEPER_tickTime`.
+* The entries are applied to the `zoo.cfg` file of every ZooKeeper pod, so only the properties that ZooKeeper accepts
+  in `zoo.cfg` belong here.
+* The log level of the servers is set the same way with a plain `LOG_LEVEL` entry (default `INFO`), for example
+  `LOG_LEVEL=DEBUG`.
+
+After editing the deployment parameters, redeploy the `zookeeper-service` chart through your delivery mechanism, for
+example, `helm upgrade`. The operator updates the ZooKeeper server deployments, and every pod rebuilds its `zoo.cfg`
+from the image and the environment variables on the next start, so the servers pick up the new properties after
+restart.
+
+## Dedicated Values
+
+The frequently changed settings have dedicated values, each delivered to the pods as an environment variable together
+with the other ZooKeeper properties:
+
+| Value                           | Delivered as                                   | Purpose                                                                               |
+|---------------------------------|------------------------------------------------|---------------------------------------------------------------------------------------|
+| `zooKeeper.heapSize`            | the `HEAP_OPTS` environment variable           | The JVM heap of the ZooKeeper servers, in Mi (`-Xms<heapSize>m -Xmx<heapSize>m`).     |
+| `zooKeeper.jolokiaPort`         | the `JOLOKIA_PORT` environment variable        | The port of the Jolokia agent, the JMX-HTTP bridge used by the monitoring.            |
+| `zooKeeper.auditEnabled`        | the `AUDIT_ENABLED` environment variable       | Enables the ZooKeeper audit logging.                                                  |
+| `zooKeeper.quorumAuthEnabled`   | the `QUORUM_AUTH_ENABLED` environment variable | Enables the internal SASL authentication between the ZooKeeper servers.               |
+
+Example — raise the JVM heap of the servers:
+
+```yaml
+zooKeeper:
+  heapSize: 1024
+```
+
+A change of these values updates the pod template of the ZooKeeper server Deployments, so the servers are restarted.
+
+## What Not to Do
+
+The following do not survive redeploys and must not be used to change ZooKeeper parameters in deployed environments:
+
+- **Direct changes of the running cluster configuration** via the ZooKeeper dynamic reconfiguration (`zkCli.sh
+  reconfig`). Such changes live only in the running cluster and are not reflected in the values of the
+  `zookeeper-service` chart. The chart values are the single source of truth of the deployment: they are what every
+  deployment run and `helm upgrade` renders, so the running configuration silently drifts from the deployed one. Set
+  the property through [ZooKeeper Properties](#zookeeper-properties) instead.
+- **Editing `zoo.cfg` inside a server pod.** The file is rebuilt from the image and the `CONF_ZOOKEEPER_*`
+  environment variables rendered from the chart values on every pod start, so a manual edit is lost on the next pod
+  restart, scaling operation or server replacement.
+- **Ad-hoc `kubectl edit zookeeperservices ...`** against a managed cluster *as a way to change deploy-time
+  configuration*. The edit lives only in the live custom resource and drifts on the next deployment run or
+  `helm upgrade` of the `zookeeper-service` chart.
+
 # Parameters
 
 ## Cloud Integration Parameters
@@ -640,7 +875,7 @@ Make sure all YAML values are escaped in accordance with the Ops portal syntax.
 
 ### Helm
 
-To deploy via Helm you need to prepare yaml file with custom deploy parameters and run the following
+To deploy via Helm you need to prepare YAML file with custom deploy parameters and run the following
 command in [ZooKeeper Chart](/operator/charts/helm/zookeeper-service):
 
 ```bash
@@ -899,7 +1134,7 @@ the same availability zone.
 
 #### Affinity cross Kubernetes Nodes
 
-Default affinity cross kubernetes Nodes (1 pod per 1 node). 
+Default affinity cross kubernetes Nodes (1 pod per 1 node).
 
 <details>
 <summary>Click to expand YAML</summary>
