@@ -83,7 +83,7 @@ All changes MUST be backward compatible.
 ### Helm Chart
 
 - Every new parameter MUST have a sensible default. Existing values files
-  (`values.yaml`, `vals.yaml`, `resource-profiles/`) must keep working.
+  (`values.yaml`, `resource-profiles/`) must keep working.
 - Reuse shared templates in `templates/_helpers.tpl` for labels, annotations,
   images, and security contexts.
 - Render the chart with `helm template` before submitting chart changes:
