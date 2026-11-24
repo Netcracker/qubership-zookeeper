@@ -40,10 +40,12 @@ echo mntr | nc localhost 2181
 ```
 
 ## Grafana
+The Prometheus dashboard installed by the chart is `operator/charts/helm/zookeeper-service/monitoring/zookeeper-dashboard.json`.
+
 ### Dashboard exporting
 ```bash
 curl -XGET -k -u admin:admin http://localhost:3000/api/dashboards/db/zookeeper-monitoring \
-  | jq . > dashboard/zookeeper-dashboard.json
+  | jq . > operator/charts/helm/zookeeper-service/monitoring/zookeeper-dashboard.json
 ```
 
   Where:
@@ -58,7 +60,7 @@ Dashboard can be imported using the following command:
 ```bash
 curl -XPOST \
   -u admin:admin \
-  --data @./dashboard/zookeeper-dashboard.json \
+  --data @operator/charts/helm/zookeeper-service/monitoring/zookeeper-dashboard.json \
   -H 'Content-Type: application/json'  \
   -k \
    http://localhost:3000/api/dashboards/db
@@ -81,42 +83,3 @@ Template can be imported in Zabbix UI from templates page (Configuration -> Temp
 If you have Zookeeper which is deployed in DR mode you need to create two hosts: 
 for left and for right side and to specify the side as value (`left`, `right`) for the macros `{$DR_SIDE}`.
 If you have Zookeeper without DR just leave this macros empty.
-
-## InfluxDB Measurement:
-
-### Telegraf tags and field
-```
-M zookeeper
-  T host
-  T port
-  T state
-  
-  F approximate_data_size        integer
-  F avg_latency                  integer
-  F ephemerals_count             integer
-  F max_file_descriptor_count    integer
-  F max_latency                  integer
-  F min_latency                  integer
-  F num_alive_connections        integer
-  F open_file_descriptor_count   integer
-  F outstanding_requests         integer
-  F packets_received             integer
-  F packets_sent                 integer
-  F version                      string
-  F watch_count                  integer
-  F znode_count                  integer
-  F status_code                  integer
-  F alive_nodes                  integer
-  F total_nodes                  integer
-```
-
-
-### Custom tags and field
-Custom fields collected by `exec-scripts/health_metric.py`:
-
-```
-M zookeeper
-  F status_code                  integer          0 - if all nodes alive; 5 - if some nodes failed; 10 - if all nodes failed
-  F alive_nodes                  integer          number of alive nodes
-  F total_nodes                  integer          total number of nodes
-```

@@ -508,8 +508,9 @@ backupDaemon:
 | monitoring.customLabels              | object  | no        | {}                       | The custom labels for a ZooKeeper Service monitoring pod.                                                                                                                                       |
 | monitoring.monitoringType            | string  | no        | prometheus               | The type of output plugin that is used for service monitoring. Currently only Prometheus type is supported. The Prometheus plugin does not require additional parameters for the configuration. |
 | monitoring.installGrafanaDashboard   | boolean | no        | true                     | Whether the ZooKeeper Grafana dashboard is to be applied or not.                                                                                                                                |
-| monitoring.zooKeeperVolumes          | string  | no        | ""                       | The persistent volume name or a comma-separated list of names that are used by ZooKeeper Service.                                                                                               |
 | monitoring.securityContext           | object  | yes       | {}                       | The pod-level security attributes and common container settings. The parameter value can be empty and should be specified in the `json` format. For example, you can add `{"runAsUser": 1000}`. |
+
+`monitoring.zooKeeperVolumes`, `monitoring.needToCleanInfluxDb`, `monitoring.smDbHost`, and `monitoring.smDbName` are still accepted by the schema and are ignored.
 
 ## Backup Daemon
 
