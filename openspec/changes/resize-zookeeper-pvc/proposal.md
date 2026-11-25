@@ -10,7 +10,7 @@ ZooKeeper data volumes are created once from `zooKeeper.storage.size`. A later d
 - Reject a smaller desired size. The reconcile stops with an error and does not change the claim.
 - When a ZooKeeper server data PVC is already bound and its capacity is still below the desired size, publish the server Deployment with the new pod spec and `replicas: 0` in the same update, wait until that pod is gone, then start it again and repeat until the reported capacity reaches the desired size or the resize times out.
 - Leave an unbound data PVC at `replicas: 1` so a volume that binds on first consumer can still be provisioned.
-- Document that increasing `zooKeeper.storage.size`, snapshot volume size, and backup volume size requires `allowVolumeExpansion: true`, and that decreasing those sizes is not supported.
+- Document that increasing `zooKeeper.storage.size` requires `allowVolumeExpansion: true`, and that decreasing it is not supported. Snapshot and backup volume sizes stay fixed after the claim is created.
 - Decreasing storage by copying data onto a new PVC with a migration pod is out of scope. ZooKeeper servers are Deployments, so StatefulSet `volumeClaimTemplates` immutability is also out of scope.
 
 ## Capabilities
@@ -25,7 +25,7 @@ ZooKeeper data volumes are created once from `zooKeeper.storage.size`. A later d
 
 ## Impact
 
-- `operator/controllers/zookeeperservice_reconciler.go`: PVC update compares storage requests, forbids shrinking, and applies a larger request. The same update path also covers snapshot and backup claims.
+- `operator/controllers/zookeeperservice_reconciler.go`: only a ZooKeeper server data claim compares storage requests, forbids shrinking, and applies a larger request. Snapshot and backup claims keep annotation updates only.
 - `operator/controllers/zookeeper_reconciler.go`: server rollout combines the Deployment update with an offline resize of `pvc-<name>-<id>`.
 - `docs/public/installation.md`: size parameters describe expansion and the shrink rejection.
 - Troubleshooting notes that said an existing data PVC is never resized.

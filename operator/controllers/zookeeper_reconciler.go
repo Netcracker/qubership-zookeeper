@@ -171,7 +171,7 @@ func (r ReconcileZooKeeper) Reconcile() error {
 				// Define a new PersistentVolumeClaim object
 				persistentVolumeClaim := zkProvider.NewZooKeeperPersistentVolumeClaimForCR(serverId)
 				if persistentVolumeClaim != nil {
-					if err := r.reconciler.createPersistentVolumeClaim(persistentVolumeClaim, r.cr, r.logger); err != nil {
+					if err := r.reconciler.createZooKeeperDataPersistentVolumeClaim(persistentVolumeClaim, r.cr, r.logger); err != nil {
 						return err
 					}
 				}

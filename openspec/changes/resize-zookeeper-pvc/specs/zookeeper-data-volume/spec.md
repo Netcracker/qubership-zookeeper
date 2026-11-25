@@ -7,21 +7,21 @@ Governs how the ZooKeeper operator sizes server data volumes and applies a large
 ## ADDED Requirements
 
 ### Requirement: Larger storage request is applied
-The operator MUST update an existing managed volume's storage request when the desired size is greater than the current request.
+The operator MUST update an existing ZooKeeper server data claim when `zooKeeper.storage.size` is greater than its storage request. Snapshot and backup claims MUST keep the request they were created with.
 
 #### Scenario: Server data volume grows
 - **WHEN** a ZooKeeper server data claim already exists and `zooKeeper.storage.size` is greater than its storage request
 - **THEN** the operator sets that claim's storage request to the desired size
 
-#### Scenario: Snapshot or backup volume grows
-- **WHEN** a snapshot or backup claim managed by the operator already exists and its configured size is greater than its storage request
-- **THEN** the operator sets that claim's storage request to the desired size
+#### Scenario: Snapshot or backup size changes
+- **WHEN** a snapshot or backup claim already exists and its configured size differs from its storage request
+- **THEN** the operator leaves that claim's storage request unchanged
 
 ### Requirement: Smaller storage request is rejected
-The operator MUST reject a desired size that is smaller than the current storage request and MUST leave that claim unchanged.
+The operator MUST reject a `zooKeeper.storage.size` smaller than the current server data claim request and MUST leave that claim unchanged.
 
 #### Scenario: Shrink is requested
-- **WHEN** the desired size of an existing managed volume is smaller than its current storage request
+- **WHEN** `zooKeeper.storage.size` is smaller than the storage request of an existing ZooKeeper server data claim
 - **THEN** the reconcile fails with an error that shrinking is forbidden
 - **AND** the claim's storage request remains the current size
 
