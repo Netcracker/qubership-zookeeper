@@ -84,12 +84,10 @@ func (r *ZooKeeperServiceReconciler) createServiceAccount(serviceAccount *corev1
 }
 
 // createPersistentVolumeClaim creates a persistent volume claim if it does not exist.
-// An existing claim is updated for annotations only. Storage size is left unchanged.
 func (r *ZooKeeperServiceReconciler) createPersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, cr *zookeeperservice.ZooKeeperService, logger logr.Logger) error {
 	return r.ensurePersistentVolumeClaim(persistentVolumeClaim, cr, logger, false)
 }
 
-// createZooKeeperDataPersistentVolumeClaim creates a ZooKeeper server data claim or expands it when the desired size is larger.
 func (r *ZooKeeperServiceReconciler) createZooKeeperDataPersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, cr *zookeeperservice.ZooKeeperService, logger logr.Logger) error {
 	return r.ensurePersistentVolumeClaim(persistentVolumeClaim, cr, logger, true)
 }
