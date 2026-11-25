@@ -14,5 +14,5 @@
 
 ## 3. Documentation
 
-- [x] 3.1 In `docs/public/installation.md`, state that increasing `zooKeeper.storage.size`, `zooKeeper.snapshotStorage.volumeSize`, and `backupDaemon.backupStorage.volumeSize` requires a StorageClass with `allowVolumeExpansion: true`, and that decreasing those sizes is not supported. Verify each of those three parameter rows contains both statements.
+- [x] 3.1 In `docs/public/installation.md`, state that increasing `zooKeeper.storage.size` requires a StorageClass with `allowVolumeExpansion: true`, and that decreasing it is not supported. Leave snapshot and backup volume size descriptions without expansion. Verify only the `zooKeeper.storage.size` row contains both statements.
 - [x] 3.2 Update the ZooKeeper troubleshooting skill so it no longer says an existing data PVC cannot be resized. State that a larger `zooKeeper.storage.size` expands a bound claim when the StorageClass allows it, and that a smaller size is rejected. Verify the skill copies under `.agents`, `.claude`, and `agent-packages` no longer contain "does not resize".

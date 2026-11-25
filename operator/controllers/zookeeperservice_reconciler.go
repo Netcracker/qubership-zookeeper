@@ -18,6 +18,8 @@ import (
 	"context"
 	"fmt"
 	"maps"
+	"strconv"
+	"strings"
 
 	zookeeperservice "github.com/Netcracker/qubership-zookeeper/operator/api/v1"
 	"github.com/Netcracker/qubership-zookeeper/operator/controllers/provider"
@@ -83,7 +85,8 @@ func (r *ZooKeeperServiceReconciler) createServiceAccount(serviceAccount *corev1
 	return err
 }
 
-// createPersistentVolumeClaim creates persistent volume claim if it does not exist and updates storage size otherwise
+// createPersistentVolumeClaim creates a persistent volume claim if it does not exist.
+// An existing server data claim can grow. Snapshot and backup claims keep the size they were created with.
 func (r *ZooKeeperServiceReconciler) createPersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, cr *zookeeperservice.ZooKeeperService, logger logr.Logger) error {
 	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
 	foundPersistentVolumeClaim := &corev1.PersistentVolumeClaim{}
@@ -103,12 +106,10 @@ func (r *ZooKeeperServiceReconciler) createPersistentVolumeClaim(persistentVolum
 
 func (r *ZooKeeperServiceReconciler) updatePersistentVolumeClaim(foundPersistentVolumeClaim *corev1.PersistentVolumeClaim,
 	persistentVolumeClaim *corev1.PersistentVolumeClaim, cr *zookeeperservice.ZooKeeperService, logger logr.Logger) error {
-	desired := persistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]
-	current := foundPersistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]
-	if desired.Cmp(current) < 0 {
-		return fmt.Errorf("PVC shrinking is forbidden, current PVC size is %s, desired is %s", current.String(), desired.String())
+	sizeChanged, err := growServerDataClaim(foundPersistentVolumeClaim, persistentVolumeClaim, cr.Name)
+	if err != nil {
+		return err
 	}
-	sizeChanged := desired.Cmp(current) > 0
 	annotationsChanged := !maps.Equal(persistentVolumeClaim.Annotations, cr.Status.PVCStatus.Annotations)
 	if !sizeChanged && !annotationsChanged {
 		return nil
@@ -123,24 +124,35 @@ func (r *ZooKeeperServiceReconciler) updatePersistentVolumeClaim(foundPersistent
 				delete(foundPersistentVolumeClaim.Annotations, key)
 			}
 		}
-		logger.Info("Updating annotations on the found persistent volume claim",
-			"PersistentVolumeClaim.Namespace", foundPersistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", foundPersistentVolumeClaim.Name)
-	}
-	if sizeChanged {
-		if foundPersistentVolumeClaim.Spec.Resources.Requests == nil {
-			foundPersistentVolumeClaim.Spec.Resources.Requests = corev1.ResourceList{}
-		}
-		foundPersistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage] = desired
 	}
 	logger.Info("Updating the found persistent volume claim",
 		"PersistentVolumeClaim.Namespace", foundPersistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", foundPersistentVolumeClaim.Name)
-	err := r.Client.Update(context.TODO(), foundPersistentVolumeClaim)
-	if err != nil {
-		// There is no ability to update PVC for some environments.
-		log.Error(err, "Error occurred during updating existing PVC, skipping it")
-		return nil
+	return r.Client.Update(context.TODO(), foundPersistentVolumeClaim)
+}
+
+func growServerDataClaim(found, desired *corev1.PersistentVolumeClaim, crName string) (bool, error) {
+	if !serverDataClaim(crName, found.Name) {
+		return false, nil
 	}
-	return nil
+	next := desired.Spec.Resources.Requests[corev1.ResourceStorage]
+	current := found.Spec.Resources.Requests[corev1.ResourceStorage]
+	if next.Cmp(current) < 0 {
+		return false, fmt.Errorf("PVC shrinking is forbidden, current PVC size is %s, desired is %s", current.String(), next.String())
+	}
+	if next.Cmp(current) == 0 {
+		return false, nil
+	}
+	if found.Spec.Resources.Requests == nil {
+		found.Spec.Resources.Requests = corev1.ResourceList{}
+	}
+	found.Spec.Resources.Requests[corev1.ResourceStorage] = next
+	return true, nil
+}
+
+func serverDataClaim(crName, claimName string) bool {
+	prefix := fmt.Sprintf("pvc-%s-", crName)
+	id, err := strconv.Atoi(strings.TrimPrefix(claimName, prefix))
+	return err == nil && strings.HasPrefix(claimName, prefix) && claimName == fmt.Sprintf(persistentVolumeClaimPattern, crName, id)
 }
 
 func (r *ZooKeeperServiceReconciler) findPersistentVolumeClaim(name string, namespace string, logger logr.Logger) (*corev1.PersistentVolumeClaim, error) {

@@ -2,7 +2,7 @@
 
 ## Context
 
-ZooKeeper servers are Deployments with strategy `Recreate`, one replica each, and a data claim named `pvc-<service>-<id>`. The claim is created from `zooKeeper.storage.size` and, before this change, an existing claim was updated only when annotations changed. Snapshot and backup claims share that update function. See proposal.md for why the size must become mutable.
+ZooKeeper servers are Deployments with strategy `Recreate`, one replica each, and a data claim named `pvc-<service>-<id>`. The claim is created from `zooKeeper.storage.size` and, before this change, an existing claim was updated only when annotations changed. Snapshot and backup claims stay on that annotation-only path. See proposal.md for why the server data size must become mutable.
 
 The ticket also asked for shrinking through a migration pod and for StatefulSet `volumeClaimTemplates`. Those are excluded: this operator does not use a StatefulSet, and the implemented path only grows a claim in place.
 
@@ -19,7 +19,7 @@ The ticket also asked for shrinking through a migration pod and for StatefulSet 
 **Non-Goals:**
 
 - Shrinking a claim, copying data to a replacement claim, or handling immutable `volumeClaimTemplates`.
-- Restarting the backup daemon or snapshot consumer when those claims grow. Only their storage request is updated.
+- Resizing snapshot or backup claims. A later change of their volume size does not update an existing claim.
 - Online filesystem growth while the server pod keeps the volume mounted.
 
 ## Decisions
@@ -48,14 +48,14 @@ The existing per-server wait for a running pod stays after this loop, so the nex
 
 ### Leave annotation handling in the claim update
 
-Size is checked before the annotation early return. If neither size nor annotations changed, the claim is not written. A size change still updates the claim when annotations are unchanged. Snapshot and backup claims use this same function, so they grow and refuse to shrink, without the server scale-down.
+Size is checked before the annotation early return, and only for a ZooKeeper server data claim. If neither size nor annotations changed, the claim is not written. A size change still updates that claim when annotations are unchanged. Snapshot and backup claims take the annotation-only path, so their storage request stays as created.
 
-If the API rejects the claim update, the error is logged and the reconcile continues. That preserves the previous behavior on clusters that cannot mutate claims.
+If the API rejects the claim update, the reconcile returns that error. The server is not scaled down for a size that was not stored.
 
 ## Risks / Trade-offs
 
 - [One server is down while its volume expands] → The loop handles a single server, and the next server waits until this pod is running. A three-node ensemble keeps a majority if only one member is down.
-- [StorageClass without `allowVolumeExpansion`, or an API that rejects the claim update] → The update error is only logged. The server is still scaled to zero because capacity is below the desired size, then the 10-minute loop fails. The next reconcile repeats that outage until the size is put back or the class allows expansion.
+- [StorageClass without `allowVolumeExpansion`, or an API that rejects the claim update] → The reconcile returns the update error and leaves the server replicas unchanged. The volume stays at its current size until the class allows expansion or the requested size is put back.
 - [Rollback to an operator that does not resize] → An already expanded claim stays large. A Deployment left at zero replicas is restored to one only when a later reconcile writes the server Deployment again.
 - [Filesystem growth that needs a mount] → The loop starts the pod, and if capacity is still short after 30 seconds it stops the pod and retries. Drivers that expand only while detached are covered by the delay before the first start.
 
