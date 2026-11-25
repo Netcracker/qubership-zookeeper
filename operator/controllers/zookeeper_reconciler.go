@@ -16,7 +16,6 @@ package controllers
 
 import (
 	"context"
-	stderrors "errors"
 	"fmt"
 	"time"
 
@@ -171,7 +170,7 @@ func (r ReconcileZooKeeper) Reconcile() error {
 				// Define a new PersistentVolumeClaim object
 				persistentVolumeClaim := zkProvider.NewZooKeeperPersistentVolumeClaimForCR(serverId)
 				if persistentVolumeClaim != nil {
-					if err := r.reconciler.createZooKeeperDataPersistentVolumeClaim(persistentVolumeClaim, r.cr, r.logger); err != nil {
+					if err := r.reconciler.createPersistentVolumeClaim(persistentVolumeClaim, r.cr, r.logger); err != nil {
 						return err
 					}
 				}
@@ -298,9 +297,18 @@ func (r *ReconcileZooKeeper) updateZooKeeperStatus(cr *zookeeperservice.ZooKeepe
 }
 
 func (r ReconcileZooKeeper) rolloutServer(serverID int, deployment *appsv1.Deployment) error {
-	desired, offline, err := r.pvcNeedsOfflineResize(serverID)
-	if err != nil {
+	pvc, err := r.serverPVC(serverID)
+	if err != nil && !errors.IsNotFound(err) {
 		return err
+	}
+	desired, offline := resource.Quantity{}, false
+	if err == nil && r.cr.Spec.ZooKeeper.Storage.Size != "" {
+		desired, err = resource.ParseQuantity(r.cr.Spec.ZooKeeper.Storage.Size)
+		if err != nil {
+			return err
+		}
+		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
+		offline = pvc.Status.Phase == corev1.ClaimBound && capacity.Cmp(desired) < 0
 	}
 	if offline {
 		zero := int32(0)
@@ -312,84 +320,44 @@ func (r ReconcileZooKeeper) rolloutServer(serverID int, deployment *appsv1.Deplo
 	if !offline {
 		return nil
 	}
-	return r.finishPVCResize(serverID, deployment.Name, desired)
-}
 
-func (r ReconcileZooKeeper) pvcNeedsOfflineResize(serverID int) (resource.Quantity, bool, error) {
-	if r.cr.Spec.ZooKeeper.Storage.Size == "" {
-		return resource.Quantity{}, false, nil
-	}
-	desired, err := resource.ParseQuantity(r.cr.Spec.ZooKeeper.Storage.Size)
-	if err != nil {
-		return resource.Quantity{}, false, err
-	}
-	pvc, err := r.serverPVC(serverID)
-	if errors.IsNotFound(err) {
-		return desired, false, nil
-	}
-	if err != nil {
-		return resource.Quantity{}, false, err
-	}
-	capacity := pvc.Status.Capacity[corev1.ResourceStorage]
-	offline := pvc.Status.Phase == corev1.ClaimBound && capacity.Cmp(desired) < 0
-	return desired, offline, nil
-}
-
-func (r ReconcileZooKeeper) finishPVCResize(serverID int, deploymentName string, desired resource.Quantity) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
+	labels := provider.GetZooKeeperSelectorLabels(r.cr.Name)
+	labels["name"] = deployment.Name
 	for attempt := 1; ; attempt++ {
-		if ctx.Err() != nil {
-			return fmt.Errorf("timeout waiting for server %d PVC resize", serverID)
-		}
-		if err := r.waitServerPodsGone(ctx, serverID); err != nil {
-			return err
+		err = wait.PollUntilContextTimeout(ctx, time.Second, 2*time.Minute, true, func(context.Context) (bool, error) {
+			pods, listErr := r.reconciler.findPodList(r.cr.Namespace, labels)
+			return listErr == nil && len(pods.Items) == 0, listErr
+		})
+		if err != nil {
+			return fmt.Errorf("timeout waiting for server %d pod to stop: %w", serverID, err)
 		}
 		select {
 		case <-time.After(10 * time.Second * time.Duration(1<<(attempt-1))):
 		case <-ctx.Done():
 			return fmt.Errorf("timeout waiting for server %d PVC resize", serverID)
 		}
-		if err := r.reconciler.scaleDeployment(deploymentName, 1, r.cr.Namespace, r.logger); err != nil {
+		if err = r.reconciler.scaleDeployment(deployment.Name, 1, r.cr.Namespace, r.logger); err != nil {
 			return err
 		}
-		resized, err := r.pvcHasCapacity(serverID, desired, 30*time.Second)
-		if err != nil || resized {
-			return err
+		grown := false
+		_ = wait.PollUntilContextTimeout(context.Background(), time.Second, 30*time.Second, true, func(context.Context) (bool, error) {
+			claim, getErr := r.serverPVC(serverID)
+			if getErr != nil {
+				return false, nil
+			}
+			capacity := claim.Status.Capacity[corev1.ResourceStorage]
+			grown = capacity.Cmp(desired) >= 0
+			return grown, nil
+		})
+		if grown {
+			return nil
 		}
-		if err := r.reconciler.scaleDeployment(deploymentName, 0, r.cr.Namespace, r.logger); err != nil {
+		if err = r.reconciler.scaleDeployment(deployment.Name, 0, r.cr.Namespace, r.logger); err != nil {
 			return err
 		}
 	}
-}
-
-func (r ReconcileZooKeeper) waitServerPodsGone(ctx context.Context, serverID int) error {
-	labels := provider.GetZooKeeperSelectorLabels(r.cr.Name)
-	labels["name"] = fmt.Sprintf("%s-%d", r.cr.Name, serverID)
-	return wait.PollUntilContextTimeout(ctx, time.Second, 2*time.Minute, true, func(context.Context) (bool, error) {
-		pods, err := r.reconciler.findPodList(r.cr.Namespace, labels)
-		return err == nil && len(pods.Items) == 0, err
-	})
-}
-
-func (r ReconcileZooKeeper) pvcHasCapacity(serverID int, desired resource.Quantity, timeout time.Duration) (bool, error) {
-	resized := false
-	err := wait.PollUntilContextTimeout(context.Background(), time.Second, timeout, true, func(context.Context) (bool, error) {
-		pvc, err := r.serverPVC(serverID)
-		if errors.IsNotFound(err) {
-			return false, nil
-		}
-		if err != nil {
-			return false, err
-		}
-		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
-		resized = capacity.Cmp(desired) >= 0
-		return resized, nil
-	})
-	if stderrors.Is(err, context.DeadlineExceeded) {
-		return false, nil
-	}
-	return resized, err
 }
 
 func (r ReconcileZooKeeper) serverPVC(serverID int) (*corev1.PersistentVolumeClaim, error) {

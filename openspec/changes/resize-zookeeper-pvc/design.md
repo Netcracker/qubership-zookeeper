@@ -50,12 +50,12 @@ The existing per-server wait for a running pod stays after this loop, so the nex
 
 Size is checked before the annotation early return, and only for a ZooKeeper server data claim. If neither size nor annotations changed, the claim is not written. A size change still updates that claim when annotations are unchanged. Snapshot and backup claims take the annotation-only path, so their storage request stays as created.
 
-If the API rejects a server data claim update, the error is logged and the reconcile continues. An annotation update of a snapshot or backup claim still returns that error.
+If the API rejects the claim update, the reconcile returns that error. The server is not scaled down for a size that was not stored.
 
 ## Risks / Trade-offs
 
 - [One server is down while its volume expands] → The loop handles a single server, and the next server waits until this pod is running. A three-node ensemble keeps a majority if only one member is down.
-- [StorageClass without `allowVolumeExpansion`, or an API that rejects the claim update] → The update error is only logged. The server is still scaled to zero because capacity is below the desired size, then the 10-minute loop fails. The next reconcile repeats that outage until the size is put back or the class allows expansion.
+- [StorageClass without `allowVolumeExpansion`, or an API that rejects the claim update] → The reconcile returns the update error and leaves the server replicas unchanged. The volume stays at its current size until the class allows expansion or the requested size is put back.
 - [Rollback to an operator that does not resize] → An already expanded claim stays large. A Deployment left at zero replicas is restored to one only when a later reconcile writes the server Deployment again.
 - [Filesystem growth that needs a mount] → The loop starts the pod, and if capacity is still short after 30 seconds it stops the pod and retries. Drivers that expand only while detached are covered by the delay before the first start.
 

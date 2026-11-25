@@ -74,10 +74,9 @@ The operator MUST fail the reconcile when a bound data volume does not reach the
 - **WHEN** a bound data volume stays below the desired capacity until the resize limit
 - **THEN** the reconcile returns an error
 
-### Requirement: Claim update failure is logged and skipped
-When the API rejects an update of an existing managed claim, the operator MUST log the error and MUST continue the reconcile.
+### Requirement: Claim update failure stops the reconcile
+When the API rejects an update of an existing claim, the operator MUST return that error and MUST NOT stop the server for a resize that was not stored.
 
 #### Scenario: Storage class rejects the update
-- **WHEN** updating an existing claim returns an error
-- **THEN** the operator logs the error
-- **AND** the reconcile continues
+- **WHEN** updating an existing server data claim returns an error
+- **THEN** the reconcile returns that error
